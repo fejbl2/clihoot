@@ -20,7 +20,9 @@ build:
 lint:
     stage: test
     script:
+        - rustup component add rustfmt
         - cargo fmt -- --check
+        - rustup component add clippy
         - cargo clippy -- -D warnings
 
 test:
