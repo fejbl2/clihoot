@@ -5,6 +5,8 @@ workflow:
 
 default:
     image: rust:latest
+    tags:
+    - shared-fi
 
 stages:
     - build
@@ -12,8 +14,6 @@ stages:
 
 build:
     stage: build
-    tags:
-        - shared-fi
     script:
         - cargo build --verbose
 
