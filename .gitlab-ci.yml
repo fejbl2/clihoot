@@ -12,6 +12,8 @@ stages:
 
 build:
     stage: build
+    tags:
+        - shared-fi
     script:
         - cargo build --verbose
 
