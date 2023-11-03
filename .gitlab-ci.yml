@@ -1,0 +1,27 @@
+workflow:
+    rules:
+        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+default:
+    image: rust:latest
+
+stages:
+    - build
+    - test
+
+build:
+    stage: build
+    script:
+        - cargo build --verbose
+
+lint:
+    stage: test
+    script:
+        - cargo fmt -- --check
+        - cargo clippy -- -D warnings
+
+test:
+    stage: test
+    script:
+        - cargo test --verbose
