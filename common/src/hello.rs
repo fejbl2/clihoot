@@ -1,0 +1,3 @@
+pub enum Hello {
+    World,
+}

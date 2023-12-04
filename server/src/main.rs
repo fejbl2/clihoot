@@ -1,4 +1,4 @@
-use common::Hello;
+use common::hello::Hello;
 
 fn main() {
     let x = Hello::World;
