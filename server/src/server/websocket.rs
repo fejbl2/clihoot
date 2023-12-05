@@ -1,9 +1,9 @@
-use crate::lobby::Lobby;
-use crate::messages::{
+use crate::server::lobby::Lobby;
+use crate::server::messages::{
     ClientActorMessage, ConnectToLobby, DisconnectFromLobby, RelayMessageToClient,
     RelayMessageToLobby, WsGracefulCloseConnection, WsHardCloseConnection,
 };
-use crate::ws_utils::{prepare_explicit_message, prepare_message};
+use crate::server::ws_utils::{prepare_explicit_message, prepare_message};
 
 use actix::{fut, ActorContext, ActorFutureExt};
 use actix::{Actor, Addr, ContextFutureSpawner, Running, WrapFuture};

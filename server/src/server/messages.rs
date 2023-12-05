@@ -1,5 +1,10 @@
-use actix::prelude::{Message, Recipient};
+use actix::{
+    prelude::{Message, Recipient},
+    Addr,
+};
 use uuid::Uuid;
+
+use crate::teacher::init::Teacher;
 
 //WsConn responds to this to pipe it through to the actual client
 #[derive(Message)]
@@ -42,4 +47,11 @@ pub struct ClientActorMessage {
     pub id: Uuid,
     pub msg: String,
     pub room_id: Uuid,
+}
+
+//client sends this to the lobby for the lobby to echo out.
+#[derive(Message, Debug)]
+#[rtype(result = "()")]
+pub struct RegisterTeacherMessage {
+    pub teacher: Addr<Teacher>,
 }

@@ -1,31 +1,34 @@
 mod args;
 mod server;
+mod teacher;
 
-use std::{sync::mpsc::Sender, thread};
+use std::{
+    sync::mpsc::{self},
+    thread,
+};
 
-use crate::args::Args;
+use crate::{args::Args, server::init::run_server, teacher::init::run_teacher};
 use clap::Parser;
 
-fn main() -> anyhow::Result<()> {
+fn main() {
     let args: Args = Args::parse();
 
     println!("Using input file: {}", args.questions_file);
     println!("Binding to port: {}", args.port);
 
-    // create oneshot channel
-    let (tx, rx) = std::sync::mpsc::channel::<String>();
+    // create oneshot channel, so that spawned server can send us its address
+    let (tx, rx) = mpsc::channel();
 
-    start_server(tx);
-
-    let received = rx.recv().unwrap();
-    println!("Got: {received}");
-
-    Ok(())
-}
-
-fn start_server() {
-    thread::spawn(move || {
-        let val = String::from("hello");
-        tx.send(val).unwrap();
+    let server_thread = thread::spawn(move || {
+        run_server(tx);
     });
+
+    let teacher_thread = thread::spawn(move || {
+        let server = rx.recv().unwrap();
+        run_teacher(server);
+    });
+
+    // wait for threads to finish
+    server_thread.join().unwrap();
+    teacher_thread.join().unwrap();
 }

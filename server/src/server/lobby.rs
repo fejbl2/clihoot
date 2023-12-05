@@ -1,9 +1,17 @@
-use crate::messages::{
-    ClientActorMessage, ConnectToLobby, DisconnectFromLobby, RelayMessageToClient,
+use crate::{
+    server::messages::{
+        ClientActorMessage, ConnectToLobby, DisconnectFromLobby, RelayMessageToClient,
+    },
+    teacher::init::Teacher,
 };
-use actix::prelude::{Actor, Context, Handler, Recipient};
+use actix::{
+    prelude::{Actor, Context, Handler, Recipient},
+    Addr,
+};
 use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
+
+use super::messages::RegisterTeacherMessage;
 
 type Socket = Recipient<RelayMessageToClient>;
 
@@ -11,6 +19,7 @@ type Socket = Recipient<RelayMessageToClient>;
 pub struct Lobby {
     sessions: HashMap<Uuid, Socket>,     //self id to self
     rooms: HashMap<Uuid, HashSet<Uuid>>, //room id  to list of users id
+    teacher: Option<Addr<Teacher>>,
 }
 
 impl Lobby {
@@ -109,5 +118,16 @@ impl Handler<ClientActorMessage> for Lobby {
                 .iter()
                 .for_each(|client| self.send_message(&msg.msg, client));
         }
+    }
+}
+
+impl Handler<RegisterTeacherMessage> for Lobby {
+    type Result = ();
+
+    fn handle(&mut self, msg: RegisterTeacherMessage, _: &mut Context<Self>) -> Self::Result {
+        println!("Received RegisterTeacherMessage received in Lobby");
+        self.teacher = Some(msg.teacher);
+
+        // TODO only now actually start the server
     }
 }
