@@ -7,11 +7,7 @@ use tokio::net::TcpListener;
 use uuid::Uuid;
 use websocket::WsConn;
 
-use std::{
-    net::SocketAddr,
-    ops::Deref,
-    sync::{mpsc::Sender, Arc},
-};
+use std::{net::SocketAddr, sync::mpsc::Sender};
 
 use super::{lobby, websocket};
 
@@ -33,7 +29,7 @@ pub fn run_server(tx: Sender<Addr<Lobby>>) {
 #[allow(clippy::unused_async)]
 async fn init(tx: Sender<Addr<Lobby>>) {
     // spawn an actor for managing the lobby
-    let lobby_actor = Arc::new(Lobby::default().start());
+    let lobby_actor = Lobby::default().start();
 
     // spawn task for accepting connections
     // LOCAL SPAWN is very important here (actors can only be spawned on the same thread)
@@ -42,7 +38,7 @@ async fn init(tx: Sender<Addr<Lobby>>) {
         tokio::task::spawn_local(accept_connections(addr, lobby_actor.clone()));
 
     // send the address of the lobby to the main thread
-    let _ = tx.send(lobby_actor.deref().clone());
+    let _ = tx.send(lobby_actor.clone());
 
     // handle CTRL+C gracefully
     tokio::spawn(async move {
@@ -52,7 +48,7 @@ async fn init(tx: Sender<Addr<Lobby>>) {
     });
 }
 
-async fn accept_connections(addr: SocketAddr, lobby: Arc<Addr<Lobby>>) -> anyhow::Result<()> {
+async fn accept_connections(addr: SocketAddr, lobby: Addr<Lobby>) -> anyhow::Result<()> {
     // create a TCP socket listener
 
     let listener = TcpListener::bind(addr).await?;

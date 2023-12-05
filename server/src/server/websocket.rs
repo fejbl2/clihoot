@@ -26,7 +26,7 @@ use uuid::Uuid;
 pub struct WsConn {
     room: Uuid,
 
-    lobby_addr: Arc<Addr<Lobby>>,
+    lobby_addr: Addr<Lobby>,
 
     connection_id: Uuid,
 
@@ -42,7 +42,7 @@ pub struct WsConn {
 impl WsConn {
     pub async fn new(
         room: Uuid,
-        lobby: Arc<Addr<Lobby>>,
+        lobby: Addr<Lobby>,
         socket: TcpStream,
         who: SocketAddr,
     ) -> anyhow::Result<WsConn> {

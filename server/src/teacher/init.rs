@@ -2,7 +2,7 @@ use actix::{
     prelude::{Actor, Context},
     Addr, AsyncContext,
 };
-
+use actix_rt::System;
 
 use crate::server::{lobby::Lobby, messages::RegisterTeacherMessage};
 
@@ -50,4 +50,11 @@ pub fn run_teacher(tx: Addr<Lobby>) {
 async fn init(lobby: Addr<Lobby>) {
     // spawn an actor for managing the lobby
     let _teacher_actor = Teacher { lobby }.start();
+
+    // handle CTRL+C gracefully
+    tokio::spawn(async move {
+        tokio::signal::ctrl_c().await.unwrap();
+        println!("CTRL-C received, shutting down");
+        System::current().stop();
+    });
 }
