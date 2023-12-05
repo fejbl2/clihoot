@@ -1,4 +1,5 @@
 mod args;
+mod server;
 
 use std::{sync::mpsc::Sender, thread};
 
@@ -22,7 +23,7 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn start_server(tx: Sender<String>) {
+fn start_server() {
     thread::spawn(move || {
         let val = String::from("hello");
         tx.send(val).unwrap();
