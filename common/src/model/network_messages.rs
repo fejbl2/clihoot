@@ -55,7 +55,7 @@ pub struct QuestionEnded {
     // TODO also uuid of question? or add uuid to the question struct?
     pub question: Question, // here we want also right choices unlike in NextQuestion
     pub player_answer: Vec<Uuid>,
-    pub stats: Vec<Uuid, u64>, // how many answers has the question with given uuid
+    pub stats: Vec<(Uuid, u64)>, // how many answers has the question with given uuid
 }
 
 #[derive(Debug, Serialize, Deserialize)]
