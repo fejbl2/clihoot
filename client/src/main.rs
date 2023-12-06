@@ -1,5 +1,4 @@
 fn main() {
-    let x = common::hello::Hello::World;
-    let _y = common::questions::Questions { hello: x };
+    let _x = common::hello::Hello::World;
     println!("Hello, world!");
 }

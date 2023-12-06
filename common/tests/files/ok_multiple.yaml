@@ -1,0 +1,27 @@
+questions:
+- text: What is the answer to the ultimate question of life, the Universe, and Everything?
+  time_seconds: 42
+  choices:
+  - text: sleep
+  - text: '42'
+    is_right: true
+  - text: food
+  - text: '69'
+
+- text: What is the answer to the ultimate question of life, the Universe, and Everything?
+  time_seconds: 42
+  choices:
+  - text: sleep
+  - text: '42'
+    is_right: true
+  - text: food
+  - text: '69'
+
+- text: What is the answer to the ultimate question of life, the Universe, and Everything?
+  time_seconds: 42
+  choices:
+  - text: sleep
+  - text: '42'
+    is_right: true
+  - text: food
+  - text: '69'

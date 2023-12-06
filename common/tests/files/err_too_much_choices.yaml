@@ -1,0 +1,9 @@
+questions:
+- text: Why are we?
+  time_seconds: 42
+  choices:
+  - text: foo
+  - text: bar
+  - text: foobar
+  - text: barfoo
+  - text: foofoobarbar
