@@ -9,13 +9,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a4668cab20f66d8d020e1fbc0ebe47217433c1b6c8f2040faf858554e394ace6"
 
 [[package]]
-name = "client"
-version = "0.1.0"
-dependencies = [
- "common",
-]
-
-[[package]]
 name = "common"
 version = "0.1.0"
 dependencies = [
@@ -107,13 +100,6 @@ dependencies = [
  "ryu",
  "serde",
  "unsafe-libyaml",
-]
-
-[[package]]
-name = "server"
-version = "0.1.0"
-dependencies = [
- "common",
 ]
 
 [[package]]
