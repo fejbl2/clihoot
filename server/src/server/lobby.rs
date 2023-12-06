@@ -102,6 +102,37 @@ impl Lobby {
         }
     }
 
+    fn next_question(&self) -> &Question {
+        let prev_question = match self.phase {
+            Phase::WaitingForPlayers => None,
+            Phase::ActiveQuestion(guid) => Some(guid),
+            Phase::AfterQuestion(guid) => Some(guid),
+            Phase::ShowingLeaderboard(guid) => Some(guid),
+            Phase::GameEnded => panic!("Cannot call next_question when game has ended"),
+        };
+
+        // get the next question after the previous one
+        let next_question = if let Some(prev_question) = prev_question {
+            // find the index of the previous question
+            let index = self
+                .questions
+                .iter()
+                .position(|q| q.id == prev_question)
+                .unwrap();
+
+            // should not happen
+            assert!(index != self.questions.len() - 1, "Received StartQuestionMessage in Lobby, but can't show next question, because there is no next question");
+
+            // get the next question
+            &self.questions[index + 1]
+        } else {
+            // no previous question, so get the first one
+            self.questions.first().unwrap()
+        };
+
+        next_question
+    }
+
     fn can_show_next_question(&self) -> bool {
         match self.phase {
             Phase::WaitingForPlayers => true,
@@ -230,38 +261,17 @@ impl Handler<StartQuestionMessage> for Lobby {
     type Result = ();
 
     fn handle(&mut self, _msg: StartQuestionMessage, _: &mut Context<Self>) -> Self::Result {
+        // 1. check that we can show the next question
+        // 2. find which question it is
+        // 3. set the phase to `ActiveQuestion`
+        // 4. send the question to all clients as well as the teacher
+
         if !self.can_show_next_question() {
             println!("Received StartQuestionMessage in Lobby, but can't show next question");
             return;
         }
 
-        let prev_question = match self.phase {
-            Phase::WaitingForPlayers => None,
-            Phase::ActiveQuestion(guid) => Some(guid),
-            Phase::AfterQuestion(guid) => Some(guid),
-            Phase::ShowingLeaderboard(guid) => Some(guid),
-            Phase::GameEnded => panic!("Received StartQuestionMessage in Lobby, but can't show next question, because the game has ended"),
-        };
-
-        // get the next question after the previous one
-        let next_question = if let Some(prev_question) = prev_question {
-            // find the index of the previous question
-            let index = self
-                .questions
-                .iter()
-                .position(|q| q.id == prev_question)
-                .unwrap();
-
-            // should not happen
-            assert!(index != self.questions.len() - 1, "Received StartQuestionMessage in Lobby, but can't show next question, because there is no next question");
-
-            // get the next question
-            self.questions[index + 1].id
-        } else {
-            // no previous question, so get the first one
-            self.questions.first().unwrap().id
-        };
-
-        self.phase = self.phase.next_phase(next_question);
+        let next_question = self.next_question();
+        self.phase = Phase::ActiveQuestion(next_question);
     }
 }
