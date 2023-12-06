@@ -1,10 +1,9 @@
-use actix::{
-    prelude::{Message, Recipient},
-    Addr,
-};
+use actix::{prelude::Message, Addr};
 use uuid::Uuid;
 
-use crate::teacher::init::Teacher;
+
+
+use super::websocket::WsConn;
 
 //WsConn responds to this to pipe it through to the actual client
 #[derive(Message)]
@@ -27,17 +26,15 @@ pub struct RelayMessageToClient(pub String);
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
 pub struct ConnectToLobby {
-    pub addr: Recipient<RelayMessageToClient>,
-    pub lobby_id: Uuid,
-    pub self_id: Uuid,
+    pub addr: Addr<WsConn>,
+    pub player_id: Uuid,
 }
 
 //WsConn sends this to a lobby to say "take me out please"
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
 pub struct DisconnectFromLobby {
-    pub room_id: Uuid,
-    pub id: Uuid,
+    pub player_id: Uuid,
 }
 
 //client sends this to the lobby for the lobby to echo out.
@@ -47,11 +44,4 @@ pub struct ClientActorMessage {
     pub id: Uuid,
     pub msg: String,
     pub room_id: Uuid,
-}
-
-//client sends this to the lobby for the lobby to echo out.
-#[derive(Message, Debug)]
-#[rtype(result = "()")]
-pub struct RegisterTeacherMessage {
-    pub teacher: Addr<Teacher>,
 }

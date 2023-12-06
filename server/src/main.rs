@@ -13,14 +13,18 @@ use clap::Parser;
 fn main() {
     let args: Args = Args::parse();
 
-    println!("Using input file: {}", args.questions_file);
     println!("Binding to port: {}", args.port);
 
     // create oneshot channel, so that spawned server can send us its address
     let (tx, rx) = mpsc::channel();
 
     let server_thread = thread::spawn(move || {
-        run_server(tx);
+        run_server(
+            tx,
+            args.questions,
+            args.randomize_answers,
+            args.randomize_questions,
+        );
     });
 
     let teacher_thread = thread::spawn(move || {

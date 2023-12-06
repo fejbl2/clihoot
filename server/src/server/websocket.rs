@@ -28,7 +28,7 @@ pub struct WsConn {
 
     lobby_addr: Addr<Lobby>,
 
-    connection_id: Uuid,
+    player_id: Uuid,
 
     receiver: Option<SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>>,
 
@@ -51,7 +51,7 @@ impl WsConn {
         let (sender, receiver) = socket.split();
 
         Ok(WsConn {
-            connection_id: Uuid::new_v4(),
+            player_id: Uuid::new_v4(),
             room,
             lobby_addr: lobby,
             receiver: Some(receiver),
@@ -72,9 +72,8 @@ impl Actor for WsConn {
         // First tell the boss that we have a new connection
         self.lobby_addr
             .send(ConnectToLobby {
-                addr: addr.clone().recipient(),
-                lobby_id: self.room,
-                self_id: self.connection_id,
+                addr: addr.clone(),
+                player_id: self.player_id,
             })
             .into_actor(self)
             // If we get a response back, then we're good to go
@@ -102,8 +101,7 @@ impl Actor for WsConn {
         }
 
         self.lobby_addr.do_send(DisconnectFromLobby {
-            id: self.connection_id,
-            room_id: self.room,
+            player_id: self.player_id,
         });
         Running::Stop
     }
@@ -179,7 +177,7 @@ impl Handler<RelayMessageToLobby> for WsConn {
     fn handle(&mut self, msg: RelayMessageToLobby, _ctx: &mut Self::Context) -> Self::Result {
         // tell the lobby to send it to everyone else
         self.lobby_addr.do_send(ClientActorMessage {
-            id: self.connection_id,
+            id: self.player_id,
             msg: msg.0,
             room_id: self.room,
         });

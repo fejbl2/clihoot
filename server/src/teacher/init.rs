@@ -4,7 +4,7 @@ use actix::{
 };
 use actix_rt::System;
 
-use crate::server::{lobby::Lobby, messages::RegisterTeacherMessage};
+use crate::server::{lobby::Lobby, teacher_messages::RegisterTeacherMessage};
 
 pub struct Teacher {
     pub lobby: Addr<Lobby>,
