@@ -77,9 +77,9 @@ impl Lobby {
     fn next_question(&self) -> &Question {
         let prev_question = match self.phase {
             Phase::WaitingForPlayers => None,
-            Phase::ActiveQuestion(guid) => Some(guid),
-            Phase::AfterQuestion(guid) => Some(guid),
-            Phase::ShowingLeaderboard(guid) => Some(guid),
+            Phase::ActiveQuestion(guid)
+            | Phase::AfterQuestion(guid)
+            | Phase::ShowingLeaderboard(guid) => Some(guid),
             Phase::GameEnded => panic!("Cannot call next_question when game has ended"),
         };
 
@@ -125,7 +125,7 @@ impl Lobby {
     }
 
     fn send_to_all(&self, message: &str, include_teacher: bool) {
-        for (_id, socket_recipient) in &self.joined_players {
+        for socket_recipient in self.joined_players.values() {
             socket_recipient.do_send(RelayMessageToClient(message.to_owned()));
         }
 
