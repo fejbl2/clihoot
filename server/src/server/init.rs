@@ -2,6 +2,7 @@ use actix::{Actor, Addr};
 
 use actix_rt::System;
 
+use common::questions::{QuestionSet};
 use lobby::Lobby;
 use tokio::net::TcpListener;
 
@@ -11,7 +12,7 @@ use websocket::WsConn;
 use std::{net::SocketAddr, sync::mpsc::Sender};
 
 use super::{
-    lobby::{self, Question},
+    lobby::{self},
     websocket,
 };
 
@@ -22,28 +23,18 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
         .unwrap()
 }
 
-pub fn run_server(
-    tx: Sender<Addr<Lobby>>,
-    questions: Vec<Question>,
-    randomize_answers: bool,
-    randomize_questions: bool,
-) {
+pub fn run_server(tx: Sender<Addr<Lobby>>, questions: QuestionSet) {
     let system = actix::System::with_tokio_rt(create_tokio_runtime);
 
-    system.block_on(init(tx, questions, randomize_answers, randomize_questions));
+    system.block_on(init(tx, questions));
 
     system.run().unwrap();
 }
 
 #[allow(clippy::unused_async)]
-async fn init(
-    tx: Sender<Addr<Lobby>>,
-    questions: Vec<Question>,
-    randomize_answers: bool,
-    randomize_questions: bool,
-) {
+async fn init(tx: Sender<Addr<Lobby>>, questions: QuestionSet) {
     // spawn an actor for managing the lobby
-    let lobby_actor = Lobby::new(questions, randomize_questions, randomize_answers).start();
+    let lobby_actor = Lobby::new(questions).start();
 
     // spawn task for accepting connections
     // LOCAL SPAWN is very important here (actors can only be spawned on the same thread)

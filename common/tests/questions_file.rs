@@ -1,9 +1,11 @@
 use std::path::Path;
 
 use common::questions;
+use uuid::Uuid;
 
-fn no_code_question_fixture() -> questions::Question {
+fn no_code_question_fixture(id: Uuid) -> questions::Question {
     questions::Question {
+        id,
         text: "What is the answer to the ultimate question of life, the Universe, and Everything?"
             .to_string(),
         code_block: None,
@@ -35,7 +37,9 @@ fn test_ok_minimal() {
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_minimal.yaml")).unwrap();
 
     let wanted = questions::QuestionSet {
-        questions: vec![no_code_question_fixture()],
+        randomize_answers: false,
+        randomize_questions: false,
+        questions: vec![no_code_question_fixture(result.questions[0].id)],
     };
 
     assert_eq!(result, wanted)
@@ -47,7 +51,10 @@ fn test_ok_code() {
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_code.yaml")).unwrap();
 
     let wanted = questions::QuestionSet {
+        randomize_answers: false,
+        randomize_questions: false,
         questions: vec![questions::Question {
+            id: result.questions[0].id,
             text: "What does this code do?".to_string(),
             code_block: Some(questions::CodeBlock {
                 language: "rust".to_string(),
@@ -86,10 +93,12 @@ fn test_ok_multiple() {
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_multiple.yaml")).unwrap();
 
     let wanted = questions::QuestionSet {
+        randomize_answers: false,
+        randomize_questions: false,
         questions: vec![
-            no_code_question_fixture(),
-            no_code_question_fixture(),
-            no_code_question_fixture(),
+            no_code_question_fixture(result.questions[0].id),
+            no_code_question_fixture(result.questions[1].id),
+            no_code_question_fixture(result.questions[2].id),
         ],
     };
 

@@ -8,8 +8,9 @@ use actix::{
     prelude::{Actor, Context, Handler},
     Addr,
 };
+use common::questions::{Question, QuestionSet};
 use rand::prelude::*;
-use serde::Deserialize;
+
 use std::collections::HashMap;
 use uuid::Uuid;
 
@@ -40,15 +41,6 @@ impl Phase {
     }
 }
 
-// TODO: remove
-#[derive(Debug, Clone, Deserialize)]
-pub struct Question {
-    id: Uuid,
-    question: String,
-    answers: Vec<String>,
-    correct_answer: usize,
-}
-
 pub struct Lobby {
     /// An address to the teacher actor
     teacher: Option<Addr<Teacher>>,
@@ -56,46 +48,26 @@ pub struct Lobby {
     /// Phase of the game  
     phase: Phase,
 
-    /// Whether to randomize answers order
-    randomize_answers: bool,
-
     /// Whether new players can join
     locked: bool,
 
     /// References to all the connected clients
     joined_players: HashMap<Uuid, Addr<WsConn>>,
 
-    questions: Vec<Question>,
-}
-
-impl Default for Lobby {
-    fn default() -> Self {
-        Lobby {
-            teacher: None,
-            phase: Phase::default(),
-            randomize_answers: false,
-            locked: true,
-            joined_players: HashMap::new(),
-            questions: Vec::new(),
-        }
-    }
+    /// All questions to be asked
+    questions: QuestionSet,
 }
 
 impl Lobby {
-    pub fn new(
-        mut questions: Vec<Question>,
-        randomize_questions: bool,
-        randomize_answers: bool,
-    ) -> Self {
-        if randomize_questions {
+    pub fn new(mut questions: QuestionSet) -> Self {
+        if questions.randomize_questions {
             let mut rng = rand::thread_rng();
-            questions.shuffle(&mut rng);
+            questions.questions.shuffle(&mut rng);
         }
 
         Lobby {
             teacher: None,
             phase: Phase::default(),
-            randomize_answers,
             locked: true,
             joined_players: HashMap::new(),
             questions,
