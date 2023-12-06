@@ -272,6 +272,6 @@ impl Handler<StartQuestionMessage> for Lobby {
         }
 
         let next_question = self.next_question();
-        self.phase = Phase::ActiveQuestion(next_question);
+        self.phase = Phase::ActiveQuestion(next_question.id);
     }
 }
