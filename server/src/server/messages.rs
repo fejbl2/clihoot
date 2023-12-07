@@ -1,8 +1,6 @@
 use actix::{prelude::Message, Addr};
 use uuid::Uuid;
 
-
-
 use super::websocket::WsConn;
 
 //WsConn responds to this to pipe it through to the actual client

@@ -2,7 +2,7 @@ use actix::{Actor, Addr};
 
 use actix_rt::System;
 
-use common::questions::{QuestionSet};
+use common::questions::QuestionSet;
 use lobby::Lobby;
 use tokio::net::TcpListener;
 

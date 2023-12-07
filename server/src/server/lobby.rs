@@ -20,6 +20,7 @@ use super::{
 };
 
 #[derive(Default, PartialEq)]
+#[allow(dead_code)]
 enum Phase {
     #[default]
     WaitingForPlayers,
@@ -29,17 +30,17 @@ enum Phase {
     GameEnded,
 }
 
-impl Phase {
-    fn next_phase(&self, next_question: Uuid) -> Phase {
-        match self {
-            Phase::WaitingForPlayers => Phase::ActiveQuestion(next_question),
-            Phase::ActiveQuestion(guid) => Phase::AfterQuestion(*guid),
-            Phase::AfterQuestion(guid) => Phase::ActiveQuestion(*guid),
-            Phase::ShowingLeaderboard(_guid) => Phase::ActiveQuestion(next_question),
-            Phase::GameEnded => Phase::GameEnded,
-        }
-    }
-}
+// impl Phase {
+//     fn next_phase(&self, next_question: Uuid) -> Phase {
+//         match self {
+//             Phase::WaitingForPlayers => Phase::ActiveQuestion(next_question),
+//             Phase::ActiveQuestion(guid) => Phase::AfterQuestion(*guid),
+//             Phase::AfterQuestion(guid) => Phase::ActiveQuestion(*guid),
+//             Phase::ShowingLeaderboard(_guid) => Phase::ActiveQuestion(next_question),
+//             Phase::GameEnded => Phase::GameEnded,
+//         }
+//     }
+// }
 
 pub struct Lobby {
     /// An address to the teacher actor
