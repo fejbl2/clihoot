@@ -33,8 +33,6 @@ fn new_uuid() -> Uuid {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Question {
-    #[serde(default = "new_uuid", skip_deserializing, skip_serializing)]
-    pub id: Uuid,
     pub text: String,
     pub code_block: Option<CodeBlock>,
     pub time_seconds: u32,
@@ -50,6 +48,9 @@ pub struct CodeBlock {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct Choice {
+    // we want to be able to identify the choices even when the client shuffles them
+    #[serde(default = "new_uuid", skip_deserializing, skip_serializing)]
+    pub id: Uuid,
     // by design, no syntax highlighting for the choices
     pub text: String,
     #[serde(default)]

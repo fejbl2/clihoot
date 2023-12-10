@@ -8,7 +8,7 @@ use actix::{
     prelude::{Actor, Context, Handler},
     Addr,
 };
-use common::questions::{Question, QuestionSet};
+use common::questions::QuestionSet;
 use rand::prelude::*;
 
 use std::collections::HashMap;
@@ -24,23 +24,11 @@ use super::{
 enum Phase {
     #[default]
     WaitingForPlayers,
-    ActiveQuestion(Uuid),
-    AfterQuestion(Uuid),
-    ShowingLeaderboard(Uuid),
+    ActiveQuestion(usize),
+    AfterQuestion(usize),
+    ShowingLeaderboard(usize),
     GameEnded,
 }
-
-// impl Phase {
-//     fn next_phase(&self, next_question: Uuid) -> Phase {
-//         match self {
-//             Phase::WaitingForPlayers => Phase::ActiveQuestion(next_question),
-//             Phase::ActiveQuestion(guid) => Phase::AfterQuestion(*guid),
-//             Phase::AfterQuestion(guid) => Phase::ActiveQuestion(*guid),
-//             Phase::ShowingLeaderboard(_guid) => Phase::ActiveQuestion(next_question),
-//             Phase::GameEnded => Phase::GameEnded,
-//         }
-//     }
-// }
 
 pub struct Lobby {
     /// An address to the teacher actor
@@ -75,43 +63,31 @@ impl Lobby {
         }
     }
 
-    fn next_question(&self) -> &Question {
+    fn next_question(&self) -> usize {
         let prev_question = match self.phase {
             Phase::WaitingForPlayers => None,
-            Phase::ActiveQuestion(guid)
-            | Phase::AfterQuestion(guid)
-            | Phase::ShowingLeaderboard(guid) => Some(guid),
+            Phase::ActiveQuestion(index)
+            | Phase::AfterQuestion(index)
+            | Phase::ShowingLeaderboard(index) => Some(index),
             Phase::GameEnded => panic!("Cannot call next_question when game has ended"),
         };
 
         // get the next question after the previous one
-        let next_question = if let Some(prev_question) = prev_question {
-            // find the index of the previous question
-            let index = self
-                .questions
-                .iter()
-                .position(|q| q.id == prev_question)
-                .unwrap();
 
-            // should not happen
-            assert!(index != self.questions.len() - 1, "Received StartQuestionMessage in Lobby, but can't show next question, because there is no next question");
-
-            // get the next question
-            &self.questions[index + 1]
+        if let Some(prev_question) = prev_question {
+            prev_question + 1
         } else {
             // no previous question, so get the first one
-            self.questions.first().unwrap()
-        };
-
-        next_question
+            0
+        }
     }
 
     fn can_show_next_question(&self) -> bool {
         match self.phase {
             Phase::WaitingForPlayers => true,
-            Phase::AfterQuestion(guid) => {
-                // find if this question is the last
-                self.questions.last().unwrap().id != guid
+            Phase::AfterQuestion(index) => {
+                // only show next question if we are not at the last question
+                index < self.questions.len() - 1
             }
             _ => false,
         }
@@ -245,6 +221,6 @@ impl Handler<StartQuestionMessage> for Lobby {
         }
 
         let next_question = self.next_question();
-        self.phase = Phase::ActiveQuestion(next_question.id);
+        self.phase = Phase::ActiveQuestion(next_question);
     }
 }

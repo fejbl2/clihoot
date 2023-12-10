@@ -21,11 +21,14 @@ fn main() -> anyhow::Result<()> {
     questions.randomize_answers = args.randomize_answers;
     questions.randomize_questions = args.randomize_questions;
 
+    // construct address on which the server will listen
+    let addr = format!("0.0.0.0:{}", args.port).parse()?;
+
     // create oneshot channel, so that spawned server can send us its address
     let (tx, rx) = mpsc::channel();
 
     let server_thread = thread::spawn(move || {
-        run_server(tx, questions).expect("Failed to run server");
+        run_server(tx, questions, addr).expect("Failed to run server");
     });
 
     let teacher_thread = thread::spawn(move || {

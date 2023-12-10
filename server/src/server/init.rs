@@ -23,10 +23,14 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
         .expect("Could not create tokio runtime") // cannot seem to get rid of this
 }
 
-pub fn run_server(tx: Sender<Addr<Lobby>>, questions: QuestionSet) -> anyhow::Result<()> {
+pub fn run_server(
+    tx: Sender<Addr<Lobby>>,
+    questions: QuestionSet,
+    addr: SocketAddr,
+) -> anyhow::Result<()> {
     let system = actix::System::with_tokio_rt(create_tokio_runtime);
 
-    system.block_on(init(tx, questions))?;
+    system.block_on(init(tx, questions, addr))?;
 
     system.run()?;
 
@@ -34,13 +38,16 @@ pub fn run_server(tx: Sender<Addr<Lobby>>, questions: QuestionSet) -> anyhow::Re
 }
 
 #[allow(clippy::unused_async)]
-async fn init(tx: Sender<Addr<Lobby>>, questions: QuestionSet) -> anyhow::Result<()> {
+async fn init(
+    tx: Sender<Addr<Lobby>>,
+    questions: QuestionSet,
+    addr: SocketAddr,
+) -> anyhow::Result<()> {
     // spawn an actor for managing the lobby
     let lobby_actor = Lobby::new(questions).start();
 
     // spawn task for accepting connections
     // LOCAL SPAWN is very important here (actors can only be spawned on the same thread)
-    let addr: SocketAddr = "0.0.0.0:3000".parse()?;
     let _connection_acceptor =
         tokio::task::spawn_local(accept_connections(addr, lobby_actor.clone()));
 
