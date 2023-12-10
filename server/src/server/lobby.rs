@@ -64,6 +64,10 @@ impl Lobby {
     }
 
     fn next_question(&self) -> anyhow::Result<usize> {
+        if !self.can_show_next_question() {
+            return Err(anyhow::anyhow!("Can't show next question"));
+        }
+
         match self.phase {
             Phase::WaitingForPlayers => Ok(0),
             Phase::ActiveQuestion(index)
@@ -89,6 +93,18 @@ impl Lobby {
             }
             _ => false,
         }
+    }
+
+    fn send_question(&self, index: usize) {
+        let mut question = self.questions[index].clone();
+
+        // censor the right answers
+        question.choices.iter_mut().for_each(|choice| {
+            choice.is_right = false;
+        });
+
+        // construct a message object
+        // TODO
     }
 
     fn send_message(&self, message: &str, id_to: &Uuid) {
@@ -208,18 +224,14 @@ impl Handler<StartQuestionMessage> for Lobby {
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, _msg: StartQuestionMessage, _: &mut Context<Self>) -> Self::Result {
-        // 1. check that we can show the next question
-        // 2. find which question it is
-        // 3. set the phase to `ActiveQuestion`
-        // 4. send the question to all clients as well as the teacher
-
-        if !self.can_show_next_question() {
-            println!("Received StartQuestionMessage in Lobby, but can't show next question");
-            return Err(anyhow::anyhow!("Can't show next question"));
-        }
+        // * find  the next question
+        // * set the phase to `ActiveQuestion`
+        // * send the question to all clients as well as the teacher
 
         let next_question = self.next_question()?;
         self.phase = Phase::ActiveQuestion(next_question);
+
+        self.send_question(next_question);
 
         Ok(())
     }

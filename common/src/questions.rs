@@ -31,7 +31,7 @@ fn new_uuid() -> Uuid {
     Uuid::new_v4()
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Question {
     pub text: String,
     pub code_block: Option<CodeBlock>,
@@ -40,13 +40,13 @@ pub struct Question {
     pub choices: Vec<Choice>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct CodeBlock {
     pub language: String,
     pub code: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Choice {
     // we want to be able to identify the choices even when the client shuffles them
     #[serde(default = "new_uuid", skip_deserializing, skip_serializing)]
