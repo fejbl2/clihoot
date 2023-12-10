@@ -11,7 +11,7 @@ pub struct ClientActor {
 
 impl ClientActor {
     // send message to the clihoot server
-    fn send_message_to_server<T: Serialize + Send + Clone>(&self, message: T) {
+    fn send_message_to_server<T: Serialize + Send + Clone + 'static>(&self, message: T) {
         self.websocket_astor_addr
             .do_send(WebsocketMsg { content: message.clone() });
     }
