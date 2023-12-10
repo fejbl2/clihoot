@@ -20,7 +20,7 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
-        .unwrap() // cannot seem to get rid of this
+        .expect("Could not create tokio runtime") // cannot seem to get rid of this
 }
 
 pub fn run_server(tx: Sender<Addr<Lobby>>, questions: QuestionSet) -> anyhow::Result<()> {
@@ -49,7 +49,9 @@ async fn init(tx: Sender<Addr<Lobby>>, questions: QuestionSet) -> anyhow::Result
 
     // handle CTRL+C gracefully
     tokio::spawn(async move {
-        tokio::signal::ctrl_c().await.unwrap();
+        tokio::signal::ctrl_c()
+            .await
+            .expect("Failed to register CTRL-C handler");
         println!("CTRL-C received, shutting down");
         System::current().stop();
     });
