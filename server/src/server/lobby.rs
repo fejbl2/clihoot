@@ -72,12 +72,7 @@ impl Lobby {
             Phase::WaitingForPlayers => Ok(0),
             Phase::ActiveQuestion(index)
             | Phase::AfterQuestion(index)
-            | Phase::ShowingLeaderboard(index) => {
-                if index >= self.questions.len() - 1 {
-                    return Err(anyhow::anyhow!("No more questions"));
-                }
-                Ok(index + 1)
-            }
+            | Phase::ShowingLeaderboard(index) => Ok(index + 1),
             Phase::GameEnded => Err(anyhow::anyhow!(
                 "Cannot call next_question when game has ended"
             )),
@@ -87,7 +82,7 @@ impl Lobby {
     fn can_show_next_question(&self) -> bool {
         match self.phase {
             Phase::WaitingForPlayers => true,
-            Phase::AfterQuestion(index) => {
+            Phase::ShowingLeaderboard(index) => {
                 // only show next question if we are not at the last question
                 index < self.questions.len() - 1
             }
