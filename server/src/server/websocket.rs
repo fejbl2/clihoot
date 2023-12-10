@@ -88,7 +88,7 @@ impl Actor for WsConn {
 
         // in order not to move self into the closure, we need to extract the fields we need
         let who = self.who;
-        let receiver = self.receiver.take().unwrap();
+        let receiver = self.receiver.take().expect("Could not take receiver"); // take ownership of the receiver, expect is fine
 
         // Spawn a Tokio task which will read from the socket and generate messages for this actor
         let reader_task = tokio::spawn(read_messages_from_socket(receiver, who, addr));
@@ -119,9 +119,6 @@ async fn read_messages_from_socket<'a>(
     while let Some(Ok(msg)) = receiver.next().await {
         match msg {
             Message::Text(s) => addr.do_send(RelayMessageToLobby(s.to_string())),
-            Message::Binary(b) => {
-                addr.do_send(RelayMessageToLobby(String::from_utf8(b).unwrap()));
-            }
             Message::Close(_) => {
                 // cannot call `ctx.stop();` because we are in another Task:
                 // instead, we send a message to ourselves to stop

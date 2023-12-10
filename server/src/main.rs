@@ -8,6 +8,7 @@ use std::{
 };
 
 use crate::{args::Args, server::init::run_server, teacher::init::run_teacher};
+use anyhow::anyhow;
 use clap::Parser;
 use common::questions::QuestionSet;
 
@@ -24,17 +25,22 @@ fn main() -> anyhow::Result<()> {
     let (tx, rx) = mpsc::channel();
 
     let server_thread = thread::spawn(move || {
-        run_server(tx, questions);
+        run_server(tx, questions).expect("Failed to run server");
     });
 
     let teacher_thread = thread::spawn(move || {
-        let server = rx.recv().unwrap();
-        run_teacher(server);
+        let server = rx.recv().expect("Failed to receive server address");
+        run_teacher(server).expect("Failed to run teacher");
     });
 
     // wait for threads to finish
-    server_thread.join().unwrap();
-    teacher_thread.join().unwrap();
+    if let Err(_e) = server_thread.join() {
+        return Err(anyhow!("Server thread panicked"));
+    }
+
+    if let Err(_e) = teacher_thread.join() {
+        return Err(anyhow!("Teacher thread panicked"));
+    }
 
     Ok(())
 }

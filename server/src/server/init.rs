@@ -20,25 +20,27 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
-        .unwrap()
+        .unwrap() // cannot seem to get rid of this
 }
 
-pub fn run_server(tx: Sender<Addr<Lobby>>, questions: QuestionSet) {
+pub fn run_server(tx: Sender<Addr<Lobby>>, questions: QuestionSet) -> anyhow::Result<()> {
     let system = actix::System::with_tokio_rt(create_tokio_runtime);
 
-    system.block_on(init(tx, questions));
+    system.block_on(init(tx, questions))?;
 
-    system.run().unwrap();
+    system.run()?;
+
+    Ok(())
 }
 
 #[allow(clippy::unused_async)]
-async fn init(tx: Sender<Addr<Lobby>>, questions: QuestionSet) {
+async fn init(tx: Sender<Addr<Lobby>>, questions: QuestionSet) -> anyhow::Result<()> {
     // spawn an actor for managing the lobby
     let lobby_actor = Lobby::new(questions).start();
 
     // spawn task for accepting connections
     // LOCAL SPAWN is very important here (actors can only be spawned on the same thread)
-    let addr: SocketAddr = "0.0.0.0:3000".parse().unwrap();
+    let addr: SocketAddr = "0.0.0.0:3000".parse()?;
     let _connection_acceptor =
         tokio::task::spawn_local(accept_connections(addr, lobby_actor.clone()));
 
@@ -51,6 +53,8 @@ async fn init(tx: Sender<Addr<Lobby>>, questions: QuestionSet) {
         println!("CTRL-C received, shutting down");
         System::current().stop();
     });
+
+    Ok(())
 }
 
 async fn accept_connections(addr: SocketAddr, lobby: Addr<Lobby>) -> anyhow::Result<()> {

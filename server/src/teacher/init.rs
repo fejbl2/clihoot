@@ -35,19 +35,21 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
         .enable_all()
         .build()
-        .unwrap()
+        .unwrap() // cannot seem to get rid of this
 }
 
-pub fn run_teacher(tx: Addr<Lobby>) {
+pub fn run_teacher(tx: Addr<Lobby>) -> anyhow::Result<()> {
     let system = actix::System::with_tokio_rt(create_tokio_runtime);
 
-    system.block_on(init(tx));
+    system.block_on(init(tx))?;
 
-    system.run().unwrap();
+    system.run()?;
+
+    Ok(())
 }
 
 #[allow(clippy::unused_async)]
-async fn init(lobby: Addr<Lobby>) {
+async fn init(lobby: Addr<Lobby>) -> anyhow::Result<()> {
     // spawn an actor for managing the lobby
     let _teacher_actor = Teacher { lobby }.start();
 
@@ -57,4 +59,6 @@ async fn init(lobby: Addr<Lobby>) {
         println!("CTRL-C received, shutting down");
         System::current().stop();
     });
+
+    Ok(())
 }
