@@ -18,7 +18,7 @@ pub struct WsHardCloseConnection;
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct RelayMessageToClient(pub String);
+pub struct LobbyOutputMessage(pub String);
 
 //WsConn sends this to the lobby to say "put me in please"
 #[derive(Message, Debug)]

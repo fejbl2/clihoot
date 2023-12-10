@@ -30,12 +30,10 @@ pub struct PlayersUpdate {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NextQuestion {
-    pub uuid: Uuid,
-    pub question_number: u64,
+    pub question_index: u64,
     pub questions_count: u64,
     pub question: Question, // make sure to set right answer to 'false' before sending
     pub show_choices_after: u64,
-    pub time: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

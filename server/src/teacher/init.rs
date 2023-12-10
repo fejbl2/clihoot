@@ -1,10 +1,12 @@
 use actix::{
     prelude::{Actor, Context},
-    Addr, AsyncContext,
+    Addr, AsyncContext, Handler,
 };
 use actix_rt::System;
 
-use crate::server::{lobby::Lobby, teacher_messages::RegisterTeacherMessage};
+use crate::server::{
+    lobby::Lobby, messages::LobbyOutputMessage, teacher_messages::RegisterTeacherMessage,
+};
 
 pub struct Teacher {
     pub lobby: Addr<Lobby>,
@@ -63,4 +65,12 @@ async fn init(lobby: Addr<Lobby>) -> anyhow::Result<()> {
     });
 
     Ok(())
+}
+
+impl Handler<LobbyOutputMessage> for Teacher {
+    type Result = ();
+
+    fn handle(&mut self, msg: LobbyOutputMessage, _ctx: &mut Self::Context) -> Self::Result {
+        println!("Teacher received message: {}", msg.0);
+    }
 }

@@ -1,6 +1,6 @@
 use crate::{
     server::messages::{
-        ClientActorMessage, ConnectToLobby, DisconnectFromLobby, RelayMessageToClient,
+        ClientActorMessage, ConnectToLobby, DisconnectFromLobby, LobbyOutputMessage,
     },
     teacher::init::Teacher,
 };
@@ -8,7 +8,11 @@ use actix::{
     prelude::{Actor, Context, Handler},
     Addr,
 };
-use common::questions::QuestionSet;
+use anyhow::Ok;
+use common::{
+    model::{network_messages::NextQuestion, NetworkMessage},
+    questions::QuestionSet,
+};
 use rand::prelude::*;
 
 use std::collections::HashMap;
@@ -90,7 +94,7 @@ impl Lobby {
         }
     }
 
-    fn send_question(&self, index: usize) {
+    fn send_question(&self, index: usize) -> anyhow::Result<()> {
         let mut question = self.questions[index].clone();
 
         // censor the right answers
@@ -99,12 +103,22 @@ impl Lobby {
         });
 
         // construct a message object
-        // TODO
+        let message = NetworkMessage::NextQuestion(NextQuestion {
+            question_index: index as u64,
+            questions_count: self.questions.len() as u64,
+            show_choices_after: question.get_reading_time_estimate() as u64,
+            question,
+        });
+
+        // send it to everyone
+        self.send_to_all(&serde_json::to_string(&message)?, true);
+
+        Ok(())
     }
 
     fn send_message(&self, message: &str, id_to: &Uuid) {
         if let Some(socket_recipient) = self.joined_players.get(id_to) {
-            socket_recipient.do_send(RelayMessageToClient(message.to_owned()));
+            socket_recipient.do_send(LobbyOutputMessage(message.to_owned()));
         } else {
             println!("attempting to send message but couldn't find user id.");
         }
@@ -112,12 +126,12 @@ impl Lobby {
 
     fn send_to_all(&self, message: &str, include_teacher: bool) {
         for socket_recipient in self.joined_players.values() {
-            socket_recipient.do_send(RelayMessageToClient(message.to_owned()));
+            socket_recipient.do_send(LobbyOutputMessage(message.to_owned()));
         }
 
         if include_teacher {
-            if let Some(_teacher) = &self.teacher {
-                // teacher.do_send(RelayMessageToClient(message.to_owned()));
+            if let Some(teacher) = &self.teacher {
+                teacher.do_send(LobbyOutputMessage(message.to_owned()));
             }
         }
     }
@@ -125,7 +139,7 @@ impl Lobby {
     fn send_to_other(&self, message: &str, id_from: &Uuid, include_teacher: bool) {
         for (id, socket_recipient) in &self.joined_players {
             if id != id_from {
-                socket_recipient.do_send(RelayMessageToClient(message.to_owned()));
+                socket_recipient.do_send(LobbyOutputMessage(message.to_owned()));
             }
         }
 
@@ -226,7 +240,7 @@ impl Handler<StartQuestionMessage> for Lobby {
         let next_question = self.next_question()?;
         self.phase = Phase::ActiveQuestion(next_question);
 
-        self.send_question(next_question);
+        self.send_question(next_question)?;
 
         Ok(())
     }

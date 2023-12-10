@@ -1,6 +1,6 @@
 use crate::server::lobby::Lobby;
 use crate::server::messages::{
-    ClientActorMessage, ConnectToLobby, DisconnectFromLobby, RelayMessageToClient,
+    ClientActorMessage, ConnectToLobby, DisconnectFromLobby, LobbyOutputMessage,
     RelayMessageToLobby, WsGracefulCloseConnection, WsHardCloseConnection,
 };
 use crate::server::ws_utils::{prepare_explicit_message, prepare_message};
@@ -159,10 +159,10 @@ impl Handler<WsGracefulCloseConnection> for WsConn {
     }
 }
 
-impl Handler<RelayMessageToClient> for WsConn {
+impl Handler<LobbyOutputMessage> for WsConn {
     type Result = ();
 
-    fn handle(&mut self, msg: RelayMessageToClient, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: LobbyOutputMessage, ctx: &mut Self::Context) -> Self::Result {
         let fut = prepare_message::<Self>(self.sender.clone(), msg.0);
         ctx.spawn(fut);
     }
