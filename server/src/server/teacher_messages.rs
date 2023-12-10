@@ -18,5 +18,5 @@ pub struct RegisterTeacherMessage {
 
 /// The teacher sends this to the lobby to register itself
 #[derive(Message, Debug)]
-#[rtype(result = "()")]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct StartQuestionMessage {}

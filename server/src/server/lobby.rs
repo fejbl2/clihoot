@@ -63,22 +63,20 @@ impl Lobby {
         }
     }
 
-    fn next_question(&self) -> usize {
-        let prev_question = match self.phase {
-            Phase::WaitingForPlayers => None,
+    fn next_question(&self) -> anyhow::Result<usize> {
+        match self.phase {
+            Phase::WaitingForPlayers => Ok(0),
             Phase::ActiveQuestion(index)
             | Phase::AfterQuestion(index)
-            | Phase::ShowingLeaderboard(index) => Some(index),
-            Phase::GameEnded => panic!("Cannot call next_question when game has ended"),
-        };
-
-        // get the next question after the previous one
-
-        if let Some(prev_question) = prev_question {
-            prev_question + 1
-        } else {
-            // no previous question, so get the first one
-            0
+            | Phase::ShowingLeaderboard(index) => {
+                if index >= self.questions.len() - 1 {
+                    return Err(anyhow::anyhow!("No more questions"));
+                }
+                Ok(index + 1)
+            }
+            Phase::GameEnded => Err(anyhow::anyhow!(
+                "Cannot call next_question when game has ended"
+            )),
         }
     }
 
@@ -207,7 +205,7 @@ impl Handler<SetLockMessage> for Lobby {
 }
 
 impl Handler<StartQuestionMessage> for Lobby {
-    type Result = ();
+    type Result = anyhow::Result<()>;
 
     fn handle(&mut self, _msg: StartQuestionMessage, _: &mut Context<Self>) -> Self::Result {
         // 1. check that we can show the next question
@@ -217,10 +215,12 @@ impl Handler<StartQuestionMessage> for Lobby {
 
         if !self.can_show_next_question() {
             println!("Received StartQuestionMessage in Lobby, but can't show next question");
-            return;
+            return Err(anyhow::anyhow!("Can't show next question"));
         }
 
-        let next_question = self.next_question();
+        let next_question = self.next_question()?;
         self.phase = Phase::ActiveQuestion(next_question);
+
+        Ok(())
     }
 }
