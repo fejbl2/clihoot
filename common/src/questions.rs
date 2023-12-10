@@ -8,7 +8,7 @@ pub struct QuestionSet {
     pub questions: Vec<Question>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Question {
     pub text: String,
     pub code_block: Option<CodeBlock>,
@@ -17,13 +17,13 @@ pub struct Question {
     pub choices: Vec<Choice>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct CodeBlock {
     pub language: String,
     pub code: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Choice {
     // by design, no syntax highlighting for the choices
     pub text: String,
