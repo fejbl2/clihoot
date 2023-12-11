@@ -7,8 +7,6 @@ use anyhow::Ok;
 use chrono::Utc;
 use common::model::network_messages::AnswerSelected;
 
-use std::collections::HashMap;
-
 impl Handler<AnswerSelected> for Lobby {
     type Result = anyhow::Result<()>;
 
@@ -26,7 +24,7 @@ impl Handler<AnswerSelected> for Lobby {
         if self
             .results
             .entry(msg.question_index)
-            .or_insert_with(HashMap::new)
+            .or_default()
             .contains_key(&id)
         {
             return Err(anyhow::anyhow!(
@@ -34,27 +32,20 @@ impl Handler<AnswerSelected> for Lobby {
             ));
         }
 
-        let answer_order = self
-            .results
-            .entry(msg.question_index)
-            .or_insert_with(HashMap::new)
-            .len();
+        let answer_order = self.results.entry(msg.question_index).or_default().len();
 
         let points =
             calculate_points(id, msg.question_index, &msg, &self.questions, &self.results)?;
 
-        self.results
-            .entry(msg.question_index)
-            .or_insert_with(HashMap::new)
-            .insert(
-                id,
-                PlayerQuestionRecord {
-                    answer_order,
-                    timestamp: Utc::now(),
-                    selected_answers: msg.answers,
-                    points_awarded: points,
-                },
-            );
+        self.results.entry(msg.question_index).or_default().insert(
+            id,
+            PlayerQuestionRecord {
+                answer_order,
+                timestamp: Utc::now(),
+                selected_answers: msg.answers,
+                points_awarded: points,
+            },
+        );
 
         // TODO: here, send update to everybody about the count of answers
 
