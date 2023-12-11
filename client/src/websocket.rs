@@ -53,6 +53,7 @@ impl WebsocketActor {
 impl<T: Serialize + Send> Handler<MessageForWebsocket<T>> for WebsocketActor {
     type Result = ();
 
+    // I was not able to fix this.. I admit my weakness
     #[allow(clippy::await_holding_refcell_ref)]
     fn handle(&mut self, msg: MessageForWebsocket<T>, ctx: &mut Context<Self>) {
         let ws_stream_tx = Rc::clone(&self.ws_stream_tx);
