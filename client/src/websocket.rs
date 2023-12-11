@@ -5,7 +5,6 @@ use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::sync::Arc;
 
 use tokio::net::TcpStream;
 use tokio_tungstenite::MaybeTlsStream;
@@ -98,7 +97,10 @@ impl Actor for WebsocketActor {
     fn started(&mut self, ctx: &mut Context<Self>) {
         println!("Websocket actor is alive");
 
-        let mut ws_stream_rx = self.ws_stream_rx.take();
+        let mut ws_stream_rx = self
+            .ws_stream_rx
+            .take()
+            .expect("websocket receiver is None");
         let websocket_actor_address = ctx.address().clone();
 
         async move {

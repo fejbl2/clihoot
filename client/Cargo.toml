@@ -15,8 +15,8 @@ tungstenite = { version = "0.21.0", features = [] }
 url = { version = "2.5.0", features = [] }
 actix = "0.13.1"
 time = "0.3.30"
-serde = "1.0.193"
-serde_json = "1.0.108"
-anyhow = "1.0.75"
+serde = "1.0"
+serde_json = "1.0"
+anyhow = "1.0"
 term = { version = "0.7.0", features = [] }
 clap = { version = "4.4.11", features = ["derive"] }
