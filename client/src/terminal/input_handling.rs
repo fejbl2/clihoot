@@ -8,6 +8,7 @@ const COLORS: [Color; 3] = [Color::Red, Color::Green, Color::Blue];
 
 impl TerminalHandleInput for TerminalActorData {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
+        // TODO define function that handle input for each state
         match &mut self.state {
             TerminalActorState::NameSelection { name } => match key_code {
                 KeyCode::Backspace => {

@@ -36,3 +36,13 @@ impl TerminalActorData {
         Self::default()
     }
 }
+
+// we can implement handlers for student specific messages:
+//
+// impl Handler<Foo> for TerminalActor<TerminalActorData> {
+//     type Result = anyhow::Result<()>;
+//
+//     fn handle(&mut self, msg: Foo, ctx: &mut Self::Context) -> Self::Result {
+//         ...
+//     }
+// }

@@ -23,6 +23,8 @@ pub struct TerminalActor<T>
 where
     T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
 {
+    // base terminal actor, instantiated with struct that represents
+    // its inner state
     pub terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
     pub inner: T,
 }

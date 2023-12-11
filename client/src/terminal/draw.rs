@@ -12,6 +12,7 @@ impl TerminalDraw for TerminalActorData {
         &mut self,
         term: &mut ratatui::prelude::Terminal<ratatui::prelude::CrosstermBackend<std::io::Stdout>>,
     ) -> anyhow::Result<()> {
+        // TODO define function that would do the drawing
         match &mut self.state {
             TerminalActorState::NameSelection { name } => {
                 term.draw(|frame| {
