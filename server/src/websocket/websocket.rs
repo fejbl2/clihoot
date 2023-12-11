@@ -1,9 +1,3 @@
-use crate::server::messages::{
-    ConnectToLobby, DisconnectFromLobby, LobbyOutputMessage, WsGracefulCloseConnection,
-    WsHardCloseConnection,
-};
-use crate::server::ws_utils::{prepare_explicit_message, prepare_message};
-
 use actix::{fut, ActorContext, ActorFutureExt};
 use actix::{Actor, Addr, ContextFutureSpawner, Running, WrapFuture};
 use actix::{AsyncContext, Handler};
@@ -24,12 +18,17 @@ use tokio::task::JoinHandle;
 use tungstenite::Message;
 use uuid::Uuid;
 
-use super::client_messages::JoinRequest;
-use super::state::Lobby;
+use crate::messages::client_messages::JoinRequest;
+use crate::messages::websocket_messages::{
+    ConnectToLobby, DisconnectFromLobby, LobbyOutputMessage, WsGracefulCloseConnection,
+    WsHardCloseConnection,
+};
+use crate::server::state::Lobby;
+use crate::websocket::ws_utils::prepare_explicit_message;
 
-pub struct WsConn {
-    room: Uuid,
+use super::ws_utils::prepare_message;
 
+pub struct Websocket {
     lobby_addr: Addr<Lobby>,
 
     player_id: Uuid,
@@ -43,20 +42,18 @@ pub struct WsConn {
     who: SocketAddr,
 }
 
-impl WsConn {
+impl Websocket {
     pub async fn new(
-        room: Uuid,
         lobby: Addr<Lobby>,
         socket: TcpStream,
         who: SocketAddr,
-    ) -> anyhow::Result<WsConn> {
+    ) -> anyhow::Result<Websocket> {
         let socket = tokio_tungstenite::accept_async(socket).await?;
 
         let (sender, receiver) = socket.split();
 
-        Ok(WsConn {
+        Ok(Websocket {
             player_id: Uuid::new_v4(),
-            room,
             lobby_addr: lobby,
             receiver: Some(receiver),
             sender: Arc::new(Mutex::new(sender)),
@@ -66,7 +63,7 @@ impl WsConn {
     }
 }
 
-impl Actor for WsConn {
+impl Actor for Websocket {
     type Context = actix::Context<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
@@ -118,7 +115,7 @@ impl Actor for WsConn {
 async fn read_messages_from_socket<'a>(
     mut receiver: SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>,
     who: SocketAddr,
-    addr: Addr<WsConn>,
+    addr: Addr<Websocket>,
 ) {
     while let Some(Ok(msg)) = receiver.next().await {
         match msg {
@@ -146,7 +143,7 @@ async fn read_messages_from_socket<'a>(
     }
 }
 
-impl Handler<WsHardCloseConnection> for WsConn {
+impl Handler<WsHardCloseConnection> for Websocket {
     type Result = ();
 
     fn handle(&mut self, _msg: WsHardCloseConnection, ctx: &mut Self::Context) -> Self::Result {
@@ -154,7 +151,7 @@ impl Handler<WsHardCloseConnection> for WsConn {
     }
 }
 
-impl Handler<WsGracefulCloseConnection> for WsConn {
+impl Handler<WsGracefulCloseConnection> for Websocket {
     type Result = ();
 
     fn handle(&mut self, _msg: WsGracefulCloseConnection, ctx: &mut Self::Context) -> Self::Result {
@@ -173,7 +170,7 @@ impl Handler<WsGracefulCloseConnection> for WsConn {
     }
 }
 
-impl Handler<LobbyOutputMessage> for WsConn {
+impl Handler<LobbyOutputMessage> for Websocket {
     type Result = ();
 
     fn handle(&mut self, msg: LobbyOutputMessage, ctx: &mut Self::Context) -> Self::Result {
@@ -182,7 +179,7 @@ impl Handler<LobbyOutputMessage> for WsConn {
     }
 }
 
-impl Handler<NetworkMessage> for WsConn {
+impl Handler<NetworkMessage> for Websocket {
     type Result = ();
 
     /// Handles mapping of messages
@@ -198,19 +195,19 @@ impl Handler<NetworkMessage> for WsConn {
                 player_data: msg.player_data,
                 ws_conn: ctx.address(),
             }),
+            NetworkMessage::TryJoinRequest(msg) => self.lobby_addr.do_send(msg),
             NetworkMessage::KickedOutNotice(_msg) => unimplemented!(),
             NetworkMessage::NextQuestion(_msg) => unimplemented!(),
-            NetworkMessage::PlayersUpdate(_msg) => todo!(),
-            NetworkMessage::QuestionEnded(_msg) => todo!(),
-            NetworkMessage::QuestionUpdate(_msg) => todo!(),
-            NetworkMessage::ShowLeaderboard(_msg) => todo!(),
-            NetworkMessage::TeacherDisconnected(_msg) => todo!(),
-            NetworkMessage::TryJoinRequest(_msg) => todo!(),
+            NetworkMessage::PlayersUpdate(_msg) => unimplemented!(),
+            NetworkMessage::QuestionEnded(_msg) => unimplemented!(),
+            NetworkMessage::QuestionUpdate(_msg) => unimplemented!(),
+            NetworkMessage::ShowLeaderboard(_msg) => unimplemented!(),
+            NetworkMessage::TeacherDisconnected(_msg) => unimplemented!(),
         }
     }
 }
 
-impl Handler<KickedOutNotice> for WsConn {
+impl Handler<KickedOutNotice> for Websocket {
     type Result = anyhow::Result<()>;
     fn handle(&mut self, msg: KickedOutNotice, ctx: &mut Self::Context) -> Self::Result {
         let msg = serde_json::to_string(&msg)?;

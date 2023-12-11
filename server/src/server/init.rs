@@ -5,12 +5,13 @@ use actix_rt::System;
 use common::questions::QuestionSet;
 use tokio::net::TcpListener;
 
-use uuid::Uuid;
-use websocket::WsConn;
+
 
 use std::{net::SocketAddr, sync::mpsc::Sender};
 
-use super::{state::Lobby, websocket};
+use crate::websocket::websocket::Websocket;
+
+use super::state::Lobby;
 
 fn create_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
@@ -66,7 +67,6 @@ async fn accept_connections(addr: SocketAddr, lobby: Addr<Lobby>) -> anyhow::Res
     // create a TCP socket listener
 
     let listener = TcpListener::bind(addr).await?;
-    let room: uuid::Uuid = Uuid::new_v4();
 
     loop {
         println!("Listening on: {addr:?}, waiting to accept a new connection");
@@ -77,7 +77,7 @@ async fn accept_connections(addr: SocketAddr, lobby: Addr<Lobby>) -> anyhow::Res
         println!("Accepted connection from: {who:?}");
 
         // spawn a actor for managing the connection
-        let ws = WsConn::new(room, lobby.clone(), socket, who).await?;
+        let ws = Websocket::new(lobby.clone(), socket, who).await?;
         let _ = ws.start();
     }
 }

@@ -1,7 +1,7 @@
 use actix::{prelude::Message, Addr};
 use uuid::Uuid;
 
-use super::websocket::WsConn;
+use crate::websocket::websocket::Websocket;
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -19,7 +19,7 @@ pub struct LobbyOutputMessage(pub String);
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
 pub struct ConnectToLobby {
-    pub addr: Addr<WsConn>,
+    pub addr: Addr<Websocket>,
     pub player_id: Uuid,
 }
 

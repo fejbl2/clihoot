@@ -1,6 +1,8 @@
 mod args;
+mod messages;
 mod server;
 mod teacher;
+mod websocket;
 
 use std::{
     sync::mpsc::{self},

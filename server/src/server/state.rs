@@ -1,21 +1,13 @@
 use crate::teacher::init::Teacher;
-use actix::{
-    Addr,
-};
+use crate::websocket::websocket::Websocket;
+use actix::Addr;
 
 use chrono::DateTime;
 use chrono::Utc;
-use common::{
-    questions::QuestionSet,
-};
-
+use common::questions::QuestionSet;
 
 use std::collections::HashMap;
 use uuid::Uuid;
-
-use super::{
-    websocket::WsConn,
-};
 
 #[derive(Default, PartialEq)]
 #[allow(dead_code)]
@@ -52,7 +44,7 @@ pub struct Lobby {
     pub locked: bool,
 
     /// References to all the connected clients
-    pub joined_players: HashMap<Uuid, Addr<WsConn>>,
+    pub joined_players: HashMap<Uuid, Addr<Websocket>>,
 
     /// Incremental results of the game
     /// * `results[question_index][player_uuid] = PlayerQuestionRecord`

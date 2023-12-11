@@ -1,6 +1,6 @@
 use actix::{Context, Handler};
 
-use crate::server::{messages::ConnectToLobby, state::Lobby};
+use crate::{messages::websocket_messages::ConnectToLobby, server::state::Lobby};
 
 impl Handler<ConnectToLobby> for Lobby {
     type Result = ();

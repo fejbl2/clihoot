@@ -1,6 +1,6 @@
 use actix::{Context, Handler};
 
-use crate::server::{messages::DisconnectFromLobby, state::Lobby};
+use crate::{messages::websocket_messages::DisconnectFromLobby, server::state::Lobby};
 
 /// Handler for Disconnect message.
 impl Handler<DisconnectFromLobby> for Lobby {

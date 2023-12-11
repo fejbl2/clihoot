@@ -9,10 +9,9 @@ use rand::prelude::*;
 use std::collections::HashMap;
 use uuid::Uuid;
 
-use super::{
-    messages::LobbyOutputMessage,
-    state::{Lobby, Phase},
-};
+use crate::messages::websocket_messages::LobbyOutputMessage;
+
+use super::state::{Lobby, Phase};
 
 impl Lobby {
     pub fn new(mut questions: QuestionSet) -> Self {

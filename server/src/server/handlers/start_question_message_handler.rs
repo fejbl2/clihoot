@@ -1,8 +1,8 @@
 use actix::{Context, Handler};
 
-use crate::server::{
-    state::{Lobby, Phase},
-    teacher_messages::StartQuestionMessage,
+use crate::{
+    messages::teacher_messages::StartQuestionMessage,
+    server::state::{Lobby, Phase},
 };
 
 impl Handler<StartQuestionMessage> for Lobby {

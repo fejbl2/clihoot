@@ -1,6 +1,6 @@
 use actix::Handler;
 
-use crate::server::{client_messages::JoinRequest, state::Lobby};
+use crate::{messages::client_messages::JoinRequest, server::state::Lobby};
 
 impl Handler<JoinRequest> for Lobby {
     type Result = anyhow::Result<()>;

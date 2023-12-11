@@ -1,6 +1,6 @@
 use actix::{Context, Handler};
 
-use crate::server::{state::Lobby, teacher_messages::RegisterTeacherMessage};
+use crate::{messages::teacher_messages::RegisterTeacherMessage, server::state::Lobby};
 
 impl Handler<RegisterTeacherMessage> for Lobby {
     type Result = ();

@@ -4,8 +4,9 @@ use actix::{
 };
 use actix_rt::System;
 
-use crate::server::{
-    messages::LobbyOutputMessage, state::Lobby, teacher_messages::RegisterTeacherMessage,
+use crate::{
+    messages::{teacher_messages::RegisterTeacherMessage, websocket_messages::LobbyOutputMessage},
+    server::state::Lobby,
 };
 
 pub struct Teacher {
