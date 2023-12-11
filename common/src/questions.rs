@@ -9,6 +9,10 @@ fn falsy() -> bool {
     false
 }
 
+fn random_quiz_name() -> String {
+    "test quiz".to_owned()
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct QuestionSet {
     pub questions: Vec<Question>,
@@ -16,6 +20,8 @@ pub struct QuestionSet {
     pub randomize_answers: bool,
     #[serde(default = "falsy", skip_deserializing, skip_serializing)]
     pub randomize_questions: bool,
+    #[serde(default = "random_quiz_name", skip_deserializing, skip_serializing)]
+    pub quiz_name: String,
 }
 
 /// We want to be able to iterate over the questions in the set directly
@@ -99,6 +105,9 @@ where
 }
 
 impl QuestionSet {
+    /// Loads a question set from a file
+    /// # Errors
+    /// If the file cannot be read or the YAML cannot be parsed
     pub fn from_file(path: &Path) -> anyhow::Result<QuestionSet> {
         let data = fs::read_to_string(path)?;
         let questions = serde_yaml::from_str(&data).context(format!(

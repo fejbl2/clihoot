@@ -1,6 +1,10 @@
+mod client_messages;
+mod handlers;
 pub mod init;
 pub mod lobby;
 pub mod messages;
+mod point_calculator;
+pub mod state;
 pub mod teacher_messages;
 mod websocket;
 mod ws_utils;

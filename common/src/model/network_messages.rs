@@ -1,4 +1,7 @@
+use std::ops::Deref;
+
 use crate::questions::Question;
+use actix::prelude::Message;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -13,9 +16,24 @@ pub struct NetworkPlayerData {
 
 // these models (structs) describe messages used in network communication between client - server - teacher
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Message, Debug, Serialize, Deserialize)]
+#[rtype(result = "anyhow::Result<TryJoinResponse>")]
 pub struct TryJoinRequest {
     pub uuid: Uuid,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub enum CanJoin {
+    Yes,
+    No(String),
+}
+
+#[derive(Message, Debug, Serialize, Deserialize)]
+#[rtype(result = "anyhow::Result<()>")]
+pub struct TryJoinResponse {
+    pub uuid: Uuid,
+    pub can_join: CanJoin,
+    pub quiz_name: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -36,11 +54,20 @@ pub struct NextQuestion {
     pub show_choices_after: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Message)]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct AnswerSelected {
     pub player_uuid: Uuid,
-    pub question_uuid: Uuid,
-    pub answer: Vec<Uuid>, // player can choose multiple answers
+    pub question_index: usize,
+    pub answers: Vec<Uuid>, // player can choose multiple answers
+}
+
+impl Deref for AnswerSelected {
+    type Target = Vec<Uuid>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.answers
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -62,7 +89,8 @@ pub struct ShowLeaderboard {
     pub was_final_round: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Message)]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct KickedOutNotice {
     pub kick_message: Option<String>,
 }

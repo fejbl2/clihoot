@@ -1,13 +1,14 @@
-use crate::server::lobby::Lobby;
 use crate::server::messages::{
-    ClientActorMessage, ConnectToLobby, DisconnectFromLobby, LobbyOutputMessage,
-    RelayMessageToLobby, WsGracefulCloseConnection, WsHardCloseConnection,
+    ConnectToLobby, DisconnectFromLobby, LobbyOutputMessage, WsGracefulCloseConnection,
+    WsHardCloseConnection,
 };
 use crate::server::ws_utils::{prepare_explicit_message, prepare_message};
 
 use actix::{fut, ActorContext, ActorFutureExt};
 use actix::{Actor, Addr, ContextFutureSpawner, Running, WrapFuture};
 use actix::{AsyncContext, Handler};
+use common::model::network_messages::KickedOutNotice;
+use common::model::NetworkMessage;
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::StreamExt;
 use tokio::sync::Mutex;
@@ -22,6 +23,9 @@ use tokio::task::JoinHandle;
 
 use tungstenite::Message;
 use uuid::Uuid;
+
+use super::client_messages::JoinRequest;
+use super::state::Lobby;
 
 pub struct WsConn {
     room: Uuid,
@@ -113,12 +117,22 @@ impl Actor for WsConn {
 
 async fn read_messages_from_socket<'a>(
     mut receiver: SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>,
-    _who: SocketAddr,
+    who: SocketAddr,
     addr: Addr<WsConn>,
 ) {
     while let Some(Ok(msg)) = receiver.next().await {
         match msg {
-            Message::Text(s) => addr.do_send(RelayMessageToLobby(s.to_string())),
+            Message::Text(msg) => {
+                println!("Received text message from {who}: {msg}");
+
+                // try to parse the JSON s to a `NetworkMessage`
+                match serde_json::from_str::<NetworkMessage>(&msg) {
+                    Ok(msg) => {
+                        addr.do_send(msg);
+                    }
+                    Err(e) => println!("Error parsing message: {e}"),
+                }
+            }
             Message::Close(_) => {
                 // cannot call `ctx.stop();` because we are in another Task:
                 // instead, we send a message to ourselves to stop
@@ -168,15 +182,41 @@ impl Handler<LobbyOutputMessage> for WsConn {
     }
 }
 
-impl Handler<RelayMessageToLobby> for WsConn {
+impl Handler<NetworkMessage> for WsConn {
     type Result = ();
 
-    fn handle(&mut self, msg: RelayMessageToLobby, _ctx: &mut Self::Context) -> Self::Result {
-        // tell the lobby to send it to everyone else
-        self.lobby_addr.do_send(ClientActorMessage {
-            id: self.player_id,
-            msg: msg.0,
-            room_id: self.room,
-        });
+    /// Handles mapping of messages
+    /// - the websocket --> this function --> lobby
+    /// - Unimplemented stuff are messages that the client should never send us
+    fn handle(&mut self, msg: NetworkMessage, ctx: &mut Self::Context) -> Self::Result {
+        match msg {
+            NetworkMessage::AnswerSelected(msg) => self.lobby_addr.do_send(msg),
+            NetworkMessage::ClientDisconnected(_msg) => {
+                ctx.notify(WsGracefulCloseConnection {});
+            }
+            NetworkMessage::JoinRequest(msg) => self.lobby_addr.do_send(JoinRequest {
+                player_data: msg.player_data,
+                ws_conn: ctx.address(),
+            }),
+            NetworkMessage::KickedOutNotice(_msg) => unimplemented!(),
+            NetworkMessage::NextQuestion(_msg) => unimplemented!(),
+            NetworkMessage::PlayersUpdate(_msg) => todo!(),
+            NetworkMessage::QuestionEnded(_msg) => todo!(),
+            NetworkMessage::QuestionUpdate(_msg) => todo!(),
+            NetworkMessage::ShowLeaderboard(_msg) => todo!(),
+            NetworkMessage::TeacherDisconnected(_msg) => todo!(),
+            NetworkMessage::TryJoinRequest(_msg) => todo!(),
+        }
+    }
+}
+
+impl Handler<KickedOutNotice> for WsConn {
+    type Result = anyhow::Result<()>;
+    fn handle(&mut self, msg: KickedOutNotice, ctx: &mut Self::Context) -> Self::Result {
+        let msg = serde_json::to_string(&msg)?;
+        let msg = prepare_message(self.sender.clone(), msg);
+
+        ctx.spawn(msg);
+        Ok(())
     }
 }

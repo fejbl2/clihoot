@@ -3,7 +3,6 @@ use actix::{Actor, Addr};
 use actix_rt::System;
 
 use common::questions::QuestionSet;
-use lobby::Lobby;
 use tokio::net::TcpListener;
 
 use uuid::Uuid;
@@ -11,10 +10,7 @@ use websocket::WsConn;
 
 use std::{net::SocketAddr, sync::mpsc::Sender};
 
-use super::{
-    lobby::{self},
-    websocket,
-};
+use super::{state::Lobby, websocket};
 
 fn create_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
