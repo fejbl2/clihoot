@@ -5,11 +5,9 @@ use actix_rt::System;
 use common::questions::QuestionSet;
 use tokio::net::TcpListener;
 
-
-
 use std::{net::SocketAddr, sync::mpsc::Sender};
 
-use crate::websocket::websocket::Websocket;
+use crate::websocket::Websocket;
 
 use super::state::Lobby;
 

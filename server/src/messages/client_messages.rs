@@ -1,11 +1,11 @@
 use actix::{Addr, Message};
 use common::model::network_messages::NetworkPlayerData;
 
-use crate::websocket::websocket::Websocket;
+use crate::websocket::Websocket;
 
 #[derive(Debug, Message)]
-#[rtype(result = "anyhow::Result<()>")]
+#[rtype(result = "common::model::network_messages::JoinResponse")]
 pub struct JoinRequest {
     pub player_data: NetworkPlayerData,
-    pub ws_conn: Addr<Websocket>,
+    pub addr: Addr<Websocket>,
 }

@@ -1,15 +1,16 @@
 use actix::prelude::{Actor, Context};
 use anyhow::Ok;
 use common::{
-    model::{network_messages::NextQuestion, NetworkMessage},
+    model::{
+        network_messages::{NetworkPlayerData, NextQuestion},
+        NetworkMessage,
+    },
     questions::QuestionSet,
 };
 use rand::prelude::*;
 
 use std::collections::HashMap;
 use uuid::Uuid;
-
-use crate::messages::websocket_messages::LobbyOutputMessage;
 
 use super::state::{Lobby, Phase};
 
@@ -29,6 +30,17 @@ impl Lobby {
             waiting_players: Vec::new(),
             results: HashMap::new(),
         }
+    }
+
+    pub fn get_players(&self) -> Vec<NetworkPlayerData> {
+        self.joined_players
+            .values()
+            .map(|val| NetworkPlayerData {
+                color: val.color.clone(),
+                nickname: val.nickname.clone(),
+                uuid: val.uuid,
+            })
+            .collect()
     }
 
     pub fn next_question(&self) -> anyhow::Result<usize> {
@@ -80,36 +92,31 @@ impl Lobby {
         Ok(())
     }
 
-    pub fn send_message(&self, message: &str, id_to: &Uuid) {
-        if let Some(socket_recipient) = self.joined_players.get(id_to) {
-            socket_recipient.do_send(LobbyOutputMessage(message.to_owned()));
+    #[allow(dead_code)]
+    pub fn send_message(&self, _message: &str, id_to: &Uuid) {
+        if let Some(_socket_recipient) = self.joined_players.get(id_to) {
         } else {
             println!("attempting to send message but couldn't find user id.");
         }
     }
 
-    pub fn send_to_all(&self, message: &str, include_teacher: bool) {
-        for socket_recipient in self.joined_players.values() {
-            socket_recipient.do_send(LobbyOutputMessage(message.to_owned()));
-        }
-
-        if include_teacher {
-            if let Some(teacher) = &self.teacher {
-                teacher.do_send(LobbyOutputMessage(message.to_owned()));
-            }
-        }
-    }
-
-    pub fn send_to_other(&self, message: &str, id_from: &Uuid, include_teacher: bool) {
-        for (id, socket_recipient) in &self.joined_players {
-            if id != id_from {
-                socket_recipient.do_send(LobbyOutputMessage(message.to_owned()));
-            }
-        }
+    pub fn send_to_all(&self, _message: &str, include_teacher: bool) {
+        for _socket_recipient in self.joined_players.values() {}
 
         if include_teacher {
             if let Some(_teacher) = &self.teacher {}
         }
+    }
+
+    #[allow(dead_code)]
+    pub fn send_to_other(&self, _message: &str, _id_from: &Uuid, _include_teacher: bool) {
+        // for (id, _socket_recipient) in &self.joined_players {
+        //     if id != id_from {}
+        // }
+
+        // if include_teacher {
+        //     if let Some(_teacher) = &self.teacher {}
+        // }
     }
 }
 

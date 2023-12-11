@@ -1,5 +1,5 @@
 use crate::teacher::init::Teacher;
-use crate::websocket::websocket::Websocket;
+use crate::websocket::Websocket;
 use actix::Addr;
 
 use chrono::DateTime;
@@ -7,6 +7,7 @@ use chrono::Utc;
 use common::questions::QuestionSet;
 
 use std::collections::HashMap;
+use std::ops::Deref;
 use uuid::Uuid;
 
 #[derive(Default, PartialEq)]
@@ -33,6 +34,21 @@ type PlayerRecords = HashMap<Uuid, PlayerQuestionRecord>;
 /// index of the question -> results of all players
 pub type QuestionRecords = HashMap<usize, PlayerRecords>;
 
+pub struct JoinedPlayer {
+    pub uuid: Uuid,
+    pub nickname: String,
+    pub color: String,
+    pub addr: Addr<Websocket>,
+}
+
+impl Deref for JoinedPlayer {
+    type Target = Addr<Websocket>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.addr
+    }
+}
+
 pub struct Lobby {
     /// An address to the teacher actor
     pub teacher: Option<Addr<Teacher>>,
@@ -44,7 +60,7 @@ pub struct Lobby {
     pub locked: bool,
 
     /// References to all the connected clients
-    pub joined_players: HashMap<Uuid, Addr<Websocket>>,
+    pub joined_players: HashMap<Uuid, JoinedPlayer>,
 
     /// Incremental results of the game
     /// * `results[question_index][player_uuid] = PlayerQuestionRecord`

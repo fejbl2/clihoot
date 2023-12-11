@@ -1,5 +1,4 @@
 pub mod answer_selected_handler;
-mod connect_to_lobby_handler;
 mod disconnect_from_lobby_handler;
 mod join_request_handler;
 mod register_teacher_message_handler;
