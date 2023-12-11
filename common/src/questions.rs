@@ -41,15 +41,16 @@ pub struct Question {
 }
 
 impl Question {
-    #[must_use] pub fn get_reading_time_estimate(&self) -> usize {
-        // 200 words per minute
+    #[must_use]
+    pub fn get_reading_time_estimate(&self) -> usize {
         let words = self.text.split_whitespace().count()
             + self
                 .code_block
                 .as_ref()
                 .map_or(0, |code| code.code.split_whitespace().count());
 
-        let estimate_secs = words / 200;
+        // 200 words per minute
+        let estimate_secs = words * 6 / 20;
         if estimate_secs == 0 {
             return 1;
         }

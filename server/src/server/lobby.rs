@@ -233,7 +233,7 @@ impl Handler<StartQuestionMessage> for Lobby {
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, _msg: StartQuestionMessage, _: &mut Context<Self>) -> Self::Result {
-        // * find  the next question
+        // * find the next question
         // * set the phase to `ActiveQuestion`
         // * send the question to all clients as well as the teacher
 
@@ -243,5 +243,13 @@ impl Handler<StartQuestionMessage> for Lobby {
         self.send_question(next_question)?;
 
         Ok(())
+    }
+}
+
+impl Handler<SetLockMessage> for Lobby {
+    type Result = ();
+
+    fn handle(&mut self, msg: SetLockMessage, _: &mut Context<Self>) -> Self::Result {
+        self.locked = msg.locked;
     }
 }
