@@ -36,12 +36,14 @@ pub struct WebsocketActor {
 }
 
 impl WebsocketActor {
-    pub async fn new(url: Url) -> Option<Self> {
-        let (ws_stream, _) = connect_async(url).await.ok()?;
+    pub async fn new(url: Url) -> anyhow::Result<Self> {
+        let (ws_stream, _) = connect_async(url).await?;
 
         let (tx, rx) = ws_stream.split();
 
-        Some(WebsocketActor {
+        // TODO: here, we want to manually send TryJoinRequest and verify that we can continue, otherwise quit the app.
+
+        Ok(WebsocketActor {
             ws_stream_rx: Some(rx),
             ws_stream_tx: Rc::new(RefCell::new(tx)),
             subscribers: vec![],
@@ -53,7 +55,7 @@ impl WebsocketActor {
 impl<T: Serialize + Send> Handler<MessageForWebsocket<T>> for WebsocketActor {
     type Result = ();
 
-    // I was not able to fix this.. I admit my weakness
+    // I was not able to fix this.. I admit my weakness ... :-(
     #[allow(clippy::await_holding_refcell_ref)]
     fn handle(&mut self, msg: MessageForWebsocket<T>, ctx: &mut Context<Self>) {
         let ws_stream_tx = Rc::clone(&self.ws_stream_tx);
@@ -67,7 +69,7 @@ impl<T: Serialize + Send> Handler<MessageForWebsocket<T>> for WebsocketActor {
                 .borrow_mut()
                 .send(tungstenite::Message::Text(serialized_message))
                 .await
-                .expect("websocket send failed")
+                .expect("websocket send failed"); // TODO fix ... should not panic the whole thread ... return something like anyhow::Result<()>
         }
         .into_actor(self)
         .wait(ctx);
@@ -78,7 +80,7 @@ impl Handler<NetworkMessage> for WebsocketActor {
     type Result = ();
 
     fn handle(&mut self, msg: NetworkMessage, _: &mut Self::Context) -> Self::Result {
-        for sub in self.subscribers.iter() {
+        for sub in &self.subscribers {
             sub.do_send(msg.clone());
         }
     }

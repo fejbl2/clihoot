@@ -8,7 +8,7 @@ use url::Url;
 mod websocket;
 
 fn url_parser(arg: &str) -> Result<Url, String> {
-    let destination_addr = format!("ws://{}", arg);
+    let destination_addr = format!("ws://{arg}");
     Ok(Url::from_str(destination_addr.as_str())
         .map_err(|_| "This is not valid url. Help: <host>:[port]")?)
 }
@@ -28,10 +28,9 @@ fn main() -> Result<()> {
 
     sys.block_on(async {
         // start websocket actor
-        let Some(websocket_actor) = WebsocketActor::new(url.clone()).await else {
+        let Ok(websocket_actor) = WebsocketActor::new(url.clone()).await else {
             println!(
-                "I can't contact the specified clihoot server on address: {} I am sorry :(",
-                url
+                "I can't contact the specified clihoot server on address: '{url}' I am sorry 😿"
             );
             System::current().stop();
             return;
