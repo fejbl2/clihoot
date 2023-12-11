@@ -3,6 +3,10 @@ use crossterm::event::KeyCode;
 
 #[derive(Message)]
 #[rtype(result = "anyhow::Result<()>")]
+pub struct Initialize;
+
+#[derive(Message)]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct Stop;
 
 #[derive(Message)]

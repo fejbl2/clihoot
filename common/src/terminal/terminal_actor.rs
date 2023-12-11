@@ -9,7 +9,7 @@ use std::io::stdout;
 use std::io::Stdout;
 use std::marker::Unpin;
 
-use crate::terminal::messages::{KeyPress, Redraw, Stop};
+use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
 
 pub trait TerminalDraw {
     fn redraw(&mut self, term: &mut Terminal<CrosstermBackend<Stdout>>) -> anyhow::Result<()>;
@@ -45,11 +45,18 @@ where
     T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
 {
     type Context = Context<Self>;
+}
 
-    fn started(&mut self, _ctx: &mut Self::Context) {
-        enable_raw_mode().unwrap();
-        stdout().execute(EnterAlternateScreen).unwrap();
-        self.inner.redraw(&mut self.terminal).unwrap();
+impl<T> Handler<Initialize> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+{
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, _msg: Initialize, _ctx: &mut Self::Context) -> Self::Result {
+        enable_raw_mode()?;
+        stdout().execute(EnterAlternateScreen)?;
+        self.inner.redraw(&mut self.terminal)
     }
 }
 
