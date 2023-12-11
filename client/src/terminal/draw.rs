@@ -1,0 +1,65 @@
+use crate::terminal::actor_data::{Color, TerminalActorData, TerminalActorState};
+use common::terminal::terminal_actor::TerminalDraw;
+use ratatui::{
+    prelude::*,
+    widgets::{Block, Borders, List, ListItem, Paragraph},
+};
+
+const COLORS: [Color; 3] = [Color::Red, Color::Green, Color::Blue];
+
+impl TerminalDraw for TerminalActorData {
+    fn redraw(
+        &mut self,
+        term: &mut ratatui::prelude::Terminal<ratatui::prelude::CrosstermBackend<std::io::Stdout>>,
+    ) -> anyhow::Result<()> {
+        match &mut self.state {
+            TerminalActorState::NameSelection { name } => {
+                term.draw(|frame| {
+                    frame.render_widget(
+                        Paragraph::new(format!("Name: {}|", name)).block(
+                            Block::default()
+                                .title("Write your name")
+                                .borders(Borders::ALL),
+                        ),
+                        frame.size(),
+                    );
+                })?;
+            }
+            TerminalActorState::ColorSelection { list_state } => {
+                term.draw(|frame| {
+                    let default_block = Block::default()
+                        .title("Select your color")
+                        .borders(Borders::ALL);
+
+                    // TOOD constant for this
+                    let items: Vec<_> = COLORS
+                        .iter()
+                        .map(|color| ListItem::new(format!("{:?}", color)))
+                        .collect();
+
+                    frame.render_stateful_widget(
+                        List::new(items)
+                            .block(default_block)
+                            .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
+                            .highlight_symbol(">> "),
+                        frame.size(),
+                        list_state,
+                    );
+                })?;
+            }
+            TerminalActorState::Todo => {
+                term.draw(|frame| {
+                    frame.render_widget(
+                        Paragraph::new(format!(
+                            "Your name is \"{}\" and your color is \"{:?}\".",
+                            self.name, self.color
+                        ))
+                        .block(Block::default().title("Greeting").borders(Borders::ALL)),
+                        frame.size(),
+                    );
+                })?;
+            }
+        }
+        Ok(())
+    }
+}

@@ -285,7 +285,14 @@ checksum = "702fc72eb24e5a1e48ce58027a675bc24edd52096d5397d4aea7c6dd9eca0bd1"
 name = "client"
 version = "0.1.0"
 dependencies = [
+ "actix",
+ "actix-rt",
+ "anyhow",
  "common",
+ "crossterm",
+ "futures",
+ "ratatui",
+ "tokio",
  "uuid",
 ]
 
@@ -302,9 +309,11 @@ dependencies = [
  "actix",
  "anyhow",
  "crossterm",
+ "futures",
  "ratatui",
  "serde",
  "serde_yaml",
+ "tokio",
  "uuid",
 ]
 
@@ -344,6 +353,7 @@ checksum = "f476fe445d41c9e991fd07515a6f463074b782242ccf4a5b7b1d1012e70824df"
 dependencies = [
  "bitflags 2.4.1",
  "crossterm_winapi",
+ "futures-core",
  "libc",
  "mio",
  "parking_lot",
