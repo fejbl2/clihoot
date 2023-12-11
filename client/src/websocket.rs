@@ -61,11 +61,11 @@ impl<T: Serialize + Send> Handler<MessageForWebsocket<T>> for WebsocketActor {
 
         async move {
             println!("Client websocket actor: sending message");
-            ws_stream_tx
+            let send_fut = ws_stream_tx
                 .borrow_mut()
-                .send(tungstenite::Message::Text(serialized_message))
-                .await
-                .expect("websocket send failed")
+                .send(tungstenite::Message::Text(serialized_message));
+
+            send_fut.await.expect("websocket send failed");
         }
         .into_actor(self)
         .wait(ctx);
