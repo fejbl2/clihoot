@@ -53,6 +53,7 @@ impl WebsocketActor {
 impl<T: Serialize + Send> Handler<MessageForWebsocket<T>> for WebsocketActor {
     type Result = ();
 
+    #[allow(clippy::await_holding_refcell_ref)]
     fn handle(&mut self, msg: MessageForWebsocket<T>, ctx: &mut Context<Self>) {
         let ws_stream_tx = Rc::clone(&self.ws_stream_tx);
 
@@ -61,11 +62,11 @@ impl<T: Serialize + Send> Handler<MessageForWebsocket<T>> for WebsocketActor {
 
         async move {
             println!("Client websocket actor: sending message");
-            let send_fut = ws_stream_tx
+            ws_stream_tx
                 .borrow_mut()
-                .send(tungstenite::Message::Text(serialized_message));
-
-            send_fut.await.expect("websocket send failed");
+                .send(tungstenite::Message::Text(serialized_message))
+                .await
+                .expect("websocket send failed")
         }
         .into_actor(self)
         .wait(ctx);
