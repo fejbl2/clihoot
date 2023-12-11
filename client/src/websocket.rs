@@ -4,7 +4,7 @@ use actix::{Actor, Context, Message};
 use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};
 use std::cell::RefCell;
-use std::net::SocketAddr;
+use std::rc::Rc;
 use std::sync::Arc;
 
 use tokio::net::TcpStream;
@@ -27,12 +27,12 @@ pub struct Subscribe(pub Recipient<NetworkMessage>);
 // actor which represents a gateway to the server, one can send it a request for sending a message or
 // just subscribe for incoming messages
 pub struct WebsocketActor {
-    ws_stream_tx: Arc<
+    ws_stream_tx: Rc<
         RefCell<
             SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, tungstenite::protocol::Message>,
         >,
     >,
-    ws_stream_rx: Arc<RefCell<SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>>>,
+    ws_stream_rx: Option<SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>>,
     subscribers: Vec<Recipient<NetworkMessage>>,
 }
 
@@ -43,8 +43,8 @@ impl WebsocketActor {
         let (tx, rx) = ws_stream.split();
 
         Some(WebsocketActor {
-            ws_stream_rx: Arc::new(RefCell::new(rx)),
-            ws_stream_tx: Arc::new(RefCell::new(tx)),
+            ws_stream_rx: Some(rx),
+            ws_stream_tx: Rc::new(RefCell::new(tx)),
             subscribers: vec![],
         })
     }
@@ -55,14 +55,14 @@ impl<T: Serialize + Send> Handler<MessageForWebsocket<T>> for WebsocketActor {
     type Result = ();
 
     fn handle(&mut self, msg: MessageForWebsocket<T>, ctx: &mut Context<Self>) {
-        let ws_stream = Arc::clone(&self.ws_stream_tx);
+        let ws_stream_tx = Rc::clone(&self.ws_stream_tx);
 
         let serialized_message =
             serde_json::to_string(&msg.0).expect("cannot serialize message for websocket");
 
         async move {
             println!("Client websocket actor: sending message");
-            ws_stream
+            ws_stream_tx
                 .borrow_mut()
                 .send(tungstenite::Message::Text(serialized_message))
                 .await
@@ -98,13 +98,12 @@ impl Actor for WebsocketActor {
     fn started(&mut self, ctx: &mut Context<Self>) {
         println!("Websocket actor is alive");
 
-        let ws_stream_rx = Arc::clone(&self.ws_stream_rx);
+        let mut ws_stream_rx = self.ws_stream_rx.take();
         let websocket_actor_address = ctx.address().clone();
 
         async move {
             // listen for messages from server
             while let Ok(incoming_msg) = ws_stream_rx
-                .borrow_mut()
                 .next()
                 .await
                 .expect("websocket listening failed")

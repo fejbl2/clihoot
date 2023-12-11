@@ -37,7 +37,7 @@ fn main() -> Result<()> {
             return;
         };
 
-        let addr_websocket_actor = websocket_actor.start();
+        let _addr_websocket_actor = websocket_actor.start();
 
         // TODO start terminal actor + send terminal actor websocket's address
 
