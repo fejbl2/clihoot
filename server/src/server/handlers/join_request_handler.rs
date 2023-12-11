@@ -54,6 +54,8 @@ impl Handler<JoinRequest> for Lobby {
             },
         );
 
+        // TODO: here, send update to everybody about the players
+
         JoinResponse {
             can_join: CanJoin::Yes,
             players: self.get_players(),

@@ -56,6 +56,8 @@ impl Handler<AnswerSelected> for Lobby {
                 },
             );
 
+        // TODO: here, send update to everybody about the count of answers
+
         Ok(())
     }
 }
