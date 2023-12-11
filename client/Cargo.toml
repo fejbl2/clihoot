@@ -18,3 +18,5 @@ time = "0.3.30"
 serde = "1.0.193"
 serde_json = "1.0.108"
 anyhow = "1.0.75"
+term = { version = "0.7.0", features = [] }
+clap = { version = "4.4.11", features = ["derive"] }
