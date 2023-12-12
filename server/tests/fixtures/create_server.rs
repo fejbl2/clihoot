@@ -10,7 +10,6 @@ use rstest::fixture;
 
 use crate::utils::{self, sample_questions};
 
-
 /// A fixture that starts a server thread and returns the join handle and the lobby address.
 /// Fixture is run every time is is requested, do not build other fixtures on top of this one (anti-example below)
 #[must_use]
