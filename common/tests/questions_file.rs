@@ -1,37 +1,20 @@
+use common::questions::{self};
+use common::test_utils::compare_question_sets;
+use common::test_utils::no_code_question_fixture;
 use std::path::Path;
+use uuid::Uuid; // Import the missing module `tests` from the `common` module..
 
-use common::questions::{self, DEFAULT_QUIZ_NAME};
-use uuid::Uuid;
-
-fn no_code_question_fixture(ids: &[Uuid]) -> questions::Question {
-    questions::Question {
-        text: "What is the answer to the ultimate question of life, the Universe, and Everything?"
-            .to_string(),
-        code_block: None,
-        time_seconds: 42,
-        choices: vec![
-            questions::Choice {
-                id: ids[0],
-                text: "sleep".to_string(),
-                is_right: false,
-            },
-            questions::Choice {
-                id: ids[1],
-                text: "42".to_string(),
-                is_right: true,
-            },
-            questions::Choice {
-                id: ids[2],
-                text: "food".to_string(),
-                is_right: false,
-            },
-            questions::Choice {
-                id: ids[3],
-                text: "69".to_string(),
-                is_right: false,
-            },
-        ],
-    }
+macro_rules! assert_questionset_eq {
+    ($left:expr, $right:expr) => {{
+        let left = $left;
+        let right = $right;
+        assert!(
+            compare_question_sets(&left, &right),
+            "Questions not equal: {:?} != {:?}",
+            left,
+            right
+        );
+    }};
 }
 
 #[test]
@@ -39,20 +22,9 @@ fn test_ok_minimal() {
     let result =
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_minimal.yaml")).unwrap();
 
-    let wanted = questions::QuestionSet {
-        quiz_name: DEFAULT_QUIZ_NAME.to_owned(),
-        randomize_answers: false,
-        randomize_questions: false,
-        questions: vec![no_code_question_fixture(
-            &result.questions[0]
-                .choices
-                .iter()
-                .map(|c| c.id)
-                .collect::<Vec<Uuid>>(),
-        )],
-    };
+    let wanted = questions::QuestionSet::new(vec![no_code_question_fixture()]);
 
-    assert_eq!(result, wanted);
+    assert_questionset_eq!(result, wanted);
 }
 
 #[test]
@@ -60,45 +32,39 @@ fn test_ok_code() {
     let result =
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_code.yaml")).unwrap();
 
-    let wanted = questions::QuestionSet {
-        quiz_name: DEFAULT_QUIZ_NAME.to_owned(),
-        randomize_answers: false,
-        randomize_questions: false,
-        questions: vec![questions::Question {
-            text: "What does this code do?".to_string(),
-            code_block: Some(questions::CodeBlock {
-                language: "rust".to_string(),
-                code: "fn main() {\n    println!(\"42\");\n}\n".to_string(),
-            }),
-            time_seconds: 42,
-            choices: vec![
-                questions::Choice {
-                    id: result.questions[0].choices[0].id,
-                    text: "Nothing useful".to_string(),
-                    is_right: false,
-                },
-                questions::Choice {
-                    id: result.questions[0].choices[1].id,
-                    text: "It prints 42".to_string(),
-                    is_right: true,
-                },
-                questions::Choice {
-                    id: result.questions[0].choices[2].id,
-                    text: "It fails to compile and the compiler will scream at us".to_string(),
-                    is_right: false,
-                },
-                questions::Choice {
-                    id: result.questions[0].choices[3].id,
-                    text:
-                        "It answers to the ultimate question of life, the Universe, and Everything"
-                            .to_string(),
-                    is_right: true,
-                },
-            ],
-        }],
-    };
+    let wanted = questions::QuestionSet::new(vec![questions::Question {
+        text: "What does this code do?".to_string(),
+        code_block: Some(questions::CodeBlock {
+            language: "rust".to_string(),
+            code: "fn main() {\n    println!(\"42\");\n}\n".to_string(),
+        }),
+        time_seconds: 42,
+        choices: vec![
+            questions::Choice {
+                id: Uuid::nil(),
+                text: "Nothing useful".to_string(),
+                is_right: false,
+            },
+            questions::Choice {
+                id: Uuid::nil(),
+                text: "It prints 42".to_string(),
+                is_right: true,
+            },
+            questions::Choice {
+                id: Uuid::nil(),
+                text: "It fails to compile and the compiler will scream at us".to_string(),
+                is_right: false,
+            },
+            questions::Choice {
+                id: Uuid::nil(),
+                text: "It answers to the ultimate question of life, the Universe, and Everything"
+                    .to_string(),
+                is_right: true,
+            },
+        ],
+    }]);
 
-    assert_eq!(result, wanted);
+    assert_questionset_eq!(result, wanted);
 }
 
 #[test]
@@ -106,36 +72,13 @@ fn test_ok_multiple() {
     let result =
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_multiple.yaml")).unwrap();
 
-    let wanted = questions::QuestionSet {
-        quiz_name: DEFAULT_QUIZ_NAME.to_owned(),
-        randomize_answers: false,
-        randomize_questions: false,
-        questions: vec![
-            no_code_question_fixture(
-                &result.questions[0]
-                    .choices
-                    .iter()
-                    .map(|c| c.id)
-                    .collect::<Vec<Uuid>>(),
-            ),
-            no_code_question_fixture(
-                &result.questions[1]
-                    .choices
-                    .iter()
-                    .map(|c| c.id)
-                    .collect::<Vec<Uuid>>(),
-            ),
-            no_code_question_fixture(
-                &result.questions[2]
-                    .choices
-                    .iter()
-                    .map(|c| c.id)
-                    .collect::<Vec<Uuid>>(),
-            ),
-        ],
-    };
+    let wanted = questions::QuestionSet::new(vec![
+        no_code_question_fixture(),
+        no_code_question_fixture(),
+        no_code_question_fixture(),
+    ]);
 
-    assert_eq!(result, wanted);
+    assert_questionset_eq!(result, wanted);
 }
 
 #[test]

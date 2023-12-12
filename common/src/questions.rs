@@ -119,4 +119,13 @@ impl QuestionSet {
 
         Ok(questions)
     }
+
+    #[must_use] pub fn new(questions: Vec<Question>) -> Self {
+        Self {
+            questions,
+            randomize_answers: false,
+            randomize_questions: false,
+            quiz_name: DEFAULT_QUIZ_NAME.to_owned(),
+        }
+    }
 }
