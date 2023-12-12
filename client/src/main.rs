@@ -1,4 +1,10 @@
-fn main() {
-    let _x = common::hello::Hello::World;
-    println!("Hello, world!");
+use client::terminal::student::run_student;
+
+#[actix_rt::main]
+async fn main() -> anyhow::Result<()> {
+    let (_term, task) = run_student().await?;
+
+    task.await??;
+
+    Ok(())
 }
