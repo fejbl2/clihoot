@@ -1,27 +1,19 @@
 mod fixtures;
 mod utils;
 
-use std::{
-    thread::{self, JoinHandle},
-    time::Duration,
-};
+use std::thread::JoinHandle;
 
 use actix::Addr;
 use common::{
-    constants::{DEFAULT_PORT, DEFAULT_QUIZ_NAME, LOBBY_LOCKED_MSG},
-    model::{
-        network_messages::{CanJoin, TryJoinRequest, TryJoinResponse},
-        ClientNetworkMessage,
-    },
+    constants::{DEFAULT_QUIZ_NAME, LOBBY_LOCKED_MSG},
+    model::network_messages::{CanJoin, TryJoinResponse},
 };
-use futures_util::{SinkExt, StreamExt};
+use futures_util::SinkExt;
 use rstest::rstest;
 use server::{messages::teacher_messages::ServerHardStop, server::state::Lobby};
 
 use crate::fixtures::create_server::create_server;
 use tungstenite::Message;
-
-use uuid::Uuid;
 
 #[rstest]
 #[tokio::test]
@@ -30,28 +22,9 @@ async fn lobby_locked_client_cannot_connect(
 ) -> anyhow::Result<()> {
     let (server_thread, server) = create_server;
 
-    thread::sleep(Duration::from_millis(100));
+    let (mut sender, mut receiver) = utils::connect_to_server().await;
 
-    let (conn, _) = tokio_tungstenite::connect_async(format!("ws://localhost:{DEFAULT_PORT}"))
-        .await
-        .expect("Failed to connect to server");
-
-    println!("Connected to server");
-
-    let (mut sender, mut receiver) = conn.split();
-
-    let id = Uuid::new_v4();
-    let msg = ClientNetworkMessage::TryJoinRequest(TryJoinRequest { uuid: id });
-
-    sender
-        .send(Message::Text(serde_json::to_string(&msg)?))
-        .await?;
-
-    println!("Sent TryJoinRequest");
-
-    let msg = receiver.next().await.expect("Failed to receive message")?;
-
-    println!("Received message: {msg:?}");
+    let (id, msg) = utils::try_join_server(&mut sender, &mut receiver).await?;
 
     assert_eq!(
         msg,
@@ -62,7 +35,7 @@ async fn lobby_locked_client_cannot_connect(
         })?)
     );
 
-    server.send(ServerHardStop {}).await?;
+    server.send(ServerHardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
     Ok(())

@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 // helper structs:
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct NetworkPlayerData {
     pub uuid: Uuid,
     pub nickname: String,

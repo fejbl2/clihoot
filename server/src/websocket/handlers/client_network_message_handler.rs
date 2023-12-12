@@ -42,6 +42,8 @@ async fn handle_join_request(
 
     let msg = serde_json::to_string(&res)?;
 
+    println!("Sending JoinResponse: {msg}");
+
     let () = send_message(sender, Message::Text(msg)).await;
 
     Ok(())
