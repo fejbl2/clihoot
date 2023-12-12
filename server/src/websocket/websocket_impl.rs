@@ -1,7 +1,7 @@
 use actix::AsyncContext;
 use actix::{Actor, Addr, Running};
 
-use common::model::NetworkMessage;
+use common::model::ClientNetworkMessage;
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::StreamExt;
 use tokio::sync::Mutex;
@@ -19,7 +19,7 @@ use crate::server::state::Lobby;
 
 pub struct Websocket {
     pub lobby_addr: Addr<Lobby>,
-    pub player_id: Uuid,
+    pub player_id: Option<Uuid>,
     pub receiver: Option<SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>>,
     pub sender: Arc<Mutex<SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, Message>>>,
     pub reader_task: Option<JoinHandle<()>>,
@@ -37,7 +37,7 @@ impl Websocket {
         let (sender, receiver) = socket.split();
 
         Ok(Websocket {
-            player_id: Uuid::new_v4(),
+            player_id: None,
             lobby_addr: lobby,
             receiver: Some(receiver),
             sender: Arc::new(Mutex::new(sender)),
@@ -68,9 +68,10 @@ impl Actor for Websocket {
             reader_task.abort();
         }
 
-        self.lobby_addr.do_send(DisconnectFromLobby {
-            player_id: self.player_id,
-        });
+        if let Some(player_id) = self.player_id {
+            self.lobby_addr.do_send(DisconnectFromLobby { player_id });
+        }
+
         Running::Stop
     }
 
@@ -90,7 +91,7 @@ async fn read_messages_from_socket<'a>(
                 println!("Received text message from {who}: {msg}");
 
                 // try to parse the JSON s to a `NetworkMessage`
-                match serde_json::from_str::<NetworkMessage>(&msg) {
+                match serde_json::from_str::<ClientNetworkMessage>(&msg) {
                     Ok(msg) => {
                         addr.do_send(msg);
                     }

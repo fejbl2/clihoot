@@ -3,7 +3,7 @@ use std::path::Path;
 use common::questions;
 use uuid::Uuid;
 
-fn no_code_question_fixture(ids: Vec<Uuid>) -> questions::Question {
+fn no_code_question_fixture(ids: &[Uuid]) -> questions::Question {
     questions::Question {
         text: "What is the answer to the ultimate question of life, the Universe, and Everything?"
             .to_string(),
@@ -44,7 +44,11 @@ fn test_ok_minimal() {
         randomize_answers: false,
         randomize_questions: false,
         questions: vec![no_code_question_fixture(
-            result.questions[0].choices.iter().map(|c| c.id).collect(),
+            &result.questions[0]
+                .choices
+                .iter()
+                .map(|c| c.id)
+                .collect::<Vec<Uuid>>(),
         )],
     };
 
@@ -107,9 +111,27 @@ fn test_ok_multiple() {
         randomize_answers: false,
         randomize_questions: false,
         questions: vec![
-            no_code_question_fixture(result.questions[0].choices.iter().map(|c| c.id).collect()),
-            no_code_question_fixture(result.questions[1].choices.iter().map(|c| c.id).collect()),
-            no_code_question_fixture(result.questions[2].choices.iter().map(|c| c.id).collect()),
+            no_code_question_fixture(
+                &result.questions[0]
+                    .choices
+                    .iter()
+                    .map(|c| c.id)
+                    .collect::<Vec<Uuid>>(),
+            ),
+            no_code_question_fixture(
+                &result.questions[1]
+                    .choices
+                    .iter()
+                    .map(|c| c.id)
+                    .collect::<Vec<Uuid>>(),
+            ),
+            no_code_question_fixture(
+                &result.questions[2]
+                    .choices
+                    .iter()
+                    .map(|c| c.id)
+                    .collect::<Vec<Uuid>>(),
+            ),
         ],
     };
 

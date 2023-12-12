@@ -3,7 +3,7 @@ use anyhow::Ok;
 use common::{
     model::{
         network_messages::{NetworkPlayerData, NextQuestion},
-        NetworkMessage,
+        ServerNetworkMessage,
     },
     questions::QuestionSet,
 };
@@ -79,7 +79,7 @@ impl Lobby {
         });
 
         // construct a message object
-        let message = NetworkMessage::NextQuestion(NextQuestion {
+        let message = ServerNetworkMessage::NextQuestion(NextQuestion {
             question_index: index as u64,
             questions_count: self.questions.len() as u64,
             show_choices_after: question.get_reading_time_estimate() as u64,
@@ -101,6 +101,9 @@ impl Lobby {
     }
 
     pub fn send_to_all(&self, _message: &str, include_teacher: bool) {
+        // TODO: send the message to all players
+        // TODO: the message should not be str, but ServerNetworkMessage (to have the ws enforce the types)
+        //  -> probably, the teacher cannot be included like so, because he will not implement All Handler<ServerNetworkMessage>
         for _socket_recipient in self.joined_players.values() {}
 
         if include_teacher {

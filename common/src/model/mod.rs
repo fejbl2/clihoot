@@ -8,19 +8,25 @@ use actix::Message;
 
 pub mod network_messages;
 
-/// The messages that can be sent over the websocket between the client and the server
+/// The messages that can be sent over the websocket FROM the client TO server
 #[derive(Debug, Serialize, Deserialize, Message)]
 #[rtype(result = "()")]
-pub enum NetworkMessage {
+pub enum ClientNetworkMessage {
     TryJoinRequest(TryJoinRequest),
     JoinRequest(JoinRequest),
+    AnswerSelected(AnswerSelected),
+    ClientDisconnected(ClientDisconnected),
+}
+
+/// The messages that can be sent over the websocket FROM the server TO the client
+#[derive(Debug, Serialize, Deserialize, Message)]
+#[rtype(result = "()")]
+pub enum ServerNetworkMessage {
     PlayersUpdate(PlayersUpdate),
     NextQuestion(NextQuestion),
-    AnswerSelected(AnswerSelected),
     QuestionUpdate(QuestionUpdate),
     QuestionEnded(QuestionEnded),
     ShowLeaderboard(ShowLeaderboard),
     KickedOutNotice(KickedOutNotice),
-    ClientDisconnected(ClientDisconnected),
     TeacherDisconnected(TeacherDisconnected),
 }
