@@ -1,3 +1,9 @@
+use actix::prelude::*;
+use tokio::task::JoinHandle;
+
+use common::terminal::handle_terminal_events::handle_events;
+use common::terminal::messages::Initialize;
+use common::terminal::terminal_actor::TerminalActor;
 use ratatui::widgets::ListState;
 
 #[derive(Debug, Clone, Copy)]
@@ -7,34 +13,46 @@ pub enum Color {
     Blue,
 }
 
-pub enum TerminalActorState {
+pub enum StudentTerminalState {
     NameSelection { name: String },
     ColorSelection { list_state: ListState },
     Todo,
 }
 
-pub struct TerminalActorData {
+pub struct StudentTerminal {
     pub name: String,
     pub color: Color,
-    pub state: TerminalActorState,
+    pub state: StudentTerminalState,
 }
 
-impl Default for TerminalActorData {
+impl Default for StudentTerminal {
     fn default() -> Self {
         Self {
             name: String::new(),
             color: Color::Red,
-            state: TerminalActorState::NameSelection {
+            state: StudentTerminalState::NameSelection {
                 name: String::new(),
             },
         }
     }
 }
 
-impl TerminalActorData {
+impl StudentTerminal {
     pub fn new() -> Self {
         Self::default()
     }
+}
+
+pub async fn run_student() -> anyhow::Result<(
+    Addr<TerminalActor<StudentTerminal>>,
+    JoinHandle<anyhow::Result<()>>,
+)> {
+    let term = TerminalActor::new(StudentTerminal::new()).start();
+
+    term.send(Initialize).await??;
+
+    let task = tokio::spawn(handle_events(term.clone()));
+    Ok((term, task))
 }
 
 // we can implement handlers for student specific messages:

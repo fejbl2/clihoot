@@ -1,16 +1,16 @@
 use crossterm::event::KeyCode;
 use ratatui::widgets::ListState;
 
-use crate::terminal::actor_data::{Color, TerminalActorData, TerminalActorState};
+use crate::terminal::student::{Color, StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalHandleInput;
 
 const COLORS: [Color; 3] = [Color::Red, Color::Green, Color::Blue];
 
-impl TerminalHandleInput for TerminalActorData {
+impl TerminalHandleInput for StudentTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
         // TODO define function that handle input for each state
         match &mut self.state {
-            TerminalActorState::NameSelection { name } => match key_code {
+            StudentTerminalState::NameSelection { name } => match key_code {
                 KeyCode::Backspace => {
                     name.pop();
                 }
@@ -19,24 +19,24 @@ impl TerminalHandleInput for TerminalActorData {
                 }
                 KeyCode::Enter => {
                     self.name = name.to_string();
-                    self.state = TerminalActorState::ColorSelection {
+                    self.state = StudentTerminalState::ColorSelection {
                         list_state: ListState::default().with_selected(Some(0)),
                     }
                 }
                 _ => {}
             },
-            TerminalActorState::ColorSelection { list_state } => {
+            StudentTerminalState::ColorSelection { list_state } => {
                 let mut selected = list_state.selected().unwrap_or(0);
 
                 match key_code {
                     KeyCode::Backspace => {
-                        self.state = TerminalActorState::NameSelection {
+                        self.state = StudentTerminalState::NameSelection {
                             name: self.name.to_string(),
                         };
                     }
                     KeyCode::Enter => {
                         self.color = COLORS[list_state.selected().unwrap_or(0)];
-                        self.state = TerminalActorState::Todo;
+                        self.state = StudentTerminalState::Todo;
                     }
                     KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('s') => {
                         selected += 1;
@@ -56,7 +56,7 @@ impl TerminalHandleInput for TerminalActorData {
                     _ => {}
                 };
             }
-            TerminalActorState::Todo => {}
+            StudentTerminalState::Todo => {}
         };
         Ok(())
     }

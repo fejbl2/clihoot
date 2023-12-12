@@ -1,17 +1,10 @@
-use actix::prelude::*;
-
-use client::terminal::actor_data::TerminalActorData;
-use common::terminal::handle_terminal_events::handle_events;
-use common::terminal::messages::Initialize;
-use common::terminal::terminal_actor::TerminalActor;
+use client::terminal::student::run_student;
 
 #[actix_rt::main]
 async fn main() -> anyhow::Result<()> {
-    let term = TerminalActor::new(TerminalActorData::new()).start();
+    let (term, task) = run_student().await?;
 
-    term.send(Initialize).await??;
-
-    tokio::spawn(handle_events(term)).await??;
+    task.await??;
 
     Ok(())
 }

@@ -1,4 +1,4 @@
-use crate::terminal::actor_data::{Color, TerminalActorData, TerminalActorState};
+use crate::terminal::student::{Color, StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalDraw;
 use ratatui::{
     prelude::*,
@@ -7,14 +7,14 @@ use ratatui::{
 
 const COLORS: [Color; 3] = [Color::Red, Color::Green, Color::Blue];
 
-impl TerminalDraw for TerminalActorData {
+impl TerminalDraw for StudentTerminal {
     fn redraw(
         &mut self,
         term: &mut ratatui::prelude::Terminal<ratatui::prelude::CrosstermBackend<std::io::Stdout>>,
     ) -> anyhow::Result<()> {
         // TODO define function that would do the drawing
         match &mut self.state {
-            TerminalActorState::NameSelection { name } => {
+            StudentTerminalState::NameSelection { name } => {
                 term.draw(|frame| {
                     frame.render_widget(
                         Paragraph::new(format!("Name: {}|", name)).block(
@@ -26,7 +26,7 @@ impl TerminalDraw for TerminalActorData {
                     );
                 })?;
             }
-            TerminalActorState::ColorSelection { list_state } => {
+            StudentTerminalState::ColorSelection { list_state } => {
                 term.draw(|frame| {
                     let default_block = Block::default()
                         .title("Select your color")
@@ -48,7 +48,7 @@ impl TerminalDraw for TerminalActorData {
                     );
                 })?;
             }
-            TerminalActorState::Todo => {
+            StudentTerminalState::Todo => {
                 term.draw(|frame| {
                     frame.render_widget(
                         Paragraph::new(format!(
