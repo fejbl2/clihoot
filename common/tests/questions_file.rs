@@ -1,6 +1,6 @@
 use std::path::Path;
 
-use common::questions;
+use common::questions::{self, DEFAULT_QUIZ_NAME};
 use uuid::Uuid;
 
 fn no_code_question_fixture(ids: &[Uuid]) -> questions::Question {
@@ -40,7 +40,7 @@ fn test_ok_minimal() {
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_minimal.yaml")).unwrap();
 
     let wanted = questions::QuestionSet {
-        quiz_name: "test quiz".to_owned(),
+        quiz_name: DEFAULT_QUIZ_NAME.to_owned(),
         randomize_answers: false,
         randomize_questions: false,
         questions: vec![no_code_question_fixture(
@@ -61,7 +61,7 @@ fn test_ok_code() {
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_code.yaml")).unwrap();
 
     let wanted = questions::QuestionSet {
-        quiz_name: "test quiz".to_owned(),
+        quiz_name: DEFAULT_QUIZ_NAME.to_owned(),
         randomize_answers: false,
         randomize_questions: false,
         questions: vec![questions::Question {
@@ -107,7 +107,7 @@ fn test_ok_multiple() {
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_multiple.yaml")).unwrap();
 
     let wanted = questions::QuestionSet {
-        quiz_name: "test quiz".to_owned(),
+        quiz_name: DEFAULT_QUIZ_NAME.to_owned(),
         randomize_answers: false,
         randomize_questions: false,
         questions: vec![

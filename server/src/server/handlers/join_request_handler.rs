@@ -1,5 +1,5 @@
 use actix::Handler;
-use common::model::network_messages::{CanJoin, JoinResponse};
+use common::model::network_messages::{CanJoin, JoinResponse, LOBBY_LOCKED_MSG};
 
 use crate::{
     messages::client_messages::JoinRequest,
@@ -19,7 +19,7 @@ impl Handler<JoinRequest> for Lobby {
 
         if self.locked {
             return JoinResponse {
-                can_join: CanJoin::No("The lobby is locked".to_owned()),
+                can_join: CanJoin::No(LOBBY_LOCKED_MSG.to_owned()),
                 ..result
             };
         }

@@ -26,6 +26,8 @@ pub struct TryJoinRequest {
     pub uuid: Uuid,
 }
 
+pub const LOBBY_LOCKED_MSG: &str = "The lobby is locked";
+
 #[derive(Debug, Serialize, Deserialize)]
 pub enum CanJoin {
     Yes,

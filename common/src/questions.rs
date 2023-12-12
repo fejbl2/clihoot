@@ -9,11 +9,13 @@ fn falsy() -> bool {
     false
 }
 
+pub const DEFAULT_QUIZ_NAME: &str = "Sample quiz";
+
 fn random_quiz_name() -> String {
-    "test quiz".to_owned()
+    DEFAULT_QUIZ_NAME.to_owned()
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct QuestionSet {
     pub questions: Vec<Question>,
     #[serde(default = "falsy", skip_deserializing, skip_serializing)]

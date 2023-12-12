@@ -1,7 +1,11 @@
 use crate::teacher::init::Teacher;
 use crate::websocket::Websocket;
+use actix::Actor;
 use actix::Addr;
 
+use actix::dev::MessageResponse;
+use actix::dev::OneshotSender;
+use actix::Message;
 use chrono::DateTime;
 use chrono::Utc;
 use common::questions::QuestionSet;
@@ -10,7 +14,7 @@ use std::collections::HashMap;
 use std::ops::Deref;
 use uuid::Uuid;
 
-#[derive(Default, PartialEq)]
+#[derive(Default, PartialEq, Clone, Debug)]
 #[allow(dead_code)]
 pub enum Phase {
     #[default]
@@ -21,6 +25,7 @@ pub enum Phase {
     GameEnded,
 }
 
+#[derive(PartialEq, Clone, Debug)]
 pub struct PlayerQuestionRecord {
     pub answer_order: usize,
     pub timestamp: DateTime<Utc>,
@@ -34,6 +39,7 @@ type PlayerRecords = HashMap<Uuid, PlayerQuestionRecord>;
 /// index of the question -> results of all players
 pub type QuestionRecords = HashMap<usize, PlayerRecords>;
 
+#[derive(PartialEq, Clone, Debug)]
 pub struct JoinedPlayer {
     pub uuid: Uuid,
     pub nickname: String,
@@ -49,6 +55,7 @@ impl Deref for JoinedPlayer {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Lobby {
     /// An address to the teacher actor
     pub teacher: Option<Addr<Teacher>>,
@@ -71,4 +78,16 @@ pub struct Lobby {
 
     /// Players who have sent a TryJoinRequest, but have not joined yet
     pub waiting_players: Vec<Uuid>,
+}
+
+impl<A, M> MessageResponse<A, M> for Lobby
+where
+    A: Actor,
+    M: Message<Result = Lobby>,
+{
+    fn handle(self, _ctx: &mut A::Context, tx: Option<OneshotSender<M::Result>>) {
+        if let Some(tx) = tx {
+            let _ = tx.send(self);
+        }
+    }
 }

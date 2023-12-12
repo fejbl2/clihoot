@@ -15,6 +15,7 @@ use uuid::Uuid;
 use super::state::{Lobby, Phase};
 
 impl Lobby {
+    #[must_use]
     pub fn new(mut questions: QuestionSet) -> Self {
         if questions.randomize_questions {
             let mut rng = rand::thread_rng();
@@ -32,6 +33,7 @@ impl Lobby {
         }
     }
 
+    #[must_use]
     pub fn get_players(&self) -> Vec<NetworkPlayerData> {
         self.joined_players
             .values()
@@ -59,6 +61,7 @@ impl Lobby {
         }
     }
 
+    #[must_use]
     pub fn can_show_next_question(&self) -> bool {
         match self.phase {
             Phase::WaitingForPlayers => true,
