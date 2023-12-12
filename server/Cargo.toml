@@ -23,3 +23,5 @@ tungstenite = "0.20.1"
 uuid = { version = "1.6.1", features = ["v4", "serde"] }
 rand = "0.8.5"
 chrono = "0.4.31"
+rstest = "0.18.2"
+async-std = { version = "1.5", features = ["attributes"] }

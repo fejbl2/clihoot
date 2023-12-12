@@ -1,5 +1,8 @@
 use actix::{Context, Handler};
-use common::model::network_messages::{CanJoin, TryJoinRequest, TryJoinResponse, LOBBY_LOCKED_MSG};
+use common::{
+    constants::LOBBY_LOCKED_MSG,
+    model::network_messages::{CanJoin, TryJoinRequest, TryJoinResponse},
+};
 
 use crate::server::state::Lobby;
 

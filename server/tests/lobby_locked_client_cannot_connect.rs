@@ -1,36 +1,38 @@
+mod fixtures;
 mod utils;
 
-use std::{sync::mpsc, thread, time::Duration};
+use std::{
+    thread::{self, JoinHandle},
+    time::Duration,
+};
 
+use actix::Addr;
 use common::{
+    constants::{DEFAULT_PORT, DEFAULT_QUIZ_NAME, LOBBY_LOCKED_MSG},
     model::{
-        network_messages::{CanJoin, TryJoinRequest, TryJoinResponse, LOBBY_LOCKED_MSG},
+        network_messages::{CanJoin, TryJoinRequest, TryJoinResponse},
         ClientNetworkMessage,
     },
-    questions::DEFAULT_QUIZ_NAME,
 };
 use futures_util::{SinkExt, StreamExt};
-use server::{messages::teacher_messages::ServerHardStop, server::init::run_server};
+use rstest::rstest;
+use server::{messages::teacher_messages::ServerHardStop, server::state::Lobby};
 
+use fixtures::create_server::create_server;
 use tungstenite::Message;
-use utils::sample_questions;
+
 use uuid::Uuid;
 
+#[rstest]
 #[tokio::test]
-async fn lobby_locked_client_cannot_connect() -> anyhow::Result<()> {
-    let questions = sample_questions();
-    let (tx, rx) = mpsc::channel();
-    let addr = "0.0.0.0:8080".to_string().parse()?;
-
-    let server_thread = thread::spawn(move || {
-        run_server(tx, questions, addr).expect("Failed to run server");
-    });
-
-    let server = rx.recv().expect("Failed to receive server address");
+async fn lobby_locked_client_cannot_connect(
+    create_server: (JoinHandle<()>, Addr<Lobby>),
+) -> anyhow::Result<()> {
+    let (server_thread, server) = create_server;
 
     thread::sleep(Duration::from_millis(100));
 
-    let (conn, _) = tokio_tungstenite::connect_async("ws://localhost:8080")
+    let (conn, _) = tokio_tungstenite::connect_async(format!("ws://localhost:{DEFAULT_PORT}"))
         .await
         .expect("Failed to connect to server");
 

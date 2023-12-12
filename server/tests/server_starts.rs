@@ -1,26 +1,22 @@
+mod fixtures;
 mod utils;
-extern crate common;
 
-use std::{sync::mpsc, thread};
+use std::thread::JoinHandle;
 
+use actix::Addr;
 use common::{assert_questionset_eq, test_utils::compare_question_sets};
+use fixtures::create_server::create_server;
+use rstest::rstest;
 use server::{
     messages::teacher_messages::{GetServerState, ServerHardStop},
-    server::{init::run_server, state::Phase},
+    server::state::{Lobby, Phase},
 };
 use utils::sample_questions;
 
+#[rstest]
 #[tokio::test]
-async fn server_starts() -> anyhow::Result<()> {
-    let questions = sample_questions();
-    let (tx, rx) = mpsc::channel();
-    let addr = "0.0.0.0:8080".to_string().parse()?;
-
-    let server_thread = thread::spawn(move || {
-        run_server(tx, questions, addr).expect("Failed to run server");
-    });
-
-    let server = rx.recv().expect("Failed to receive server address");
+async fn server_starts(create_server: (JoinHandle<()>, Addr<Lobby>)) -> anyhow::Result<()> {
+    let (server_thread, server) = create_server;
 
     let state = server.send(GetServerState {}).await?;
 

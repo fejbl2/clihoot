@@ -5,11 +5,11 @@ use std::ops::Deref;
 use std::path::Path;
 use uuid::Uuid;
 
+use crate::constants::DEFAULT_QUIZ_NAME;
+
 fn falsy() -> bool {
     false
 }
-
-pub const DEFAULT_QUIZ_NAME: &str = "Sample quiz";
 
 fn random_quiz_name() -> String {
     DEFAULT_QUIZ_NAME.to_owned()
