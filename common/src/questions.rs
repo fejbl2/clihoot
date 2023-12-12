@@ -1,14 +1,37 @@
 use anyhow::Context;
 use serde::{de, Deserialize, Deserializer, Serialize};
 use std::fs;
+use std::ops::Deref;
 use std::path::Path;
+use uuid::Uuid;
+
+fn falsy() -> bool {
+    false
+}
 
 #[derive(Debug, Serialize, Deserialize, PartialEq)]
 pub struct QuestionSet {
     pub questions: Vec<Question>,
+    #[serde(default = "falsy", skip_deserializing, skip_serializing)]
+    pub randomize_answers: bool,
+    #[serde(default = "falsy", skip_deserializing, skip_serializing)]
+    pub randomize_questions: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+/// We want to be able to iterate over the questions in the set directly
+impl Deref for QuestionSet {
+    type Target = Vec<Question>;
+
+    fn deref(&self) -> &Self::Target {
+        &self.questions
+    }
+}
+
+fn new_uuid() -> Uuid {
+    Uuid::new_v4()
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Question {
     pub text: String,
     pub code_block: Option<CodeBlock>,
@@ -17,14 +40,17 @@ pub struct Question {
     pub choices: Vec<Choice>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct CodeBlock {
     pub language: String,
     pub code: String,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Choice {
+    // we want to be able to identify the choices even when the client shuffles them
+    #[serde(default = "new_uuid", skip_deserializing, skip_serializing)]
+    pub id: Uuid,
     // by design, no syntax highlighting for the choices
     pub text: String,
     #[serde(default)]
