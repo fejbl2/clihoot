@@ -10,6 +10,9 @@ use rstest::fixture;
 
 use crate::utils::{self, sample_questions};
 
+
+/// A fixture that starts a server thread and returns the join handle and the lobby address.
+/// Fixture is run every time is is requested, do not build other fixtures on top of this one (anti-example below)
 #[must_use]
 #[fixture]
 pub fn create_server() -> (JoinHandle<()>, Addr<Lobby>) {
@@ -30,3 +33,17 @@ pub fn create_server() -> (JoinHandle<()>, Addr<Lobby>) {
 
     (server_thread, server)
 }
+
+/////////////// DO NOT DO THIS: ///////////////
+// #[must_use]
+// #[fixture]
+// pub fn server(create_server: (JoinHandle<()>, Addr<Lobby>)) -> Addr<Lobby> {
+//     create_server.1
+// }
+
+// #[must_use]
+// #[fixture]
+// pub fn server_thread(create_server: (JoinHandle<()>, Addr<Lobby>)) -> JoinHandle<()> {
+//     create_server.0
+// }
+///////////////////////////////////////////////

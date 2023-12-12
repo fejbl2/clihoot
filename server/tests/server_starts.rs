@@ -3,15 +3,15 @@ mod utils;
 
 use std::thread::JoinHandle;
 
+use crate::fixtures::create_server::create_server;
+use crate::utils::sample_questions;
 use actix::Addr;
 use common::{assert_questionset_eq, test_utils::compare_question_sets};
-use fixtures::create_server::create_server;
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{GetServerState, ServerHardStop},
     server::state::{Lobby, Phase},
 };
-use utils::sample_questions;
 
 #[rstest]
 #[tokio::test]

@@ -18,7 +18,7 @@ use futures_util::{SinkExt, StreamExt};
 use rstest::rstest;
 use server::{messages::teacher_messages::ServerHardStop, server::state::Lobby};
 
-use fixtures::create_server::create_server;
+use crate::fixtures::create_server::create_server;
 use tungstenite::Message;
 
 use uuid::Uuid;
