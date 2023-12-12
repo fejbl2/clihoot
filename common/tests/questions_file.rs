@@ -1,21 +1,9 @@
+use common::assert_questionset_eq;
 use common::questions::{self};
 use common::test_utils::compare_question_sets;
 use common::test_utils::no_code_question_fixture;
 use std::path::Path;
 use uuid::Uuid; // Import the missing module `tests` from the `common` module..
-
-macro_rules! assert_questionset_eq {
-    ($left:expr, $right:expr) => {{
-        let left = $left;
-        let right = $right;
-        assert!(
-            compare_question_sets(&left, &right),
-            "Questions not equal: {:?} != {:?}",
-            left,
-            right
-        );
-    }};
-}
 
 #[test]
 fn test_ok_minimal() {

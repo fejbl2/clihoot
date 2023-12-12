@@ -3,6 +3,7 @@ extern crate common;
 
 use std::{sync::mpsc, thread};
 
+use common::{assert_questionset_eq, test_utils::compare_question_sets};
 use server::{
     messages::teacher_messages::{GetServerState, ServerHardStop},
     server::{init::run_server, state::Phase},
@@ -25,10 +26,7 @@ async fn server_starts() -> anyhow::Result<()> {
 
     assert!(state.joined_players.is_empty());
     assert!(state.locked); // no players can join if there is no teacher
-    assert!(common::test_utils::compare_question_sets(
-        &state.questions,
-        &sample_questions()
-    ));
+    assert_questionset_eq!(&state.questions, &sample_questions());
     assert!(state.results.is_empty());
     assert_eq!(state.phase, Phase::WaitingForPlayers);
     assert_eq!(state.teacher, None);
