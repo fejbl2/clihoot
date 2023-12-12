@@ -16,18 +16,12 @@ async fn main() {
 
     thread::sleep(Duration::from_millis(5000));
 
-    music_actor
-        .send(MusicMessage::Sad)
-        .await
-        .unwrap();
+    music_actor.send(MusicMessage::Sad).await.unwrap();
     println!("Sad music is playing.");
 
     thread::sleep(Duration::from_millis(5000));
 
-    music_actor
-        .send(MusicMessage::Angry)
-        .await
-        .unwrap();
+    music_actor.send(MusicMessage::Angry).await.unwrap();
     println!("Angry music is playing.");
 
     thread::sleep(Duration::from_millis(10000));

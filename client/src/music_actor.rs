@@ -35,11 +35,17 @@ impl MusicActor {
     pub fn new() -> Self {
         if let Ok((stream, stream_handle)) = OutputStream::try_default() {
             if let Ok(sink) = Sink::try_new(&stream_handle) {
-                return MusicActor{sink: Some(sink), stream: Some(stream)};
+                return MusicActor {
+                    sink: Some(sink),
+                    stream: Some(stream),
+                };
             }
         }
         eprintln!("Failed to open stream to music device, no music will be played during game.");
-        MusicActor { sink: None, stream: None}
+        MusicActor {
+            sink: None,
+            stream: None,
+        }
     }
 }
 
@@ -51,7 +57,6 @@ impl Handler<MusicMessage> for MusicActor {
     type Result = ();
 
     fn handle(&mut self, msg: MusicMessage, _: &mut Context<Self>) {
-
         let Some(sink) = &self.sink else {
             return; // just ignore the message if music device was not initialized
         };
@@ -62,7 +67,7 @@ impl Handler<MusicMessage> for MusicActor {
 
         if let Ok(source) = rodio::Decoder::new(reader) {
             sink.append(source);
-        }else {
+        } else {
             eprintln!("Failed to decode the music.");
         }
     }
