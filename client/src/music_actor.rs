@@ -2,8 +2,11 @@ use actix::prelude::*;
 use actix::Message;
 use rodio::OutputStream;
 use rodio::Sink;
-use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Cursor};
+
+const HAPPY_MUSIC: &[u8] = include_bytes!("../assets/happy.wav");
+const SAD_MUSIC: &[u8] = include_bytes!("../assets/sad.wav");
+const ANGRY_MUSIC: &[u8] = include_bytes!("../assets/angry.wav");
 
 #[derive(Message)]
 #[rtype(result = "()")]
@@ -14,25 +17,29 @@ pub enum MusicMessage {
 }
 
 impl MusicMessage {
-    fn get_file_path(&self) -> &'static str {
+    fn get_content(&self) -> &'static [u8] {
         match self {
-            MusicMessage::Happy => "assets/happy.wav",
-            MusicMessage::Sad => "assets/sad.wav",
-            MusicMessage::Angry => "assets/angry.wav",
+            MusicMessage::Happy => HAPPY_MUSIC,
+            MusicMessage::Sad => SAD_MUSIC,
+            MusicMessage::Angry => ANGRY_MUSIC,
         }
     }
 }
 
 pub struct MusicActor {
-    sink: Sink,
-    stream: OutputStream, // we must hold this to not drop it - like a cake above luxury carpet
+    sink: Option<Sink>,
+    stream: Option<OutputStream>, // we must hold this to not drop it - like a cake above luxury carpet
 }
 
 impl MusicActor {
     pub fn new() -> Self {
-        let (stream, stream_handle) = OutputStream::try_default().unwrap();
-        let sink = Sink::try_new(&stream_handle).unwrap();
-        MusicActor { sink, stream}
+        if let Ok((stream, stream_handle)) = OutputStream::try_default() {
+            if let Ok(sink) = Sink::try_new(&stream_handle) {
+                return MusicActor{sink: Some(sink), stream: Some(stream)};
+            }
+        }
+        eprintln!("Failed to open stream to music device, no music will be played during game.");
+        MusicActor { sink: None, stream: None}
     }
 }
 
@@ -44,18 +51,19 @@ impl Handler<MusicMessage> for MusicActor {
     type Result = ();
 
     fn handle(&mut self, msg: MusicMessage, _: &mut Context<Self>) {
-        self.sink.stop(); // stop currently playing music
 
-        let file_path = msg.get_file_path();
+        let Some(sink) = &self.sink else {
+            return; // just ignore the message if music device was not initialized
+        };
 
-        if let Ok(file) = File::open(file_path) {
-            if let Ok(source) = rodio::Decoder::new(BufReader::new(file)) {
-                self.sink.append(source);
-            }else {
-                eprintln!("Failed to decode the music file: {file_path}");
-            }
-        } else {
-            eprintln!("Failed to open the music file: {file_path}");
+        sink.stop(); // stop currently playing music
+
+        let reader = BufReader::new(Cursor::new(msg.get_content()));
+
+        if let Ok(source) = rodio::Decoder::new(reader) {
+            sink.append(source);
+        }else {
+            eprintln!("Failed to decode the music.");
         }
     }
 }
