@@ -2,15 +2,9 @@ mod utils;
 
 use std::{sync::mpsc, thread};
 
-use common::{
-    model::network_messages::{CanJoin, TryJoinRequest, TryJoinResponse, LOBBY_LOCKED_MSG},
-    questions::DEFAULT_QUIZ_NAME,
-};
-use futures_util::{SinkExt, StreamExt};
 use server::{messages::teacher_messages::ServerHardStop, server::init::run_server};
-use tungstenite::Message;
+
 use utils::sample_questions;
-use uuid::Uuid;
 
 #[tokio::test]
 async fn lobby_locked_client_cannot_connect() -> anyhow::Result<()> {
@@ -56,8 +50,8 @@ async fn lobby_locked_client_cannot_connect() -> anyhow::Result<()> {
     //     })?)
     // );
 
-    // server.send(ServerHardStop {}).await?;
-    // server_thread.join().expect("Server thread panicked");
+    server.send(ServerHardStop {}).await?;
+    server_thread.join().expect("Server thread panicked");
 
     Ok(())
 }
