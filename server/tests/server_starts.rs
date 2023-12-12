@@ -3,7 +3,7 @@ mod utils;
 use std::{sync::mpsc, thread};
 
 use server::{
-    messages::teacher_messages::GetServerState,
+    messages::teacher_messages::{GetServerState, ServerHardStop},
     server::{init::run_server, state::Phase},
 };
 use utils::sample_questions;
@@ -30,6 +30,7 @@ async fn server_starts() -> anyhow::Result<()> {
     assert_eq!(state.teacher, None);
     assert!(state.waiting_players.is_empty());
 
+    server.send(ServerHardStop {}).await?;
     server_thread.join().expect("Server thread panicked");
 
     Ok(())
