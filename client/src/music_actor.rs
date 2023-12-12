@@ -4,35 +4,35 @@ use rodio::OutputStream;
 use rodio::Sink;
 use std::fs::File;
 use std::io::BufReader;
-use std::time::Duration;
 
 #[derive(Message)]
 #[rtype(result = "()")]
 pub enum MusicMessage {
-    Happy(Duration),
-    Sad(Duration),
-    Angry(Duration),
+    Happy,
+    Sad,
+    Angry,
 }
 
 impl MusicMessage {
-    fn duration(&self) -> Duration {
+    fn get_file_path(&self) -> &'static str {
         match self {
-            MusicMessage::Happy(duration)
-            | MusicMessage::Sad(duration)
-            | MusicMessage::Angry(duration) => *duration,
+            MusicMessage::Happy => "assets/happy.wav",
+            MusicMessage::Sad => "assets/sad.wav",
+            MusicMessage::Angry => "assets/angry.wav",
         }
     }
 }
 
 pub struct MusicActor {
     sink: Sink,
+    stream: OutputStream, // we must hold this to not drop it - like a cake above luxury carpet
 }
 
 impl MusicActor {
     pub fn new() -> Self {
-        let (_stream, stream_handle) = OutputStream::try_default().unwrap();
+        let (stream, stream_handle) = OutputStream::try_default().unwrap();
         let sink = Sink::try_new(&stream_handle).unwrap();
-        MusicActor { sink }
+        MusicActor { sink, stream}
     }
 }
 
@@ -44,18 +44,16 @@ impl Handler<MusicMessage> for MusicActor {
     type Result = ();
 
     fn handle(&mut self, msg: MusicMessage, _: &mut Context<Self>) {
-        let file_path = match msg {
-            MusicMessage::Happy(_) => "assets/happy.wav",
-            MusicMessage::Sad(_) => "assets/sad.wav",
-            MusicMessage::Angry(_) => "assets/angry.wav",
-        };
+        self.sink.stop(); // stop currently playing music
+
+        let file_path = msg.get_file_path();
 
         if let Ok(file) = File::open(file_path) {
-            let source = rodio::Decoder::new(BufReader::new(file)).unwrap();
-            self.sink.append(source);
-
-            self.sink.sleep_until_end();
-            self.sink.stop();
+            if let Ok(source) = rodio::Decoder::new(BufReader::new(file)) {
+                self.sink.append(source);
+            }else {
+                eprintln!("Failed to decode the music file: {file_path}");
+            }
         } else {
             eprintln!("Failed to open the music file: {file_path}");
         }

@@ -1,5 +1,6 @@
 mod music_actor;
 
+use std::thread;
 use actix::prelude::*;
 use music_actor::MusicActor;
 use music_actor::MusicMessage;
@@ -11,18 +12,26 @@ async fn main() {
     println!("Music actor is created.");
 
     music_actor
-        .send(MusicMessage::Happy(Duration::from_secs(10)))
+        .send(MusicMessage::Happy)
         .await
         .unwrap();
     println!("Happy music is playing.");
+
+    thread::sleep(Duration::from_millis(5000));
+
     music_actor
-        .send(MusicMessage::Sad(Duration::from_secs(8)))
+        .send(MusicMessage::Sad)
         .await
         .unwrap();
     println!("Sad music is playing.");
+
+    thread::sleep(Duration::from_millis(5000));
+
     music_actor
-        .send(MusicMessage::Angry(Duration::from_secs(15)))
+        .send(MusicMessage::Angry)
         .await
         .unwrap();
     println!("Angry music is playing.");
+
+    thread::sleep(Duration::from_millis(10000));
 }
