@@ -120,7 +120,8 @@ impl QuestionSet {
         Ok(questions)
     }
 
-    #[must_use] pub fn new(questions: Vec<Question>) -> Self {
+    #[must_use]
+    pub fn new(questions: Vec<Question>) -> Self {
         Self {
             questions,
             randomize_answers: false,

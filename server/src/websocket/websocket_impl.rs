@@ -1,6 +1,8 @@
 use actix::AsyncContext;
 use actix::{Actor, Addr, Running};
+use common::model::network_messages::TryJoinRequest;
 
+use crate::messages::websocket_messages::WebsocketGracefulStop;
 use common::model::ClientNetworkMessage;
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::StreamExt;
@@ -95,7 +97,19 @@ async fn read_messages_from_socket<'a>(
                     Ok(msg) => {
                         addr.do_send(msg);
                     }
-                    Err(e) => println!("Error parsing message: {e}"),
+                    Err(e) => {
+                        println!(
+                            "sample serialized msg: '{}'",
+                            serde_json::to_string(&ClientNetworkMessage::TryJoinRequest(
+                                TryJoinRequest {
+                                    uuid: Uuid::new_v4(),
+                                }
+                            ))
+                            .unwrap()
+                        );
+                        println!("Hanging up on the client bcs parsing message failed: {e}");
+                        addr.do_send(WebsocketGracefulStop {});
+                    }
                 }
             }
             Message::Close(_) => {
