@@ -4,9 +4,12 @@ workflow:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 default:
-    image: rust:latest
+    image: rust:latest-alpine
     tags:
     - shared-fi
+    before_script:
+        - apk add alsa-lib-dev
+
 
 stages:
     - build
