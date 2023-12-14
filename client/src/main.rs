@@ -1,11 +1,11 @@
 mod music_actor;
 
 use actix::prelude::*;
+use client::terminal::student::run_student;
 use music_actor::MusicActor;
 use music_actor::MusicMessage;
 use std::thread;
 use std::time::Duration;
-use client::terminal::student::run_student;
 
 #[actix_rt::main]
 async fn main() -> anyhow::Result<()> {
