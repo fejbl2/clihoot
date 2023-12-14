@@ -4,11 +4,11 @@ workflow:
         - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 default:
-    image: rust:alpine
+    image: rust:latest
     tags:
     - shared-fi
     before_script:
-        - apk add alsa-lib-dev
+        - apt update && apt install -y libasound2-dev
 
 
 stages:
