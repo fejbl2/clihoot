@@ -28,7 +28,7 @@ impl MusicMessage {
 
 pub struct MusicActor {
     sink: Option<Sink>,
-    stream: Option<OutputStream>, // we must hold this to not drop it - like a cake above luxury carpet
+    _stream: Option<OutputStream>, // we must hold this to not drop it - like a cake above luxury carpet
 }
 
 impl MusicActor {
@@ -37,14 +37,14 @@ impl MusicActor {
             if let Ok(sink) = Sink::try_new(&stream_handle) {
                 return MusicActor {
                     sink: Some(sink),
-                    stream: Some(stream),
+                    _stream: Some(stream),
                 };
             }
         }
         eprintln!("Failed to open stream to music device, no music will be played during game.");
         MusicActor {
             sink: None,
-            stream: None,
+            _stream: None,
         }
     }
 }
