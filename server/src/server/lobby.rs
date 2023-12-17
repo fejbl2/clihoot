@@ -5,7 +5,7 @@ use common::{
         network_messages::{NetworkPlayerData, NextQuestion},
         ServerNetworkMessage,
     },
-    questions::QuestionSet,
+    questions::{Question, QuestionSet},
 };
 use rand::prelude::*;
 
@@ -13,6 +13,14 @@ use std::collections::HashMap;
 use uuid::Uuid;
 
 use super::state::{Lobby, Phase};
+
+pub fn censor_question(question: &mut Question) -> &mut Question {
+    question.choices.iter_mut().for_each(|choice| {
+        choice.is_right = false;
+    });
+
+    question
+}
 
 impl Lobby {
     #[must_use]
@@ -77,20 +85,25 @@ impl Lobby {
         let mut question = self.questions[index].clone();
 
         // censor the right answers
-        question.choices.iter_mut().for_each(|choice| {
-            choice.is_right = false;
-        });
+        censor_question(&mut question);
 
         // construct a message object
-        let message = ServerNetworkMessage::NextQuestion(NextQuestion {
+        let message = NextQuestion {
             question_index: index as u64,
             questions_count: self.questions.len() as u64,
             show_choices_after: question.get_reading_time_estimate() as u64,
             question,
-        });
+        };
 
-        // send it to everyone
-        self.send_to_all(&serde_json::to_string(&message)?, true);
+        // send it to all students
+        self.send_to_all(&ServerNetworkMessage::NextQuestion(message.clone()));
+
+        // and also to the teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(message);
 
         Ok(())
     }
@@ -108,14 +121,9 @@ impl Lobby {
         Ok(())
     }
 
-    pub fn send_to_all(&self, _message: &str, include_teacher: bool) {
-        // TODO: send the message to all players
-        // TODO: the message should not be str, but ServerNetworkMessage (to have the ws enforce the types)
-        //  -> probably, the teacher cannot be included like so, because he will not implement All Handler<ServerNetworkMessage>
-        for _socket_recipient in self.joined_players.values() {}
-
-        if include_teacher {
-            if let Some(_teacher) = &self.teacher {}
+    pub fn send_to_all(&self, message: &ServerNetworkMessage) {
+        for socket_recipient in self.joined_players.values() {
+            socket_recipient.do_send(message.clone());
         }
     }
 

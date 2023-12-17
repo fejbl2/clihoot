@@ -1,7 +1,7 @@
 use anyhow::Context;
 use serde::{de, Deserialize, Deserializer, Serialize};
 use std::fs;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::path::Path;
 use uuid::Uuid;
 
@@ -32,6 +32,12 @@ impl Deref for QuestionSet {
 
     fn deref(&self) -> &Self::Target {
         &self.questions
+    }
+}
+
+impl DerefMut for QuestionSet {
+    fn deref_mut(&mut self) -> &mut Vec<Question> {
+        &mut self.questions
     }
 }
 

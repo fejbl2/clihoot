@@ -16,7 +16,6 @@ pub struct RegisterTeacherMessage {
     pub teacher: Addr<Teacher>,
 }
 
-/// The teacher sends this to the lobby to register itself
 #[derive(Message, Debug)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct StartQuestionMessage;

@@ -20,6 +20,7 @@ pub async fn send_message(
 }
 
 /// Returns an actor future which sends a text message `msg` to the client, using the specified `sender`.
+/// Usage: `prepare_message::<Self>(self.sender.clone(), msg).wait(ctx);`
 pub fn prepare_message<T: Actor>(
     sender: Arc<Mutex<SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, Message>>>,
     msg: String,

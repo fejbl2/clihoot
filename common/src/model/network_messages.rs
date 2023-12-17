@@ -20,19 +20,19 @@ pub struct NetworkPlayerData {
 
 // these models (structs) describe messages used in network communication between client - server - teacher
 
-#[derive(Message, Debug, Serialize, Deserialize)]
+#[derive(Message, Debug, Serialize, Deserialize, Clone)]
 #[rtype(result = "TryJoinResponse")]
 pub struct TryJoinRequest {
     pub uuid: Uuid,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub enum CanJoin {
     Yes,
     No(String),
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TryJoinResponse {
     pub uuid: Uuid,
     pub can_join: CanJoin,
@@ -51,7 +51,7 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct JoinResponse {
     pub uuid: Uuid,
     pub can_join: CanJoin,
@@ -71,17 +71,18 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct JoinRequest {
     pub player_data: NetworkPlayerData,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PlayersUpdate {
     pub players: Vec<NetworkPlayerData>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone, Message)]
+#[rtype(result = "()")]
 pub struct NextQuestion {
     pub question_index: u64,
     pub questions_count: u64,
@@ -89,7 +90,7 @@ pub struct NextQuestion {
     pub show_choices_after: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize, Message)]
+#[derive(Debug, Serialize, Deserialize, Message, Clone)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct AnswerSelected {
     pub player_uuid: Uuid,
@@ -105,12 +106,12 @@ impl Deref for AnswerSelected {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct QuestionUpdate {
     pub players_answered_count: u64,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct QuestionEnded {
     // TODO also uuid of question? or add uuid to the question struct?
     pub question: Question, // here we want also right choices unlike in NextQuestion
@@ -118,54 +119,49 @@ pub struct QuestionEnded {
     pub stats: Vec<(Uuid, u64)>, // how many answers has the question with given uuid
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ShowLeaderboard {
     pub players: Vec<(NetworkPlayerData, u64)>, // players with score
     pub was_final_round: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Message)]
+#[derive(Debug, Serialize, Deserialize, Message, Clone)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct KickedOutNotice {
     pub kick_message: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ClientDisconnected {
     // no data
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TeacherDisconnected {
     // no data
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct StartQuestion {
-    // no data
-}
-
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct KickPlayer {
     pub player_uuid: Uuid,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct EarlyEndQuestion {
     // no data
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct SwitchToLeaderboard {
     // no data
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct LockGame {
     pub lock: bool, // if true -> lock the game, if false -> unlock
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ReconnectRequest {
     pub player_uuid: Uuid,
 }

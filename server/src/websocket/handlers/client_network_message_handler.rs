@@ -54,7 +54,6 @@ impl Handler<ClientNetworkMessage> for Websocket {
 
     /// Handles mapping of messages
     /// - the websocket --> this function --> lobby
-    /// - Unimplemented stuff are messages that the client should never send us
     fn handle(&mut self, msg: ClientNetworkMessage, ctx: &mut Self::Context) -> Self::Result {
         match msg {
             ClientNetworkMessage::TryJoinRequest(msg) => {
