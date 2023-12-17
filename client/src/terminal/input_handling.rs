@@ -18,7 +18,7 @@ impl TerminalHandleInput for StudentTerminal {
                     name.push(char);
                 }
                 KeyCode::Enter => {
-                    self.name = name.to_string();
+                    self.name = (*name).to_string();
                     self.state = StudentTerminalState::ColorSelection {
                         list_state: ListState::default().with_selected(Some(0)),
                     }
@@ -38,14 +38,14 @@ impl TerminalHandleInput for StudentTerminal {
                         self.color = COLORS[list_state.selected().unwrap_or(0)];
                         self.state = StudentTerminalState::Todo;
                     }
-                    KeyCode::Down | KeyCode::Char('j') | KeyCode::Char('s') => {
+                    KeyCode::Down | KeyCode::Char('j' | 's') => {
                         selected += 1;
                         if selected >= 3 {
                             selected = 0;
                         }
                         list_state.select(Some(selected))
                     }
-                    KeyCode::Up | KeyCode::Char('k') | KeyCode::Char('w') => {
+                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
                         if selected == 0 {
                             selected = 2;
                         } else {

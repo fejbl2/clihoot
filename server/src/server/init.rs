@@ -3,18 +3,13 @@ use actix::{Actor, Addr};
 use actix_rt::System;
 
 use common::questions::QuestionSet;
-use lobby::Lobby;
 use tokio::net::TcpListener;
-
-use uuid::Uuid;
-use websocket::WsConn;
 
 use std::{net::SocketAddr, sync::mpsc::Sender};
 
-use super::{
-    lobby::{self},
-    websocket,
-};
+use crate::websocket::Websocket;
+
+use super::state::Lobby;
 
 fn create_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
@@ -23,6 +18,10 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
         .expect("Could not create tokio runtime") // cannot seem to get rid of this
 }
 
+/// Starts the server and send the address of the lobby through the given channel.
+/// # Errors
+/// - If the tokio runtime cannot be created
+/// - If the server cannot be started
 pub fn run_server(
     tx: Sender<Addr<Lobby>>,
     questions: QuestionSet,
@@ -70,7 +69,6 @@ async fn accept_connections(addr: SocketAddr, lobby: Addr<Lobby>) -> anyhow::Res
     // create a TCP socket listener
 
     let listener = TcpListener::bind(addr).await?;
-    let room: uuid::Uuid = Uuid::new_v4();
 
     loop {
         println!("Listening on: {addr:?}, waiting to accept a new connection");
@@ -81,7 +79,7 @@ async fn accept_connections(addr: SocketAddr, lobby: Addr<Lobby>) -> anyhow::Res
         println!("Accepted connection from: {who:?}");
 
         // spawn a actor for managing the connection
-        let ws = WsConn::new(room, lobby.clone(), socket, who).await?;
+        let ws = Websocket::new(lobby.clone(), socket, who).await?;
         let _ = ws.start();
     }
 }

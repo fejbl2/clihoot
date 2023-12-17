@@ -17,7 +17,7 @@ impl TerminalDraw for StudentTerminal {
             StudentTerminalState::NameSelection { name } => {
                 term.draw(|frame| {
                     frame.render_widget(
-                        Paragraph::new(format!("Name: {}|", name)).block(
+                        Paragraph::new(format!("Name: {name}|")).block(
                             Block::default()
                                 .title("Write your name")
                                 .borders(Borders::ALL),
@@ -35,7 +35,7 @@ impl TerminalDraw for StudentTerminal {
                     // TOOD constant for this
                     let items: Vec<_> = COLORS
                         .iter()
-                        .map(|color| ListItem::new(format!("{:?}", color)))
+                        .map(|color| ListItem::new(format!("{color:?}")))
                         .collect();
 
                     frame.render_stateful_widget(

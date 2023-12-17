@@ -1,6 +1,8 @@
 mod args;
+mod messages;
 mod server;
 mod teacher;
+mod websocket;
 
 use std::{
     sync::mpsc::{self},
@@ -25,15 +27,16 @@ fn main() -> anyhow::Result<()> {
     let addr = format!("0.0.0.0:{}", args.port).parse()?;
 
     // create oneshot channel, so that spawned server can send us its address
-    let (tx, rx) = mpsc::channel();
+    let (tx_server, rx_server) = mpsc::channel();
+    let (tx_teacher, _rx_teacher) = mpsc::channel();
 
     let server_thread = thread::spawn(move || {
-        run_server(tx, questions, addr).expect("Failed to run server");
+        run_server(tx_server, questions, addr).expect("Failed to run server");
     });
 
     let teacher_thread = thread::spawn(move || {
-        let server = rx.recv().expect("Failed to receive server address");
-        run_teacher(server).expect("Failed to run teacher");
+        let server = rx_server.recv().expect("Failed to receive server address");
+        run_teacher(server, tx_teacher).expect("Failed to run teacher");
     });
 
     // wait for threads to finish

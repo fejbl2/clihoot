@@ -5,17 +5,25 @@ use std::ops::Deref;
 use std::path::Path;
 use uuid::Uuid;
 
+use crate::constants::DEFAULT_QUIZ_NAME;
+
 fn falsy() -> bool {
     false
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+fn random_quiz_name() -> String {
+    DEFAULT_QUIZ_NAME.to_owned()
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct QuestionSet {
     pub questions: Vec<Question>,
     #[serde(default = "falsy", skip_deserializing, skip_serializing)]
     pub randomize_answers: bool,
     #[serde(default = "falsy", skip_deserializing, skip_serializing)]
     pub randomize_questions: bool,
+    #[serde(default = "random_quiz_name", skip_deserializing, skip_serializing)]
+    pub quiz_name: String,
 }
 
 /// We want to be able to iterate over the questions in the set directly
@@ -38,6 +46,25 @@ pub struct Question {
     pub time_seconds: u32,
     #[serde(deserialize_with = "deserialize_choices")]
     pub choices: Vec<Choice>,
+}
+
+impl Question {
+    #[must_use]
+    pub fn get_reading_time_estimate(&self) -> usize {
+        let words = self.text.split_whitespace().count()
+            + self
+                .code_block
+                .as_ref()
+                .map_or(0, |code| code.code.split_whitespace().count());
+
+        // 200 words per minute
+        let estimate_secs = words * 6 / 20;
+        if estimate_secs == 0 {
+            return 1;
+        }
+
+        estimate_secs
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -80,6 +107,9 @@ where
 }
 
 impl QuestionSet {
+    /// Loads a question set from a file
+    /// # Errors
+    /// If the file cannot be read or the YAML cannot be parsed
     pub fn from_file(path: &Path) -> anyhow::Result<QuestionSet> {
         let data = fs::read_to_string(path)?;
         let questions = serde_yaml::from_str(&data).context(format!(
@@ -88,5 +118,15 @@ impl QuestionSet {
         ))?;
 
         Ok(questions)
+    }
+
+    #[must_use]
+    pub fn new(questions: Vec<Question>) -> Self {
+        Self {
+            questions,
+            randomize_answers: false,
+            randomize_questions: false,
+            quiz_name: DEFAULT_QUIZ_NAME.to_owned(),
+        }
     }
 }

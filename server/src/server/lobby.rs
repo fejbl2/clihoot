@@ -1,53 +1,21 @@
-use crate::{
-    server::messages::{
-        ClientActorMessage, ConnectToLobby, DisconnectFromLobby, RelayMessageToClient,
+use actix::prelude::{Actor, Context};
+use anyhow::Ok;
+use common::{
+    model::{
+        network_messages::{NetworkPlayerData, NextQuestion},
+        ServerNetworkMessage,
     },
-    teacher::init::Teacher,
+    questions::QuestionSet,
 };
-use actix::{
-    prelude::{Actor, Context, Handler},
-    Addr,
-};
-use common::questions::QuestionSet;
 use rand::prelude::*;
 
 use std::collections::HashMap;
 use uuid::Uuid;
 
-use super::{
-    teacher_messages::{RegisterTeacherMessage, SetLockMessage, StartQuestionMessage},
-    websocket::WsConn,
-};
-
-#[derive(Default, PartialEq)]
-#[allow(dead_code)]
-enum Phase {
-    #[default]
-    WaitingForPlayers,
-    ActiveQuestion(usize),
-    AfterQuestion(usize),
-    ShowingLeaderboard(usize),
-    GameEnded,
-}
-
-pub struct Lobby {
-    /// An address to the teacher actor
-    teacher: Option<Addr<Teacher>>,
-
-    /// Phase of the game  
-    phase: Phase,
-
-    /// Whether new players can join
-    locked: bool,
-
-    /// References to all the connected clients
-    joined_players: HashMap<Uuid, Addr<WsConn>>,
-
-    /// All questions to be asked
-    questions: QuestionSet,
-}
+use super::state::{Lobby, Phase};
 
 impl Lobby {
+    #[must_use]
     pub fn new(mut questions: QuestionSet) -> Self {
         if questions.randomize_questions {
             let mut rng = rand::thread_rng();
@@ -60,10 +28,24 @@ impl Lobby {
             locked: true,
             joined_players: HashMap::new(),
             questions,
+            waiting_players: Vec::new(),
+            results: HashMap::new(),
         }
     }
 
-    fn next_question(&self) -> anyhow::Result<usize> {
+    #[must_use]
+    pub fn get_players(&self) -> Vec<NetworkPlayerData> {
+        self.joined_players
+            .values()
+            .map(|val| NetworkPlayerData {
+                color: val.color.clone(),
+                nickname: val.nickname.clone(),
+                uuid: val.uuid,
+            })
+            .collect()
+    }
+
+    pub fn next_question(&self) -> anyhow::Result<usize> {
         if !self.can_show_next_question() {
             return Err(anyhow::anyhow!("Can't show next question"));
         }
@@ -79,7 +61,8 @@ impl Lobby {
         }
     }
 
-    fn can_show_next_question(&self) -> bool {
+    #[must_use]
+    pub fn can_show_next_question(&self) -> bool {
         match self.phase {
             Phase::WaitingForPlayers => true,
             Phase::ShowingLeaderboard(index) => {
@@ -90,7 +73,7 @@ impl Lobby {
         }
     }
 
-    fn send_question(&self, index: usize) {
+    pub fn send_question(&self, index: usize) -> anyhow::Result<()> {
         let mut question = self.questions[index].clone();
 
         // censor the right answers
@@ -99,41 +82,52 @@ impl Lobby {
         });
 
         // construct a message object
+        let message = ServerNetworkMessage::NextQuestion(NextQuestion {
+            question_index: index as u64,
+            questions_count: self.questions.len() as u64,
+            show_choices_after: question.get_reading_time_estimate() as u64,
+            question,
+        });
+
+        // send it to everyone
+        self.send_to_all(&serde_json::to_string(&message)?, true);
+
+        Ok(())
+    }
+
+    #[allow(dead_code)]
+    /// Sends a message to a specific player
+    /// # Errors
+    /// - when the `id_to` does not exist in the `joined_players` hashmap
+    pub fn send_message(&self, _message: &str, id_to: &Uuid) -> anyhow::Result<()> {
+        let Some(_socket_recipient) = self.joined_players.get(id_to) else {
+            anyhow::bail!("attempting to send message but couldn't find user id.");
+        };
+
         // TODO
+        Ok(())
     }
 
-    fn send_message(&self, message: &str, id_to: &Uuid) {
-        if let Some(socket_recipient) = self.joined_players.get(id_to) {
-            socket_recipient.do_send(RelayMessageToClient(message.to_owned()));
-        } else {
-            println!("attempting to send message but couldn't find user id.");
-        }
-    }
-
-    fn send_to_all(&self, message: &str, include_teacher: bool) {
-        for socket_recipient in self.joined_players.values() {
-            socket_recipient.do_send(RelayMessageToClient(message.to_owned()));
-        }
+    pub fn send_to_all(&self, _message: &str, include_teacher: bool) {
+        // TODO: send the message to all players
+        // TODO: the message should not be str, but ServerNetworkMessage (to have the ws enforce the types)
+        //  -> probably, the teacher cannot be included like so, because he will not implement All Handler<ServerNetworkMessage>
+        for _socket_recipient in self.joined_players.values() {}
 
         if include_teacher {
-            if let Some(_teacher) = &self.teacher {
-                // teacher.do_send(RelayMessageToClient(message.to_owned()));
-            }
+            if let Some(_teacher) = &self.teacher {}
         }
     }
 
-    fn send_to_other(&self, message: &str, id_from: &Uuid, include_teacher: bool) {
-        for (id, socket_recipient) in &self.joined_players {
-            if id != id_from {
-                socket_recipient.do_send(RelayMessageToClient(message.to_owned()));
-            }
-        }
+    #[allow(dead_code)]
+    pub fn send_to_other(&self, _message: &str, _id_from: &Uuid, _include_teacher: bool) {
+        // for (id, _socket_recipient) in &self.joined_players {
+        //     if id != id_from {}
+        // }
 
-        if include_teacher {
-            if let Some(_teacher) = &self.teacher {
-                // teacher.do_send(RelayMessageToClient(message.to_owned()));
-            }
-        }
+        // if include_teacher {
+        //     if let Some(_teacher) = &self.teacher {}
+        // }
     }
 }
 
@@ -151,83 +145,5 @@ impl Actor for Lobby {
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
         println!("Lobby stopped");
-    }
-}
-
-/// Handler for Disconnect message.
-impl Handler<DisconnectFromLobby> for Lobby {
-    type Result = ();
-
-    fn handle(&mut self, msg: DisconnectFromLobby, _: &mut Context<Self>) {
-        if self.joined_players.remove(&msg.player_id).is_some() {
-            println!("{} disconnected", msg.player_id);
-            // TODO: send `PlayersUpdate` message
-        }
-    }
-}
-
-impl Handler<ConnectToLobby> for Lobby {
-    type Result = ();
-
-    fn handle(&mut self, msg: ConnectToLobby, _: &mut Context<Self>) -> Self::Result {
-        // save info that new client joined
-        self.joined_players.insert(msg.player_id, msg.addr);
-        println!("{} joined", msg.player_id);
-
-        // TODO: remove - just for testing
-        self.send_message(&format!("your id is {}", msg.player_id), &msg.player_id);
-
-        // send to all other clients that new client joined
-        self.send_to_other(&format!("{} joined", msg.player_id), &msg.player_id, false);
-    }
-}
-
-impl Handler<ClientActorMessage> for Lobby {
-    type Result = ();
-
-    fn handle(&mut self, msg: ClientActorMessage, _: &mut Context<Self>) -> Self::Result {
-        // TODO - remove - send the message to all clients
-        self.send_to_all(msg.msg.as_str(), false);
-    }
-}
-
-impl Handler<RegisterTeacherMessage> for Lobby {
-    type Result = ();
-
-    fn handle(&mut self, msg: RegisterTeacherMessage, _: &mut Context<Self>) -> Self::Result {
-        println!("Received RegisterTeacherMessage in Lobby; unlocking lobby");
-        self.teacher = Some(msg.teacher);
-
-        // only now actually start the server (i.e. allow players to join)
-        self.locked = false;
-    }
-}
-
-impl Handler<SetLockMessage> for Lobby {
-    type Result = ();
-
-    fn handle(&mut self, msg: SetLockMessage, _: &mut Context<Self>) -> Self::Result {
-        println!(
-            "Received SetLockMessage in Lobby; setting `locked` to `{}`",
-            msg.locked
-        );
-        self.locked = msg.locked;
-    }
-}
-
-impl Handler<StartQuestionMessage> for Lobby {
-    type Result = anyhow::Result<()>;
-
-    fn handle(&mut self, _msg: StartQuestionMessage, _: &mut Context<Self>) -> Self::Result {
-        // * find  the next question
-        // * set the phase to `ActiveQuestion`
-        // * send the question to all clients as well as the teacher
-
-        let next_question = self.next_question()?;
-        self.phase = Phase::ActiveQuestion(next_question);
-
-        self.send_question(next_question);
-
-        Ok(())
     }
 }
