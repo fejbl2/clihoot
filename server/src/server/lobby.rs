@@ -96,11 +96,16 @@ impl Lobby {
     }
 
     #[allow(dead_code)]
-    pub fn send_message(&self, _message: &str, id_to: &Uuid) {
-        if let Some(_socket_recipient) = self.joined_players.get(id_to) {
-        } else {
-            println!("attempting to send message but couldn't find user id.");
-        }
+    /// Sends a message to a specific player
+    /// # Errors
+    /// - when the `id_to` does not exist in the `joined_players` hashmap
+    pub fn send_message(&self, _message: &str, id_to: &Uuid) -> anyhow::Result<()> {
+        let Some(_socket_recipient) = self.joined_players.get(id_to) else {
+            anyhow::bail!("attempting to send message but couldn't find user id.");
+        };
+
+        // TODO
+        Ok(())
     }
 
     pub fn send_to_all(&self, _message: &str, include_teacher: bool) {

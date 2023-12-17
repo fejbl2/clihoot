@@ -1,4 +1,5 @@
 mod fixtures;
+mod mocks;
 mod utils;
 
 use std::thread::JoinHandle;
@@ -8,7 +9,6 @@ use common::{
     constants::{DEFAULT_QUIZ_NAME, LOBBY_LOCKED_MSG},
     model::network_messages::{CanJoin, TryJoinResponse},
 };
-use futures_util::SinkExt;
 use rstest::rstest;
 use server::{messages::teacher_messages::ServerHardStop, server::state::Lobby};
 

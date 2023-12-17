@@ -18,6 +18,10 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
         .expect("Could not create tokio runtime") // cannot seem to get rid of this
 }
 
+/// Starts the server and send the address of the lobby through the given channel.
+/// # Errors
+/// - If the tokio runtime cannot be created
+/// - If the server cannot be started
 pub fn run_server(
     tx: Sender<Addr<Lobby>>,
     questions: QuestionSet,

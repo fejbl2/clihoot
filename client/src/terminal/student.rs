@@ -38,6 +38,7 @@ impl Default for StudentTerminal {
 }
 
 impl StudentTerminal {
+    #[must_use]
     pub fn new() -> Self {
         Self::default()
     }

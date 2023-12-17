@@ -1,3 +1,5 @@
+use std::sync::mpsc::Sender;
+
 use actix::{
     prelude::{Actor, Context},
     Addr, AsyncContext,
@@ -38,10 +40,10 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
         .expect("Could not create tokio runtime") // cannot seem to get rid of this
 }
 
-pub fn run_teacher(tx: Addr<Lobby>) -> anyhow::Result<()> {
+pub fn run_teacher(lobby: Addr<Lobby>, tx: Sender<Addr<Teacher>>) -> anyhow::Result<()> {
     let system = actix::System::with_tokio_rt(create_tokio_runtime);
 
-    system.block_on(init(tx))?;
+    system.block_on(init(lobby, tx))?;
 
     system.run()?;
 
@@ -49,9 +51,12 @@ pub fn run_teacher(tx: Addr<Lobby>) -> anyhow::Result<()> {
 }
 
 #[allow(clippy::unused_async)]
-async fn init(lobby: Addr<Lobby>) -> anyhow::Result<()> {
+async fn init(lobby: Addr<Lobby>, tx: Sender<Addr<Teacher>>) -> anyhow::Result<()> {
     // spawn an actor for managing the lobby
-    let _teacher_actor = Teacher { lobby }.start();
+    let teacher_actor = Teacher { lobby }.start();
+
+    tx.send(teacher_actor.clone())
+        .expect("Failed to send teacher address");
 
     // handle CTRL+C gracefully
     tokio::spawn(async move {

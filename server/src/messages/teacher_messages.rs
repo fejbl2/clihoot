@@ -1,6 +1,6 @@
 use actix::{prelude::Message, Addr};
 
-use crate::{server::state::Lobby, teacher::init::Teacher};
+use crate::teacher::init::Teacher;
 
 /// The teacher sends this to the lobby to set the locked state
 #[derive(Message, Debug)]
@@ -26,5 +26,5 @@ pub struct StartQuestionMessage;
 pub struct ServerHardStop;
 
 #[derive(Message, Debug)]
-#[rtype(result = "Lobby")]
-pub struct GetServerState;
+#[rtype(result = "()")]
+pub struct TeacherHardStop;
