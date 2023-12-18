@@ -3,7 +3,7 @@ use std::{path::Path, thread, time::Duration};
 use anyhow::{bail, Ok};
 use common::model::network_messages::{
     AnswerSelected, CanJoin, JoinRequest, NetworkPlayerData, NextQuestion, PlayersUpdate,
-    QuestionEnded, QuestionUpdate, TryJoinRequest,
+    QuestionEnded, QuestionUpdate, ShowLeaderboard, TryJoinRequest,
 };
 use common::model::ServerNetworkMessage;
 use common::questions;
@@ -186,6 +186,16 @@ pub async fn receive_players_update(receiver: &mut Receiver) -> anyhow::Result<P
     };
 
     Ok(update)
+}
+
+#[allow(dead_code)]
+pub async fn receive_show_leaderboard(receiver: &mut Receiver) -> anyhow::Result<ShowLeaderboard> {
+    let show = match receive_server_network_msg(receiver).await? {
+        ServerNetworkMessage::ShowLeaderboard(q) => q,
+        _ => bail!("Expected ShowLeaderboard"),
+    };
+
+    Ok(show)
 }
 
 #[allow(dead_code)]

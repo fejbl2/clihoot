@@ -135,7 +135,8 @@ pub struct QuestionEnded {
     pub stats: HashMap<Uuid, ChoiceStats>, // how many answers has the option with given uuid
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Message)]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct ShowLeaderboard {
     pub players: Vec<(NetworkPlayerData, usize)>, // players with score
     pub was_final_round: bool,
@@ -148,11 +149,6 @@ pub struct ClientDisconnected {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TeacherDisconnected {
-    // no data
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct SwitchToLeaderboard {
     // no data
 }
 

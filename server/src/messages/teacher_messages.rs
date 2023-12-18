@@ -41,3 +41,7 @@ pub struct KickPlayer {
     pub player_uuid: Uuid,
     pub reason: Option<String>,
 }
+
+#[derive(Debug, Clone, Message)]
+#[rtype(result = "anyhow::Result<()>")]
+pub struct SwitchToLeaderboard;

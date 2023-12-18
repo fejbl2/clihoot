@@ -4,7 +4,7 @@ use common::{
     model::{
         network_messages::{
             ChoiceStats, NetworkPlayerData, NextQuestion, PlayersUpdate, QuestionEnded,
-            QuestionUpdate,
+            QuestionUpdate, ShowLeaderboard,
         },
         ServerNetworkMessage,
     },
@@ -143,6 +143,46 @@ impl Lobby {
             question: self.questions[index].clone(),
         });
         Ok(())
+    }
+
+    #[allow(dead_code)]
+    pub fn send_leaderboard(&self, index: usize) -> anyhow::Result<bool> {
+        let is_final = index == self.questions.len() - 1;
+
+        let message = ShowLeaderboard {
+            was_final_round: is_final,
+            players: self
+                .get_players()
+                .into_iter()
+                .map(|player| {
+                    // here, sum up the scores for each question so far
+
+                    let score = (0..=index)
+                        .map(|question_index| {
+                            self.results
+                                .get(&question_index)
+                                .and_then(|results| results.get(&player.uuid))
+                                .map(|record| record.points_awarded)
+                                .unwrap_or(0)
+                        })
+                        .sum();
+
+                    (player, score)
+                })
+                .collect(),
+        };
+
+        // send it to all students
+        self.send_to_all(&ServerNetworkMessage::ShowLeaderboard(message.clone()));
+
+        // and also to the teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(message);
+
+        Ok(is_final)
     }
 
     pub fn send_question_update(&self, index: usize) -> anyhow::Result<()> {

@@ -7,9 +7,7 @@ use std::thread::JoinHandle;
 use actix::Addr;
 
 use common::test_utils::compare_censored_questions;
-use common::{
-    assert_censored_question_eq, questions::QuestionCensored,
-};
+use common::{assert_censored_question_eq, questions::QuestionCensored};
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{ServerHardStop, StartQuestionMessage, TeacherHardStop},
