@@ -96,7 +96,7 @@ async fn read_messages_from_socket<'a>(
                     }
                     Err(e) => {
                         println!("Hanging up on the client bcs parsing message failed: {e}");
-                        addr.do_send(WebsocketGracefulStop);
+                        addr.do_send(WebsocketGracefulStop { reason: None });
                     }
                 }
             }

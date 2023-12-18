@@ -11,7 +11,7 @@ use uuid::Uuid;
 
 // helper structs:
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct NetworkPlayerData {
     pub uuid: Uuid,
     pub nickname: String,
@@ -76,7 +76,7 @@ pub struct JoinRequest {
     pub player_data: NetworkPlayerData,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PlayersUpdate {
     pub players: Vec<NetworkPlayerData>,
 }
@@ -138,12 +138,6 @@ pub struct ShowLeaderboard {
     pub was_final_round: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize, Message, Clone)]
-#[rtype(result = "anyhow::Result<()>")]
-pub struct KickedOutNotice {
-    pub kick_message: Option<String>,
-}
-
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ClientDisconnected {
     // no data
@@ -152,11 +146,6 @@ pub struct ClientDisconnected {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TeacherDisconnected {
     // no data
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct KickPlayer {
-    pub player_uuid: Uuid,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

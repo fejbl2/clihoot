@@ -30,7 +30,7 @@
 // ) -> anyhow::Result<()> {
 //     let (server_thread, server, teacher_thread, teacher) = create_server_and_teacher;
 
-//     // TODO
+//     // TODO TEST: 2 players, one answering, state is the same, second answers, state is different
 
 //     server.send(ServerHardStop).await?;
 //     server_thread.join().expect("Server thread panicked");

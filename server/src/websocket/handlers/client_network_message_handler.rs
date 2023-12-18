@@ -39,7 +39,7 @@ async fn handle_answer_selected(
     if let Err(e) = res {
         // an error means that the client tries to cheat and therefore, we will disconnect
         println!("Player tried to cheat: {}", e);
-        addr.do_send(WebsocketGracefulStop);
+        addr.do_send(WebsocketGracefulStop { reason: None });
         return Err(e);
     }
 
@@ -76,7 +76,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
             ClientNetworkMessage::TryJoinRequest(msg) => {
                 if self.player_id.is_some() {
                     println!("Player tried to cheat by sending another TryJoinRequest",);
-                    ctx.notify(WebsocketGracefulStop);
+                    ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }
 
@@ -92,7 +92,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
                 // If player is cheating by sending a different uuid, just hang up
                 if self.player_id != Some(msg.player_data.uuid) {
                     println!("Player tried to cheat by sending a different uuid",);
-                    ctx.notify(WebsocketGracefulStop);
+                    ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }
 
@@ -107,7 +107,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
                 // If player is cheating by sending a different uuid, just hang up
                 if self.player_id != Some(msg.player_uuid) {
                     println!("Player tried to cheat by sending a different uuid");
-                    ctx.notify(WebsocketGracefulStop);
+                    ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }
 
@@ -118,7 +118,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
                 ));
             }
             ClientNetworkMessage::ClientDisconnected(_msg) => {
-                ctx.notify(WebsocketGracefulStop);
+                ctx.notify(WebsocketGracefulStop { reason: None });
             }
         }
     }

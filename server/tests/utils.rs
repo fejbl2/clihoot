@@ -125,9 +125,9 @@ pub async fn join_new_player() -> anyhow::Result<(Sender, Receiver, NetworkPlaye
 pub async fn receive_server_network_msg(
     receiver: &mut Receiver,
 ) -> anyhow::Result<ServerNetworkMessage> {
-    let question = receiver.next().await.expect("Failed to receive message")?;
-    let question = question.to_text()?;
-    let question = serde_json::from_str::<ServerNetworkMessage>(question)?;
+    let msg = receiver.next().await.expect("Failed to receive message")?;
+    let msg = msg.to_text()?;
+    let msg = serde_json::from_str::<ServerNetworkMessage>(msg)?;
 
-    Ok(question)
+    Ok(msg)
 }

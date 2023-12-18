@@ -14,11 +14,13 @@ use crate::{
 impl Handler<WebsocketGracefulStop> for Websocket {
     type Result = ();
 
-    fn handle(&mut self, _msg: WebsocketGracefulStop, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: WebsocketGracefulStop, ctx: &mut Self::Context) -> Self::Result {
+        let reason = msg.reason.unwrap_or_else(|| "Goodbye".to_owned());
+
         // also send close message to the client
         let msg = Message::Close(Some(CloseFrame {
             code: CloseCode::Normal,
-            reason: Cow::from("Goodbye"),
+            reason: Cow::from(reason),
         }));
 
         // send a goodbye message

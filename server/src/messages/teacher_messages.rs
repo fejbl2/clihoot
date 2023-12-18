@@ -1,4 +1,5 @@
 use actix::{prelude::Message, Addr};
+use uuid::Uuid;
 
 use crate::teacher::init::Teacher;
 
@@ -32,4 +33,11 @@ pub struct TeacherHardStop;
 #[rtype(result = "anyhow::Result<()>")]
 pub struct EarlyEndQuestion {
     pub index: usize,
+}
+
+#[derive(Debug, Clone, Message)]
+#[rtype(result = "anyhow::Result<()>")]
+pub struct KickPlayer {
+    pub player_uuid: Uuid,
+    pub reason: Option<String>,
 }
