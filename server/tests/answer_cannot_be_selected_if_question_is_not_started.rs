@@ -5,9 +5,12 @@ mod utils;
 use std::{borrow::Cow, thread::JoinHandle, vec};
 
 use actix::Addr;
-use common::model::{network_messages::AnswerSelected, ClientNetworkMessage};
+use common::{
+    constants::DEFAULT_GOODBYE_MESSAGE,
+    model::{network_messages::AnswerSelected, ClientNetworkMessage},
+};
 
-use futures_util::{SinkExt, StreamExt};
+use futures_util::SinkExt;
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{ServerHardStop, TeacherHardStop},
@@ -47,14 +50,14 @@ async fn answer_cannot_be_selected_if_question_is_not_started(
         .await?;
 
     // The server should disconnect, because the player tried to cheat
-    let msg = receiver.next().await.expect("Failed to receive message")?;
+    let close = utils::receive_close_frame(&mut receiver).await?;
 
     assert_eq!(
-        msg,
-        Message::Close(Some(CloseFrame {
+        close,
+        CloseFrame {
             code: CloseCode::Normal,
-            reason: Cow::from("Goodbye"),
-        }))
+            reason: Cow::from(DEFAULT_GOODBYE_MESSAGE),
+        }
     );
 
     // get server state and make sure they were kicked

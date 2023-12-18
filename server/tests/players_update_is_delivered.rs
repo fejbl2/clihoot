@@ -6,15 +6,14 @@ use std::thread::JoinHandle;
 
 use actix::Addr;
 
-use common::model::{network_messages::PlayersUpdate, ServerNetworkMessage};
-use futures_util::StreamExt;
+use common::model::network_messages::PlayersUpdate;
+
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{ServerHardStop, TeacherHardStop},
     server::state::Lobby,
     teacher::init::Teacher,
 };
-use tungstenite::Message;
 
 use crate::{
     fixtures::create_server_and_teacher::create_server_and_teacher,
@@ -35,18 +34,13 @@ async fn players_update_is_delivered(
     let (_snd_sender, _snd_receiver, snd_data) = utils::join_new_player().await?;
 
     // assert that the first player gets a players update message
-    let msg = fst_receiver
-        .next()
-        .await
-        .expect("Failed to receive message")?;
+    let msg = utils::receive_players_update(&mut fst_receiver).await?;
 
     assert_eq!(
         msg,
-        Message::Text(serde_json::to_string(
-            &ServerNetworkMessage::PlayersUpdate(PlayersUpdate {
-                players: vec![fst_data.clone(), snd_data.clone(),]
-            })
-        )?)
+        PlayersUpdate {
+            players: vec![fst_data.clone(), snd_data.clone(),]
+        }
     );
 
     // Get server state and assert that both are there

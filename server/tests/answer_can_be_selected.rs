@@ -10,13 +10,9 @@ use std::{
 };
 
 use actix::Addr;
-use anyhow::bail;
-use common::{
-    model::{network_messages::ChoiceStats, ServerNetworkMessage},
-    questions::QuestionCensored,
-};
 
-use futures_util::StreamExt;
+use common::{model::network_messages::ChoiceStats, questions::QuestionCensored};
+
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{ServerHardStop, StartQuestionMessage, TeacherHardStop},
@@ -45,7 +41,7 @@ async fn answer_can_be_selected(
     assert_eq!(state.phase, Phase::ActiveQuestion(0));
 
     // read the question from websocket
-    let question = utils::receive_question(&mut receiver).await?;
+    let question = utils::receive_next_question(&mut receiver).await?;
 
     // send the answer
     utils::send_question_answer(&mut sender, &player, &question.question, vec![0]).await?;
@@ -74,13 +70,7 @@ async fn answer_can_be_selected(
     assert!(diff.num_seconds() < 1);
 
     // The next received message should be an `ServerNetworkMessage::QuestionEnded` message
-    let question_ended = receiver.next().await.expect("Failed to receive message")?;
-    let question_ended = question_ended.to_text()?;
-    let question_ended = serde_json::from_str::<ServerNetworkMessage>(question_ended)?;
-    let question_ended = match question_ended {
-        ServerNetworkMessage::QuestionEnded(q) => q,
-        _ => bail!("Expected QuestionEnded"),
-    };
+    let question_ended = utils::receive_question_ended(&mut receiver).await?;
 
     assert_eq!(question_ended.question_index, 0);
     assert_eq!(

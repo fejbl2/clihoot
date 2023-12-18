@@ -8,7 +8,6 @@ use actix::Addr;
 
 use common::model::network_messages::QuestionUpdate;
 
-use futures_util::SinkExt;
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{ServerHardStop, StartQuestionMessage, TeacherHardStop},
@@ -35,8 +34,8 @@ async fn answer_can_be_selected(
     server.send(StartQuestionMessage).await??;
 
     // read the question from websocket
-    let fst = utils::receive_question(&mut fst_receiver).await?;
-    let snd = utils::receive_question(&mut snd_receiver).await?;
+    let fst = utils::receive_next_question(&mut fst_receiver).await?;
+    let snd = utils::receive_next_question(&mut snd_receiver).await?;
     assert_eq!(fst, snd);
 
     // the first player sends an answer

@@ -5,21 +5,16 @@ mod utils;
 use std::{borrow::Cow, thread::JoinHandle, vec};
 
 use actix::Addr;
-use anyhow::bail;
 
-use common::model::{network_messages::PlayersUpdate, ServerNetworkMessage};
+use common::model::network_messages::PlayersUpdate;
 
-use futures_util::StreamExt;
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{KickPlayer, ServerHardStop, TeacherHardStop},
     server::state::Lobby,
     teacher::init::Teacher,
 };
-use tungstenite::{
-    protocol::{frame::coding::CloseCode, CloseFrame},
-    Message,
-};
+use tungstenite::protocol::{frame::coding::CloseCode, CloseFrame};
 
 use crate::fixtures::create_server_and_teacher::create_server_and_teacher;
 
@@ -37,7 +32,7 @@ async fn teacher_can_kick_player(
     let (_snd_sender, mut snd_receiver, snd_data) = utils::join_new_player().await?;
 
     // drain the players update message which comes after the joining the second player
-    let _ = utils::receive_server_network_msg(&mut fst_receiver).await?;
+    let _ = utils::receive_players_update(&mut fst_receiver).await?;
 
     let kick_reason = "Bad nickname";
 
@@ -50,24 +45,18 @@ async fn teacher_can_kick_player(
         .await??;
 
     // assert that the first player gets a kicked out notice
-    let msg = fst_receiver
-        .next()
-        .await
-        .expect("Failed to receive message")?;
+    let msg = utils::receive_close_frame(&mut fst_receiver).await?;
 
     assert_eq!(
         msg,
-        Message::Close(Some(CloseFrame {
+        CloseFrame {
             code: CloseCode::Normal,
             reason: Cow::from(kick_reason),
-        }))
+        }
     );
 
     // assert that the second player gets a players update message
-    let msg = match utils::receive_server_network_msg(&mut snd_receiver).await? {
-        ServerNetworkMessage::PlayersUpdate(msg) => msg,
-        _ => bail!("Expected PlayersUpdate"),
-    };
+    let msg = utils::receive_players_update(&mut snd_receiver).await?;
 
     assert_eq!(
         msg,

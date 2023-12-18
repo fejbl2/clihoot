@@ -15,6 +15,7 @@ use futures_util::{
 };
 use tokio::net::TcpStream;
 use tokio_tungstenite::{MaybeTlsStream, WebSocketStream};
+use tungstenite::protocol::CloseFrame;
 use tungstenite::Message;
 use uuid::Uuid;
 
@@ -136,7 +137,19 @@ pub async fn receive_server_network_msg(
 }
 
 #[allow(dead_code)]
-pub async fn receive_question(receiver: &mut Receiver) -> anyhow::Result<NextQuestion> {
+pub async fn receive_close_frame(receiver: &mut Receiver) -> anyhow::Result<CloseFrame> {
+    let msg = receiver.next().await.expect("Failed to receive message")?;
+
+    let msg = match msg {
+        Message::Close(Some(frame)) => frame,
+        _ => bail!("Expected CloseFrame"),
+    };
+
+    Ok(msg)
+}
+
+#[allow(dead_code)]
+pub async fn receive_next_question(receiver: &mut Receiver) -> anyhow::Result<NextQuestion> {
     let question = match receive_server_network_msg(receiver).await? {
         ServerNetworkMessage::NextQuestion(q) => q,
         _ => bail!("Expected NextQuestion"),

@@ -5,10 +5,10 @@ mod utils;
 use std::thread::JoinHandle;
 
 use actix::Addr;
-use anyhow::bail;
+
 use common::test_utils::compare_censored_questions;
 use common::{
-    assert_censored_question_eq, model::ServerNetworkMessage, questions::QuestionCensored,
+    assert_censored_question_eq, questions::QuestionCensored,
 };
 use rstest::rstest;
 use server::{
@@ -37,11 +37,7 @@ async fn next_question_is_delivered(
     // and the client should receive the question message
     let questions = sample_questions();
 
-    let question = utils::receive_server_network_msg(&mut receiver).await?;
-    let question = match question {
-        ServerNetworkMessage::NextQuestion(q) => q,
-        _ => bail!("Expected NextQuestion"),
-    };
+    let question = utils::receive_next_question(&mut receiver).await?;
 
     assert_eq!(question.question_index, 0);
     assert_eq!(question.questions_count, questions.len());
