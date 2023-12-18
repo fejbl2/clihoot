@@ -12,21 +12,17 @@ use std::{
 use actix::Addr;
 use anyhow::bail;
 use common::{
-    model::{
-        network_messages::{AnswerSelected, ChoiceStats},
-        ClientNetworkMessage, ServerNetworkMessage,
-    },
+    model::{network_messages::ChoiceStats, ServerNetworkMessage},
     questions::QuestionCensored,
 };
 
-use futures_util::{SinkExt, StreamExt};
+use futures_util::StreamExt;
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{ServerHardStop, StartQuestionMessage, TeacherHardStop},
     server::state::{Lobby, Phase},
     teacher::init::Teacher,
 };
-use tungstenite::Message;
 
 use crate::{
     fixtures::create_server_and_teacher::create_server_and_teacher,
@@ -48,22 +44,11 @@ async fn answer_can_be_selected(
     let state = server.send(GetServerState).await?;
     assert_eq!(state.phase, Phase::ActiveQuestion(0));
 
-    // read the question
-    let question = match utils::receive_server_network_msg(&mut receiver).await? {
-        ServerNetworkMessage::NextQuestion(q) => q,
-        _ => bail!("Expected NextQuestion"),
-    };
-
-    let answer = ClientNetworkMessage::AnswerSelected(AnswerSelected {
-        player_uuid: player.uuid,
-        question_index: 0,
-        answers: vec![question.choices[0].id],
-    });
+    // read the question from websocket
+    let question = utils::receive_question(&mut receiver).await?;
 
     // send the answer
-    sender
-        .send(Message::Text(serde_json::to_string(&answer)?))
-        .await?;
+    utils::send_question_answer(&mut sender, &player, &question.question, vec![0]).await?;
 
     // wait for the server to process the answer
     thread::sleep(Duration::from_millis(100));

@@ -4,6 +4,7 @@ use common::{
     model::{
         network_messages::{
             ChoiceStats, NetworkPlayerData, NextQuestion, PlayersUpdate, QuestionEnded,
+            QuestionUpdate,
         },
         ServerNetworkMessage,
     },
@@ -130,6 +131,42 @@ impl Lobby {
             }));
         }
 
+        // and also to the teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(QuestionEnded {
+            stats: stats.clone(),
+            player_answer: None,
+            question_index: index,
+            question: self.questions[index].clone(),
+        });
+        Ok(())
+    }
+
+    pub fn send_question_update(&self, index: usize) -> anyhow::Result<()> {
+        let answered_count = self
+            .results
+            .get(&index)
+            .map(|results| results.len())
+            .unwrap_or(0);
+
+        // construct a message object
+        let message = QuestionUpdate {
+            players_answered_count: answered_count,
+            question_index: index,
+        };
+
+        // send it to all students
+        self.send_to_all(&ServerNetworkMessage::QuestionUpdate(message.clone()));
+
+        // and also to the teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(message);
         Ok(())
     }
 

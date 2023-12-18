@@ -54,10 +54,13 @@ impl Handler<AnswerSelected> for Lobby {
         if self.results.entry(msg.question_index).or_default().len() == self.joined_players.len() {
             ctx.notify(EarlyEndQuestion {
                 index: msg.question_index,
-            })
+            });
+
+            return Ok(());
         }
 
-        // TODO: here, send update to everybody about the count of answers
+        // if not last player, send update to everybody about the count of answers
+        self.send_question_update(msg.question_index)?;
 
         Ok(())
     }

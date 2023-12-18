@@ -81,7 +81,7 @@ pub struct PlayersUpdate {
     pub players: Vec<NetworkPlayerData>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Message)]
+#[derive(Debug, Serialize, Deserialize, Clone, Message, PartialEq)]
 #[rtype(result = "()")]
 pub struct NextQuestion {
     pub question_index: usize,
@@ -114,9 +114,11 @@ impl Deref for AnswerSelected {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, Message, PartialEq)]
+#[rtype(result = "()")]
 pub struct QuestionUpdate {
     pub players_answered_count: usize,
+    pub question_index: usize,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
@@ -124,7 +126,8 @@ pub struct ChoiceStats {
     pub players_answered_count: usize,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Message)]
+#[rtype(result = "()")]
 pub struct QuestionEnded {
     pub question_index: usize,
     pub question: Question, // here we want also right choices unlike in NextQuestion, so no censoring

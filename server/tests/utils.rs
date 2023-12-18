@@ -1,7 +1,10 @@
 use std::{path::Path, thread, time::Duration};
 
 use anyhow::{bail, Ok};
-use common::model::network_messages::{CanJoin, JoinRequest, NetworkPlayerData, TryJoinRequest};
+use common::model::network_messages::{
+    AnswerSelected, CanJoin, JoinRequest, NetworkPlayerData, NextQuestion, PlayersUpdate,
+    QuestionEnded, QuestionUpdate, TryJoinRequest,
+};
 use common::model::ServerNetworkMessage;
 use common::questions;
 use common::{constants::DEFAULT_PORT, model::ClientNetworkMessage};
@@ -130,4 +133,76 @@ pub async fn receive_server_network_msg(
     let msg = serde_json::from_str::<ServerNetworkMessage>(msg)?;
 
     Ok(msg)
+}
+
+#[allow(dead_code)]
+pub async fn receive_question(receiver: &mut Receiver) -> anyhow::Result<NextQuestion> {
+    let question = match receive_server_network_msg(receiver).await? {
+        ServerNetworkMessage::NextQuestion(q) => q,
+        _ => bail!("Expected NextQuestion"),
+    };
+
+    Ok(question)
+}
+
+#[allow(dead_code)]
+pub async fn receive_question_update(receiver: &mut Receiver) -> anyhow::Result<QuestionUpdate> {
+    let update = match receive_server_network_msg(receiver).await? {
+        ServerNetworkMessage::QuestionUpdate(q) => q,
+        _ => bail!("Expected QuestionUpdate"),
+    };
+
+    Ok(update)
+}
+
+#[allow(dead_code)]
+pub async fn receive_question_ended(receiver: &mut Receiver) -> anyhow::Result<QuestionEnded> {
+    let ended = match receive_server_network_msg(receiver).await? {
+        ServerNetworkMessage::QuestionEnded(q) => q,
+        _ => bail!("Expected QuestionEnded"),
+    };
+
+    Ok(ended)
+}
+
+#[allow(dead_code)]
+pub async fn receive_players_update(receiver: &mut Receiver) -> anyhow::Result<PlayersUpdate> {
+    let update = match receive_server_network_msg(receiver).await? {
+        ServerNetworkMessage::PlayersUpdate(q) => q,
+        _ => bail!("Expected PlayersUpdate"),
+    };
+
+    Ok(update)
+}
+
+#[allow(dead_code)]
+pub async fn send_question_answer(
+    sender: &mut Sender,
+    player: &NetworkPlayerData,
+    question: &questions::QuestionCensored,
+    selected_options: Vec<usize>, // indexes of selected options
+) -> anyhow::Result<()> {
+    let answer = ClientNetworkMessage::AnswerSelected(AnswerSelected {
+        player_uuid: player.uuid,
+        question_index: 0,
+        answers: question
+            .choices
+            .iter()
+            .enumerate()
+            .filter_map(|(index, choice)| {
+                if selected_options.contains(&index) {
+                    Some(choice.id)
+                } else {
+                    None
+                }
+            })
+            .collect(),
+    });
+
+    // send the answer
+    sender
+        .send(Message::Text(serde_json::to_string(&answer)?))
+        .await?;
+
+    Ok(())
 }
