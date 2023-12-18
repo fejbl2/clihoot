@@ -153,11 +153,6 @@ pub struct TeacherDisconnected {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct LockGame {
-    pub lock: bool, // if true -> lock the game, if false -> unlock
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ReconnectRequest {
     pub player_uuid: Uuid,
 }
