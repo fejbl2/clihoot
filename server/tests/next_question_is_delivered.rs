@@ -5,15 +5,15 @@ mod utils;
 use std::thread::JoinHandle;
 
 use actix::Addr;
-use common::model::{network_messages::NextQuestion, ServerNetworkMessage};
-use futures_util::StreamExt;
+use anyhow::bail;
+use common::test_utils::compare_censored_questions;
+use common::{
+    assert_censored_question_eq, model::ServerNetworkMessage, questions::QuestionCensored,
+};
 use rstest::rstest;
 use server::{
     messages::teacher_messages::{ServerHardStop, StartQuestionMessage, TeacherHardStop},
-    server::{
-        lobby::censor_question,
-        state::{Lobby, Phase},
-    },
+    server::state::{Lobby, Phase},
     teacher::init::Teacher,
 };
 
@@ -21,7 +21,6 @@ use crate::{
     fixtures::create_server_and_teacher::create_server_and_teacher,
     mocks::get_server_state_handler::GetServerState, utils::sample_questions,
 };
-use tungstenite::Message;
 
 #[rstest]
 #[tokio::test]
@@ -36,19 +35,24 @@ async fn next_question_is_delivered(
     server.send(StartQuestionMessage).await??;
 
     // and the client should receive the question message
-    let mut questions = sample_questions();
-    let question = receiver.next().await.expect("Failed to receive message")?;
+    let questions = sample_questions();
 
+    let question = utils::receive_server_network_msg(&mut receiver).await?;
+    let question = match question {
+        ServerNetworkMessage::NextQuestion(q) => q,
+        _ => bail!("Expected NextQuestion"),
+    };
+
+    assert_eq!(question.question_index, 0);
+    assert_eq!(question.questions_count, questions.len());
     assert_eq!(
-        question,
-        Message::Text(serde_json::to_string(&ServerNetworkMessage::NextQuestion(
-            NextQuestion {
-                question: censor_question(&mut questions[0]).clone(),
-                question_index: 0u64,
-                questions_count: questions.len() as u64,
-                show_choices_after: questions[0].get_reading_time_estimate() as u64
-            }
-        ))?)
+        question.show_choices_after,
+        questions[0].get_reading_time_estimate()
+    );
+
+    assert_censored_question_eq!(
+        &question.question,
+        QuestionCensored::from(questions[0].clone())
     );
 
     let state = server.send(GetServerState).await?;

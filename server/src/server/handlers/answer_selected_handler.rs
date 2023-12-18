@@ -1,8 +1,11 @@
-use crate::server::{
-    point_calculator::calculate_points,
-    state::{Lobby, Phase, PlayerQuestionRecord},
+use crate::{
+    messages::teacher_messages::EarlyEndQuestion,
+    server::{
+        point_calculator::calculate_points,
+        state::{Lobby, Phase, PlayerQuestionRecord},
+    },
 };
-use actix::prelude::Handler;
+use actix::{prelude::Handler, AsyncContext};
 use anyhow::Ok;
 use chrono::Utc;
 use common::model::network_messages::AnswerSelected;
@@ -10,7 +13,7 @@ use common::model::network_messages::AnswerSelected;
 impl Handler<AnswerSelected> for Lobby {
     type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, msg: AnswerSelected, _ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: AnswerSelected, ctx: &mut Self::Context) -> Self::Result {
         let id = msg.player_uuid;
 
         if !self.joined_players.contains_key(&id) {
@@ -40,12 +43,19 @@ impl Handler<AnswerSelected> for Lobby {
         self.results.entry(msg.question_index).or_default().insert(
             id,
             PlayerQuestionRecord {
-                answer_order,
+                answer_order: answer_order + 1,
                 timestamp: Utc::now(),
                 selected_answers: msg.answers,
                 points_awarded: points,
             },
         );
+
+        // if the last player answered, notify self of the end of the question
+        if self.results.entry(msg.question_index).or_default().len() == self.joined_players.len() {
+            ctx.notify(EarlyEndQuestion {
+                index: msg.question_index,
+            })
+        }
 
         // TODO: here, send update to everybody about the count of answers
 

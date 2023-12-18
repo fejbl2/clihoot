@@ -27,3 +27,9 @@ pub struct ServerHardStop;
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
 pub struct TeacherHardStop;
+
+#[derive(Message, Debug)]
+#[rtype(result = "anyhow::Result<()>")]
+pub struct EarlyEndQuestion {
+    pub index: usize,
+}

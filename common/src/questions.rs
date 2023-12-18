@@ -18,10 +18,13 @@ fn random_quiz_name() -> String {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct QuestionSet {
     pub questions: Vec<Question>,
+
     #[serde(default = "falsy", skip_deserializing, skip_serializing)]
     pub randomize_answers: bool,
+
     #[serde(default = "falsy", skip_deserializing, skip_serializing)]
     pub randomize_questions: bool,
+
     #[serde(default = "random_quiz_name", skip_deserializing, skip_serializing)]
     pub quiz_name: String,
 }
@@ -54,6 +57,32 @@ pub struct Question {
     pub choices: Vec<Choice>,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct QuestionCensored {
+    pub text: String,
+    pub code_block: Option<CodeBlock>,
+    pub time_seconds: u32,
+    pub choices: Vec<ChoiceCensored>,
+}
+
+impl From<Question> for QuestionCensored {
+    fn from(question: Question) -> Self {
+        Self {
+            text: question.text,
+            code_block: question.code_block,
+            time_seconds: question.time_seconds,
+            choices: question
+                .choices
+                .iter()
+                .map(|choice| ChoiceCensored {
+                    id: choice.id,
+                    text: choice.text.clone(),
+                })
+                .collect(),
+        }
+    }
+}
+
 impl Question {
     #[must_use]
     pub fn get_reading_time_estimate(&self) -> usize {
@@ -82,12 +111,18 @@ pub struct CodeBlock {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Choice {
     // we want to be able to identify the choices even when the client shuffles them
-    #[serde(default = "new_uuid", skip_deserializing, skip_serializing)]
+    #[serde(default = "new_uuid")]
     pub id: Uuid,
     // by design, no syntax highlighting for the choices
     pub text: String,
     #[serde(default)]
     pub is_right: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
+pub struct ChoiceCensored {
+    pub id: Uuid,
+    pub text: String,
 }
 
 fn deserialize_choices<'de, D>(deserializer: D) -> Result<Vec<Choice>, D::Error>

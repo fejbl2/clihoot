@@ -26,6 +26,6 @@ pub fn calculate_points(
 
     let num_wrong = answers.len() - num_correct;
 
-    // for now, just return the number of correct answers * 100
-    Ok(num_correct * 100 - num_wrong * 50)
+    // for now, just return the number of correct answers * 100 - number of wrong answers * 50
+    Ok(usize::saturating_sub(num_correct * 100, num_wrong * 50))
 }

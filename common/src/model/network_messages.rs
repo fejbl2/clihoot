@@ -1,6 +1,6 @@
-use std::ops::Deref;
+use std::{collections::HashMap, ops::Deref};
 
-use crate::questions::Question;
+use crate::questions::{Question, QuestionCensored};
 use actix::{
     dev::{MessageResponse, OneshotSender},
     prelude::Message,
@@ -84,10 +84,18 @@ pub struct PlayersUpdate {
 #[derive(Debug, Serialize, Deserialize, Clone, Message)]
 #[rtype(result = "()")]
 pub struct NextQuestion {
-    pub question_index: u64,
-    pub questions_count: u64,
-    pub question: Question, // make sure to set right answer to 'false' before sending
-    pub show_choices_after: u64,
+    pub question_index: usize,
+    pub questions_count: usize,
+    pub question: QuestionCensored,
+    pub show_choices_after: usize,
+}
+
+impl Deref for NextQuestion {
+    type Target = QuestionCensored;
+
+    fn deref(&self) -> &Self::Target {
+        &self.question
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize, Message, Clone)]
@@ -108,20 +116,25 @@ impl Deref for AnswerSelected {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct QuestionUpdate {
-    pub players_answered_count: u64,
+    pub players_answered_count: usize,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+pub struct ChoiceStats {
+    pub players_answered_count: usize,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct QuestionEnded {
-    // TODO also uuid of question? or add uuid to the question struct?
-    pub question: Question, // here we want also right choices unlike in NextQuestion
-    pub player_answer: Vec<Uuid>,
-    pub stats: Vec<(Uuid, u64)>, // how many answers has the question with given uuid
+    pub question_index: usize,
+    pub question: Question, // here we want also right choices unlike in NextQuestion, so no censoring
+    pub player_answer: Option<Vec<Uuid>>, // optional -- if player did not answer, this is None
+    pub stats: HashMap<Uuid, ChoiceStats>, // how many answers has the option with given uuid
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct ShowLeaderboard {
-    pub players: Vec<(NetworkPlayerData, u64)>, // players with score
+    pub players: Vec<(NetworkPlayerData, usize)>, // players with score
     pub was_final_round: bool,
 }
 
@@ -144,11 +157,6 @@ pub struct TeacherDisconnected {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct KickPlayer {
     pub player_uuid: Uuid,
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct EarlyEndQuestion {
-    // no data
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]

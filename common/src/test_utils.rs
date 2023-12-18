@@ -11,6 +11,35 @@ pub fn compare_question_sets(left: &QuestionSet, right: &QuestionSet) -> bool {
     true
 }
 
+pub fn compare_censored_questions(
+    left: &questions::QuestionCensored,
+    right: &questions::QuestionCensored,
+) -> bool {
+    if left.text != right.text {
+        return false;
+    }
+
+    if left.time_seconds != right.time_seconds {
+        return false;
+    }
+
+    if left.code_block != right.code_block {
+        return false;
+    }
+
+    if left.choices.len() != right.choices.len() {
+        return false;
+    }
+
+    for (left_choice, right_choice) in left.choices.iter().zip(right.choices.iter()) {
+        if left_choice.text != right_choice.text {
+            return false;
+        }
+    }
+
+    true
+}
+
 fn compare_questions(left: &questions::Question, right: &questions::Question) -> bool {
     if left.text != right.text {
         return false;
