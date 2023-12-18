@@ -3,7 +3,7 @@ use std::sync::Arc;
 use actix::{Addr, AsyncContext, Handler};
 use common::model::{
     network_messages::{JoinRequest, TryJoinRequest},
-    ClientNetworkMessage,
+    ClientNetworkMessage, ServerNetworkMessage,
 };
 use futures_util::stream::SplitSink;
 use tokio::{net::TcpStream, sync::Mutex};
@@ -21,7 +21,9 @@ async fn handle_try_join_request(
     sender: Arc<Mutex<SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, Message>>>,
 ) -> anyhow::Result<()> {
     let res = lobby.send(msg).await?;
-    let msg = serde_json::to_string(&res)?;
+
+    let msg = serde_json::to_string(&ServerNetworkMessage::TryJoinResponse(res))?;
+
     let () = send_message(sender, Message::Text(msg)).await;
 
     Ok(())
@@ -40,9 +42,7 @@ async fn handle_join_request(
         })
         .await?;
 
-    let msg = serde_json::to_string(&res)?;
-
-    println!("Sending JoinResponse: {msg}");
+    let msg = serde_json::to_string(&ServerNetworkMessage::JoinResponse(res))?;
 
     let () = send_message(sender, Message::Text(msg)).await;
 

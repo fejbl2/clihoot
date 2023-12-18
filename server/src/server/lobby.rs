@@ -2,7 +2,7 @@ use actix::prelude::{Actor, Context};
 use anyhow::Ok;
 use common::{
     model::{
-        network_messages::{NetworkPlayerData, NextQuestion},
+        network_messages::{NetworkPlayerData, NextQuestion, PlayersUpdate},
         ServerNetworkMessage,
     },
     questions::{Question, QuestionSet},
@@ -43,8 +43,12 @@ impl Lobby {
 
     #[must_use]
     pub fn get_players(&self) -> Vec<NetworkPlayerData> {
-        self.joined_players
-            .values()
+        let mut players: Vec<_> = self.joined_players.values().collect();
+
+        players.sort_by_key(|x| x.joined_at);
+
+        players
+            .into_iter()
             .map(|val| NetworkPlayerData {
                 color: val.color.clone(),
                 nickname: val.nickname.clone(),
@@ -112,7 +116,7 @@ impl Lobby {
     /// Sends a message to a specific player
     /// # Errors
     /// - when the `id_to` does not exist in the `joined_players` hashmap
-    pub fn send_message(&self, _message: &str, id_to: &Uuid) -> anyhow::Result<()> {
+    pub fn send_to(&self, _message: &str, id_to: &Uuid) -> anyhow::Result<()> {
         let Some(_socket_recipient) = self.joined_players.get(id_to) else {
             anyhow::bail!("attempting to send message but couldn't find user id.");
         };
@@ -121,21 +125,38 @@ impl Lobby {
         Ok(())
     }
 
+    /// Sends the `message` to all joined players
     pub fn send_to_all(&self, message: &ServerNetworkMessage) {
         for socket_recipient in self.joined_players.values() {
             socket_recipient.do_send(message.clone());
         }
     }
 
+    /// Sends the `message` to all joined players except the one with `id_from`
     #[allow(dead_code)]
-    pub fn send_to_other(&self, _message: &str, _id_from: &Uuid, _include_teacher: bool) {
-        // for (id, _socket_recipient) in &self.joined_players {
-        //     if id != id_from {}
-        // }
+    pub fn send_to_others(&self, message: &ServerNetworkMessage, id_from: &Uuid) {
+        for (id, socket_recipient) in &self.joined_players {
+            if id != id_from {
+                socket_recipient.do_send(message.clone());
+            }
+        }
+    }
 
-        // if include_teacher {
-        //     if let Some(_teacher) = &self.teacher {}
-        // }
+    /// Sends the `PlayersUpdate` to all currently joined players. Should be invoked
+    /// whenever the list of players changes.
+    /// If `except` is not None, the message will not be sent to the player with this id.
+    pub fn send_players_update(&self, except: Option<&Uuid>) {
+        let message = PlayersUpdate {
+            players: self.get_players(),
+        };
+
+        // (maybe) NICE TO HAVE: delay sending of the update by 100 ms, and
+        //   if another `send_players_update` is called, discard the previous one and send the new one
+        if let Some(uuid) = except {
+            self.send_to_others(&ServerNetworkMessage::PlayersUpdate(message), uuid);
+        } else {
+            self.send_to_all(&ServerNetworkMessage::PlayersUpdate(message));
+        }
     }
 }
 

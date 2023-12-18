@@ -1,6 +1,5 @@
 use actix::AsyncContext;
 use actix::{Actor, Addr, Running};
-use common::model::network_messages::TryJoinRequest;
 
 use crate::messages::websocket_messages::WebsocketGracefulStop;
 use common::model::ClientNetworkMessage;
@@ -84,38 +83,27 @@ impl Actor for Websocket {
 
 async fn read_messages_from_socket<'a>(
     mut receiver: SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>,
-    who: SocketAddr,
+    _who: SocketAddr,
     addr: Addr<Websocket>,
 ) {
     while let Some(Ok(msg)) = receiver.next().await {
         match msg {
             Message::Text(msg) => {
-                println!("Received text message from {who}: {msg}");
-
                 // try to parse the JSON s to a `NetworkMessage`
                 match serde_json::from_str::<ClientNetworkMessage>(&msg) {
                     Ok(msg) => {
                         addr.do_send(msg);
                     }
                     Err(e) => {
-                        println!(
-                            "sample serialized msg: '{}'",
-                            serde_json::to_string(&ClientNetworkMessage::TryJoinRequest(
-                                TryJoinRequest {
-                                    uuid: Uuid::new_v4(),
-                                }
-                            ))
-                            .unwrap()
-                        );
                         println!("Hanging up on the client bcs parsing message failed: {e}");
-                        addr.do_send(WebsocketGracefulStop {});
+                        addr.do_send(WebsocketGracefulStop);
                     }
                 }
             }
             Message::Close(_) => {
                 // cannot call `ctx.stop();` because we are in another Task:
                 // instead, we send a message to ourselves to stop
-                addr.do_send(WebsocketHardStop {});
+                addr.do_send(WebsocketHardStop);
 
                 // also quit the loop
                 return;

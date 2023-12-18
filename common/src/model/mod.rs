@@ -1,8 +1,9 @@
 use serde::{Deserialize, Serialize};
 
 use self::network_messages::{
-    AnswerSelected, ClientDisconnected, JoinRequest, KickedOutNotice, NextQuestion, PlayersUpdate,
-    QuestionEnded, QuestionUpdate, ShowLeaderboard, TeacherDisconnected, TryJoinRequest,
+    AnswerSelected, ClientDisconnected, JoinRequest, JoinResponse, KickedOutNotice, NextQuestion,
+    PlayersUpdate, QuestionEnded, QuestionUpdate, ShowLeaderboard, TeacherDisconnected,
+    TryJoinRequest, TryJoinResponse,
 };
 use actix::Message;
 
@@ -29,4 +30,6 @@ pub enum ServerNetworkMessage {
     ShowLeaderboard(ShowLeaderboard),
     KickedOutNotice(KickedOutNotice),
     TeacherDisconnected(TeacherDisconnected),
+    JoinResponse(JoinResponse),
+    TryJoinResponse(TryJoinResponse),
 }

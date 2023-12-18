@@ -45,6 +45,7 @@ pub struct JoinedPlayer {
     pub nickname: String,
     pub color: String,
     pub addr: Addr<Websocket>,
+    pub joined_at: DateTime<Utc>,
 }
 
 impl Deref for JoinedPlayer {

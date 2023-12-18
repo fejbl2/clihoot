@@ -16,8 +16,6 @@ impl Handler<WebsocketGracefulStop> for Websocket {
 
     fn handle(&mut self, _msg: WebsocketGracefulStop, ctx: &mut Self::Context) -> Self::Result {
         // also send close message to the client
-        println!("Sending close to {}...", self.who);
-
         let msg = Message::Close(Some(CloseFrame {
             code: CloseCode::Normal,
             reason: Cow::from("Goodbye"),
