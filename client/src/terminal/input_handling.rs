@@ -1,10 +1,10 @@
+use crate::terminal::constants::COLORS;
 use crossterm::event::KeyCode;
+use ratatui::style::Color;
 use ratatui::widgets::ListState;
 
-use crate::terminal::student::{Color, StudentTerminal, StudentTerminalState};
+use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalHandleInput;
-
-const COLORS: [Color; 3] = [Color::Red, Color::Green, Color::Blue];
 
 impl TerminalHandleInput for StudentTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
@@ -36,11 +36,11 @@ impl TerminalHandleInput for StudentTerminal {
                     }
                     KeyCode::Enter => {
                         self.color = COLORS[list_state.selected().unwrap_or(0)];
-                        self.state = StudentTerminalState::Todo;
+                        self.state = StudentTerminalState::EndGame;
                     }
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
                         selected += 1;
-                        if selected >= 3 {
+                        if selected >= COLORS.len() {
                             selected = 0;
                         }
                         list_state.select(Some(selected));
@@ -56,7 +56,7 @@ impl TerminalHandleInput for StudentTerminal {
                     _ => {}
                 };
             }
-            StudentTerminalState::Todo => {}
+            _ => {}
         };
         Ok(())
     }
