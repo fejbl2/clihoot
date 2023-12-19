@@ -3,6 +3,7 @@ mod mocks;
 mod utils;
 
 use std::thread::JoinHandle;
+use std::time::Duration;
 
 use crate::utils::sample_questions;
 use crate::{
@@ -18,6 +19,7 @@ use server::{
 
 #[rstest]
 #[tokio::test]
+#[timeout(Duration::from_secs(10))]
 async fn server_starts(create_server: (JoinHandle<()>, Addr<Lobby>)) -> anyhow::Result<()> {
     let (server_thread, server) = create_server;
 

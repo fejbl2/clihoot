@@ -2,7 +2,7 @@ mod fixtures;
 mod mocks;
 mod utils;
 
-use std::{borrow::Cow, thread::JoinHandle, vec};
+use std::{borrow::Cow, thread::JoinHandle, time::Duration, vec};
 
 use actix::Addr;
 use common::{
@@ -29,6 +29,7 @@ use crate::{
 
 #[rstest]
 #[tokio::test]
+#[timeout(Duration::from_secs(10))]
 async fn answer_cannot_be_selected_if_question_is_not_started(
     create_server_and_teacher: (JoinHandle<()>, Addr<Lobby>, JoinHandle<()>, Addr<Teacher>),
 ) -> anyhow::Result<()> {

@@ -11,7 +11,8 @@ pub fn compare_question_sets(left: &QuestionSet, right: &QuestionSet) -> bool {
     true
 }
 
-#[must_use] pub fn compare_censored_questions(
+#[must_use]
+pub fn compare_censored_questions(
     left: &questions::QuestionCensored,
     right: &questions::QuestionCensored,
 ) -> bool {

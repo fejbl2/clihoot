@@ -2,7 +2,7 @@ mod fixtures;
 mod mocks;
 mod utils;
 
-use std::{thread::JoinHandle, vec};
+use std::{thread::JoinHandle, time::Duration, vec};
 
 use actix::Addr;
 
@@ -19,6 +19,7 @@ use crate::fixtures::create_server_and_teacher::create_server_and_teacher;
 
 #[rstest]
 #[tokio::test]
+#[timeout(Duration::from_secs(10))]
 async fn answer_can_be_selected(
     create_server_and_teacher: (JoinHandle<()>, Addr<Lobby>, JoinHandle<()>, Addr<Teacher>),
 ) -> anyhow::Result<()> {

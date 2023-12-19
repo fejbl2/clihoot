@@ -2,7 +2,7 @@ mod fixtures;
 mod mocks;
 mod utils;
 
-use std::thread::JoinHandle;
+use std::{thread::JoinHandle, time::Duration};
 
 use actix::Addr;
 use common::{
@@ -27,6 +27,7 @@ use tungstenite::Message;
 
 #[rstest]
 #[tokio::test]
+#[timeout(Duration::from_secs(10))]
 async fn client_connects_and_joins(
     create_server_and_teacher: (JoinHandle<()>, Addr<Lobby>, JoinHandle<()>, Addr<Teacher>),
 ) -> anyhow::Result<()> {

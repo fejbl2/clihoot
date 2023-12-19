@@ -26,6 +26,7 @@ use crate::{
 
 #[rstest]
 #[tokio::test]
+#[timeout(Duration::from_secs(10))]
 async fn teacher_can_switch_to_leaderboard(
     create_server_and_teacher: (JoinHandle<()>, Addr<Lobby>, JoinHandle<()>, Addr<Teacher>),
 ) -> anyhow::Result<()> {

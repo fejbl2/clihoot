@@ -252,6 +252,7 @@ async fn play_second_round(game: &mut Game) -> anyhow::Result<(QuestionEnded, Qu
 
 #[rstest]
 #[tokio::test]
+#[timeout(Duration::from_secs(10))]
 async fn two_question_game_simulation() -> anyhow::Result<()> {
     let questions = get_questions();
     let mut game = init_game(questions).await?;
