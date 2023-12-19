@@ -37,8 +37,15 @@ impl Handler<AnswerSelected> for Lobby {
 
         let answer_order = self.results.entry(msg.question_index).or_default().len();
 
-        let points =
-            calculate_points(id, msg.question_index, &msg, &self.questions, &self.results)?;
+        let points = calculate_points(
+            id,
+            answer_order,
+            self.joined_players.len(),
+            msg.question_index,
+            &msg,
+            &self.questions,
+            &self.results,
+        )?;
 
         self.results.entry(msg.question_index).or_default().insert(
             id,

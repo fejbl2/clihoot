@@ -10,7 +10,7 @@ use common::{
     },
     questions::{QuestionCensored, QuestionSet},
 };
-use itertools::Itertools;
+
 use rand::prelude::*;
 
 use std::collections::HashMap;
@@ -85,29 +85,32 @@ impl Lobby {
         let mut stats: HashMap<Uuid, ChoiceStats> =
             HashMap::with_capacity(self.questions[index].choices.len());
 
+        // fill stats with zeros for each choice
+        for choice in &self.questions[index].choices {
+            stats.insert(
+                choice.id,
+                ChoiceStats {
+                    players_answered_count: 0,
+                },
+            );
+        }
+
         // calculate how many players (usize) chose the given option (uuid)
         let results = self
             .results
             .get(&index)
             .ok_or_else(|| anyhow::anyhow!("No results for this question"))?;
 
-        // map results to iterator of selected answers
-        let answers = results
-            .iter()
-            .flat_map(|(_, record)| record.selected_answers.iter());
-
-        // now map answers to HashMap<Uuid, ChoiceStats>
-        answers
-            .group_by(|answer| *answer)
-            .into_iter()
-            .for_each(|(answer, group)| {
-                stats.insert(
-                    *answer,
-                    ChoiceStats {
-                        players_answered_count: group.count(),
-                    },
-                );
-            });
+        for result in results {
+            for answer in result.1.selected_answers.iter() {
+                if let Some(choice_stats) = stats.get_mut(answer) {
+                    choice_stats.players_answered_count += 1;
+                } else {
+                    // never happens
+                    panic!("Answer {} not found in stats", answer);
+                }
+            }
+        }
 
         Ok(stats)
     }

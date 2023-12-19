@@ -31,8 +31,8 @@ pub fn sample_questions() -> questions::QuestionSet {
     questions::QuestionSet::from_file(Path::new("../common/tests/files/ok_minimal.yaml")).unwrap()
 }
 
-type Sender = SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
-type Receiver = SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>;
+pub type Sender = SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
+pub type Receiver = SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>;
 
 #[allow(dead_code)]
 pub async fn connect_to_server() -> (Sender, Receiver) {
@@ -203,11 +203,12 @@ pub async fn send_question_answer(
     sender: &mut Sender,
     player: &NetworkPlayerData,
     question: &questions::QuestionCensored,
+    index: usize,
     selected_options: Vec<usize>, // indexes of selected options
 ) -> anyhow::Result<()> {
     let answer = ClientNetworkMessage::AnswerSelected(AnswerSelected {
         player_uuid: player.uuid,
-        question_index: 0,
+        question_index: index,
         answers: question
             .choices
             .iter()

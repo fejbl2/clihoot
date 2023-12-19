@@ -135,7 +135,7 @@ pub struct QuestionEnded {
     pub stats: HashMap<Uuid, ChoiceStats>, // how many answers has the option with given uuid
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Message)]
+#[derive(Debug, Serialize, Deserialize, Clone, Message, PartialEq)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct ShowLeaderboard {
     pub players: Vec<(NetworkPlayerData, usize)>, // players with score
