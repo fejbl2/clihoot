@@ -15,7 +15,6 @@ use crate::fixtures::create_server::create_server;
 use crate::fixtures::create_server_and_teacher::create_server_and_teacher;
 
 #[rstest]
-#[ignore]
 #[tokio::test]
 #[timeout(Duration::from_secs(10))]
 async fn question_ends_itself_after_timeout_test_implementation() -> anyhow::Result<()> {
