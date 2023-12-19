@@ -43,7 +43,7 @@ async fn teacher_can_switch_to_leaderboard(
     let question = utils::receive_next_question(&mut receiver).await?;
 
     // send the answer
-    utils::send_question_answer(&mut sender, &player, &question.question, vec![0]).await?;
+    utils::send_question_answer(&mut sender, &player, &question.question, 0, vec![0]).await?;
 
     // wait for the server to process the answer
     thread::sleep(Duration::from_millis(100));

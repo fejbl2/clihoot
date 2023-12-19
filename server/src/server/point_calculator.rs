@@ -6,6 +6,8 @@ use super::state::QuestionRecords;
 
 pub fn calculate_points(
     _player: Uuid,
+    answer_order: usize,
+    total_players: usize,
     question: usize,
     answers: &AnswerSelected,
     questions: &QuestionSet,
@@ -26,6 +28,7 @@ pub fn calculate_points(
 
     let num_wrong = answers.len() - num_correct;
 
-    // for now, just return the number of correct answers * 100 - number of wrong answers * 50
-    Ok(usize::saturating_sub(num_correct * 100, num_wrong * 50))
+    let modifier = total_players - answer_order + 10; // magic constant
+
+    Ok(modifier * usize::saturating_sub(num_correct * 10, num_wrong * 5))
 }

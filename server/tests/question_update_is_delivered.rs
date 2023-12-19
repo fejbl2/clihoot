@@ -39,7 +39,7 @@ async fn answer_can_be_selected(
     assert_eq!(fst, snd);
 
     // the first player sends an answer
-    utils::send_question_answer(&mut fst_sender, &fst_player, &fst.question, vec![1]).await?;
+    utils::send_question_answer(&mut fst_sender, &fst_player, &fst.question, 0, vec![1]).await?;
 
     // both players should receive the Question Update
     let fst_update = utils::receive_question_update(&mut fst_receiver).await?;
@@ -54,7 +54,7 @@ async fn answer_can_be_selected(
     );
 
     // second player answers
-    utils::send_question_answer(&mut snd_sender, &snd_player, &snd.question, vec![0]).await?;
+    utils::send_question_answer(&mut snd_sender, &snd_player, &snd.question, 0, vec![0]).await?;
 
     // and both receive the QuestionEnded
     let mut fst_ended = utils::receive_question_ended(&mut fst_receiver).await?;

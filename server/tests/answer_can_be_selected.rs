@@ -44,7 +44,7 @@ async fn answer_can_be_selected(
     let question = utils::receive_next_question(&mut receiver).await?;
 
     // send the answer
-    utils::send_question_answer(&mut sender, &player, &question.question, vec![0]).await?;
+    utils::send_question_answer(&mut sender, &player, &question.question, 0, vec![0]).await?;
 
     // wait for the server to process the answer
     thread::sleep(Duration::from_millis(100));
@@ -84,6 +84,24 @@ async fn answer_can_be_selected(
         question.choices[0].id,
         ChoiceStats {
             players_answered_count: 1,
+        },
+    );
+    stats.insert(
+        question.choices[1].id,
+        ChoiceStats {
+            players_answered_count: 0,
+        },
+    );
+    stats.insert(
+        question.choices[2].id,
+        ChoiceStats {
+            players_answered_count: 0,
+        },
+    );
+    stats.insert(
+        question.choices[3].id,
+        ChoiceStats {
+            players_answered_count: 0,
         },
     );
     assert_eq!(question_ended.stats, stats);
