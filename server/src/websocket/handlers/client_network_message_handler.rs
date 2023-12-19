@@ -38,7 +38,7 @@ async fn handle_answer_selected(
 
     if let Err(e) = res {
         // an error means that the client tries to cheat and therefore, we will disconnect
-        println!("Player tried to cheat: {}", e);
+        println!("Player tried to cheat: {e}");
         addr.do_send(WebsocketGracefulStop { reason: None });
         return Err(e);
     }

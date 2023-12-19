@@ -1,1 +1,0 @@
-- test that the question will end itself after timeout (currently not implemented)
