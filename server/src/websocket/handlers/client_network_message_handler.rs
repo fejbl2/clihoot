@@ -2,8 +2,8 @@ use std::sync::Arc;
 
 use actix::{Addr, AsyncContext, Handler};
 use common::model::{
-    network_messages::{JoinRequest, TryJoinRequest},
-    ClientNetworkMessage,
+    network_messages::{AnswerSelected, JoinRequest, TryJoinRequest},
+    ClientNetworkMessage, ServerNetworkMessage,
 };
 use futures_util::stream::SplitSink;
 use tokio::{net::TcpStream, sync::Mutex};
@@ -21,8 +21,27 @@ async fn handle_try_join_request(
     sender: Arc<Mutex<SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, Message>>>,
 ) -> anyhow::Result<()> {
     let res = lobby.send(msg).await?;
-    let msg = serde_json::to_string(&res)?;
+
+    let msg = serde_json::to_string(&ServerNetworkMessage::TryJoinResponse(res))?;
+
     let () = send_message(sender, Message::Text(msg)).await;
+
+    Ok(())
+}
+
+async fn handle_answer_selected(
+    lobby: Addr<Lobby>,
+    msg: AnswerSelected,
+    addr: Addr<Websocket>,
+) -> anyhow::Result<()> {
+    let res = lobby.send(msg).await?;
+
+    if let Err(e) = res {
+        // an error means that the client tries to cheat and therefore, we will disconnect
+        println!("Player tried to cheat: {}", e);
+        addr.do_send(WebsocketGracefulStop { reason: None });
+        return Err(e);
+    }
 
     Ok(())
 }
@@ -40,9 +59,7 @@ async fn handle_join_request(
         })
         .await?;
 
-    let msg = serde_json::to_string(&res)?;
-
-    println!("Sending JoinResponse: {msg}");
+    let msg = serde_json::to_string(&ServerNetworkMessage::JoinResponse(res))?;
 
     let () = send_message(sender, Message::Text(msg)).await;
 
@@ -54,13 +71,12 @@ impl Handler<ClientNetworkMessage> for Websocket {
 
     /// Handles mapping of messages
     /// - the websocket --> this function --> lobby
-    /// - Unimplemented stuff are messages that the client should never send us
     fn handle(&mut self, msg: ClientNetworkMessage, ctx: &mut Self::Context) -> Self::Result {
         match msg {
             ClientNetworkMessage::TryJoinRequest(msg) => {
                 if self.player_id.is_some() {
                     println!("Player tried to cheat by sending another TryJoinRequest",);
-                    ctx.notify(WebsocketGracefulStop {});
+                    ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }
 
@@ -76,7 +92,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
                 // If player is cheating by sending a different uuid, just hang up
                 if self.player_id != Some(msg.player_data.uuid) {
                     println!("Player tried to cheat by sending a different uuid",);
-                    ctx.notify(WebsocketGracefulStop {});
+                    ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }
 
@@ -91,14 +107,18 @@ impl Handler<ClientNetworkMessage> for Websocket {
                 // If player is cheating by sending a different uuid, just hang up
                 if self.player_id != Some(msg.player_uuid) {
                     println!("Player tried to cheat by sending a different uuid");
-                    ctx.notify(WebsocketGracefulStop {});
+                    ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }
 
-                self.lobby_addr.do_send(msg);
+                tokio::spawn(handle_answer_selected(
+                    self.lobby_addr.clone(),
+                    msg,
+                    ctx.address(),
+                ));
             }
             ClientNetworkMessage::ClientDisconnected(_msg) => {
-                ctx.notify(WebsocketGracefulStop {});
+                ctx.notify(WebsocketGracefulStop { reason: None });
             }
         }
     }

@@ -3,7 +3,9 @@ use uuid::Uuid;
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct WebsocketGracefulStop;
+pub struct WebsocketGracefulStop {
+    pub reason: Option<String>,
+}
 
 #[derive(Message)]
 #[rtype(result = "()")]

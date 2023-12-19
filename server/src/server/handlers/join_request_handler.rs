@@ -54,10 +54,12 @@ impl Handler<JoinRequest> for Lobby {
                 color: msg.player_data.color,
                 nickname: msg.player_data.nickname,
                 uuid: msg.player_data.uuid,
+                joined_at: chrono::Utc::now(),
             },
         );
 
-        // TODO: here, send update to everybody about the players
+        // do NOT send update to the player that just joined
+        self.send_players_update(Some(&id));
 
         JoinResponse {
             can_join: CanJoin::Yes,

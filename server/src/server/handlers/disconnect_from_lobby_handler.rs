@@ -9,7 +9,8 @@ impl Handler<DisconnectFromLobby> for Lobby {
     fn handle(&mut self, msg: DisconnectFromLobby, _: &mut Context<Self>) {
         if self.joined_players.remove(&msg.player_id).is_some() {
             println!("{} disconnected", msg.player_id);
-            // TODO: send `PlayersUpdate` message
+
+            self.send_players_update(Some(&msg.player_id));
         }
     }
 }

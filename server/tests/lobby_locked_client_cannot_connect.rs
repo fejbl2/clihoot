@@ -7,7 +7,10 @@ use std::thread::JoinHandle;
 use actix::Addr;
 use common::{
     constants::{DEFAULT_QUIZ_NAME, LOBBY_LOCKED_MSG},
-    model::network_messages::{CanJoin, TryJoinResponse},
+    model::{
+        network_messages::{CanJoin, TryJoinResponse},
+        ServerNetworkMessage,
+    },
 };
 use rstest::rstest;
 use server::{messages::teacher_messages::ServerHardStop, server::state::Lobby};
@@ -28,11 +31,13 @@ async fn lobby_locked_client_cannot_connect(
 
     assert_eq!(
         msg,
-        Message::Text(serde_json::to_string(&TryJoinResponse {
-            can_join: CanJoin::No(LOBBY_LOCKED_MSG.to_string()),
-            uuid: id,
-            quiz_name: DEFAULT_QUIZ_NAME.to_string(),
-        })?)
+        Message::Text(serde_json::to_string(
+            &ServerNetworkMessage::TryJoinResponse(TryJoinResponse {
+                can_join: CanJoin::No(LOBBY_LOCKED_MSG.to_string()),
+                uuid: id,
+                quiz_name: DEFAULT_QUIZ_NAME.to_string(),
+            })
+        )?)
     );
 
     server.send(ServerHardStop).await?;

@@ -2,11 +2,15 @@ use actix::prelude::{Actor, Context};
 use anyhow::Ok;
 use common::{
     model::{
-        network_messages::{NetworkPlayerData, NextQuestion},
+        network_messages::{
+            ChoiceStats, NetworkPlayerData, NextQuestion, PlayersUpdate, QuestionEnded,
+            QuestionUpdate, ShowLeaderboard,
+        },
         ServerNetworkMessage,
     },
-    questions::QuestionSet,
+    questions::{QuestionCensored, QuestionSet},
 };
+use itertools::Itertools;
 use rand::prelude::*;
 
 use std::collections::HashMap;
@@ -35,8 +39,12 @@ impl Lobby {
 
     #[must_use]
     pub fn get_players(&self) -> Vec<NetworkPlayerData> {
-        self.joined_players
-            .values()
+        let mut players: Vec<_> = self.joined_players.values().collect();
+
+        players.sort_by_key(|x| x.joined_at);
+
+        players
+            .into_iter()
             .map(|val| NetworkPlayerData {
                 color: val.color.clone(),
                 nickname: val.nickname.clone(),
@@ -73,24 +81,155 @@ impl Lobby {
         }
     }
 
-    pub fn send_question(&self, index: usize) -> anyhow::Result<()> {
-        let mut question = self.questions[index].clone();
+    fn get_question_stats(&self, index: usize) -> anyhow::Result<HashMap<Uuid, ChoiceStats>> {
+        let mut stats: HashMap<Uuid, ChoiceStats> =
+            HashMap::with_capacity(self.questions[index].choices.len());
 
-        // censor the right answers
-        question.choices.iter_mut().for_each(|choice| {
-            choice.is_right = false;
+        // calculate how many players (usize) chose the given option (uuid)
+        let results = self
+            .results
+            .get(&index)
+            .ok_or_else(|| anyhow::anyhow!("No results for this question"))?;
+
+        // map results to iterator of selected answers
+        let answers = results
+            .iter()
+            .flat_map(|(_, record)| record.selected_answers.iter());
+
+        // now map answers to HashMap<Uuid, ChoiceStats>
+        answers
+            .group_by(|answer| *answer)
+            .into_iter()
+            .for_each(|(answer, group)| {
+                stats.insert(
+                    *answer,
+                    ChoiceStats {
+                        players_answered_count: group.count(),
+                    },
+                );
+            });
+
+        Ok(stats)
+    }
+
+    fn get_player_answer(&self, index: usize, player_id: &Uuid) -> Option<Vec<Uuid>> {
+        self.results
+            .get(&index)
+            .and_then(|results| results.get(player_id))
+            .map(|record| record.selected_answers.clone())
+    }
+
+    pub fn send_question_ended(&self, index: usize) -> anyhow::Result<()> {
+        let stats = self.get_question_stats(index)?;
+
+        for (player_id, socket_recipient) in &self.joined_players {
+            socket_recipient.do_send(ServerNetworkMessage::QuestionEnded(QuestionEnded {
+                stats: stats.clone(),
+                player_answer: self.get_player_answer(index, player_id),
+                question_index: index,
+                question: self.questions[index].clone(),
+            }));
+        }
+
+        // and also to the teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(QuestionEnded {
+            stats: stats.clone(),
+            player_answer: None,
+            question_index: index,
+            question: self.questions[index].clone(),
         });
+        Ok(())
+    }
+
+    #[allow(dead_code)]
+    pub fn send_leaderboard(&self, index: usize) -> anyhow::Result<bool> {
+        let is_final = index == self.questions.len() - 1;
+
+        let message = ShowLeaderboard {
+            was_final_round: is_final,
+            players: self
+                .get_players()
+                .into_iter()
+                .map(|player| {
+                    // here, sum up the scores for each question so far
+
+                    let score = (0..=index)
+                        .map(|question_index| {
+                            self.results
+                                .get(&question_index)
+                                .and_then(|results| results.get(&player.uuid))
+                                .map(|record| record.points_awarded)
+                                .unwrap_or(0)
+                        })
+                        .sum();
+
+                    (player, score)
+                })
+                .collect(),
+        };
+
+        // send it to all students
+        self.send_to_all(&ServerNetworkMessage::ShowLeaderboard(message.clone()));
+
+        // and also to the teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(message);
+
+        Ok(is_final)
+    }
+
+    pub fn send_question_update(&self, index: usize) -> anyhow::Result<()> {
+        let answered_count = self
+            .results
+            .get(&index)
+            .map(|results| results.len())
+            .unwrap_or(0);
 
         // construct a message object
-        let message = ServerNetworkMessage::NextQuestion(NextQuestion {
-            question_index: index as u64,
-            questions_count: self.questions.len() as u64,
-            show_choices_after: question.get_reading_time_estimate() as u64,
-            question,
-        });
+        let message = QuestionUpdate {
+            players_answered_count: answered_count,
+            question_index: index,
+        };
 
-        // send it to everyone
-        self.send_to_all(&serde_json::to_string(&message)?, true);
+        // send it to all students
+        self.send_to_all(&ServerNetworkMessage::QuestionUpdate(message.clone()));
+
+        // and also to the teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(message);
+        Ok(())
+    }
+
+    pub fn send_question(&self, index: usize) -> anyhow::Result<()> {
+        let question = self.questions[index].clone();
+
+        // construct a message object
+        let message = NextQuestion {
+            question_index: index,
+            questions_count: self.questions.len(),
+            show_choices_after: question.get_reading_time_estimate(),
+            question: QuestionCensored::from(question),
+        };
+
+        // send it to all students
+        self.send_to_all(&ServerNetworkMessage::NextQuestion(message.clone()));
+
+        // and also to the teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(message);
 
         Ok(())
     }
@@ -99,7 +238,7 @@ impl Lobby {
     /// Sends a message to a specific player
     /// # Errors
     /// - when the `id_to` does not exist in the `joined_players` hashmap
-    pub fn send_message(&self, _message: &str, id_to: &Uuid) -> anyhow::Result<()> {
+    pub fn send_to(&self, _message: &str, id_to: &Uuid) -> anyhow::Result<()> {
         let Some(_socket_recipient) = self.joined_players.get(id_to) else {
             anyhow::bail!("attempting to send message but couldn't find user id.");
         };
@@ -108,26 +247,38 @@ impl Lobby {
         Ok(())
     }
 
-    pub fn send_to_all(&self, _message: &str, include_teacher: bool) {
-        // TODO: send the message to all players
-        // TODO: the message should not be str, but ServerNetworkMessage (to have the ws enforce the types)
-        //  -> probably, the teacher cannot be included like so, because he will not implement All Handler<ServerNetworkMessage>
-        for _socket_recipient in self.joined_players.values() {}
-
-        if include_teacher {
-            if let Some(_teacher) = &self.teacher {}
+    /// Sends the `message` to all joined players
+    pub fn send_to_all(&self, message: &ServerNetworkMessage) {
+        for socket_recipient in self.joined_players.values() {
+            socket_recipient.do_send(message.clone());
         }
     }
 
+    /// Sends the `message` to all joined players except the one with `id_from`
     #[allow(dead_code)]
-    pub fn send_to_other(&self, _message: &str, _id_from: &Uuid, _include_teacher: bool) {
-        // for (id, _socket_recipient) in &self.joined_players {
-        //     if id != id_from {}
-        // }
+    pub fn send_to_others(&self, message: &ServerNetworkMessage, id_from: &Uuid) {
+        for (id, socket_recipient) in &self.joined_players {
+            if id != id_from {
+                socket_recipient.do_send(message.clone());
+            }
+        }
+    }
 
-        // if include_teacher {
-        //     if let Some(_teacher) = &self.teacher {}
-        // }
+    /// Sends the `PlayersUpdate` to all currently joined players. Should be invoked
+    /// whenever the list of players changes.
+    /// If `except` is not None, the message will not be sent to the player with this id.
+    pub fn send_players_update(&self, except: Option<&Uuid>) {
+        let message = PlayersUpdate {
+            players: self.get_players(),
+        };
+
+        // (maybe) NICE TO HAVE: delay sending of the update by 100 ms, and
+        //   if another `send_players_update` is called, discard the previous one and send the new one
+        if let Some(uuid) = except {
+            self.send_to_others(&ServerNetworkMessage::PlayersUpdate(message), uuid);
+        } else {
+            self.send_to_all(&ServerNetworkMessage::PlayersUpdate(message));
+        }
     }
 }
 
