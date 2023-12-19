@@ -37,15 +37,6 @@ fn main() -> Result<()> {
         };
 
         let _addr_websocket_actor = websocket_actor.start();
-
-        // TODO start terminal actor + send terminal actor websocket's address
-
-        // TODO register terminal actor at websocket
-
-        /*addr_websocket_actor
-        .send(Subscribe(addr_client.recipient()))
-        .await
-        .unwrap();*/
     });
     sys.run()?;
 

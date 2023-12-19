@@ -19,6 +19,11 @@ pub struct TryJoinRequest {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+pub struct TryJoinResponse {
+    // todo: add parameters
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct JoinRequest {
     pub player_data: NetworkPlayerData,
 }
