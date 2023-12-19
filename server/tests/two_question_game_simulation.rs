@@ -28,13 +28,13 @@ use crate::{
 
 const QUIZ_NAME: &str = "The most epic quiz ever";
 const Q1_TEXT: &str = "How old is the creator?";
-const Q1_TIME: u32 = 10;
+const Q1_TIME: usize = 10;
 
 const Q2_TEXT: &str = "What will the following code do?";
 const Q2_CODEBLOCK: &str = "fn main() {
     println!(\"Hello, world!\");
 }";
-const Q2_TIME: u32 = 5;
+const Q2_TIME: usize = 5;
 
 fn get_questions() -> QuestionSet {
     //// QUESTION DATA ////
@@ -252,6 +252,7 @@ async fn play_second_round(game: &mut Game) -> anyhow::Result<(QuestionEnded, Qu
 
 #[rstest]
 #[tokio::test]
+#[timeout(Duration::from_secs(10))]
 async fn two_question_game_simulation() -> anyhow::Result<()> {
     let questions = get_questions();
     let mut game = init_game(questions).await?;

@@ -2,7 +2,7 @@ mod fixtures;
 mod mocks;
 mod utils;
 
-use std::thread::JoinHandle;
+use std::{thread::JoinHandle, time::Duration};
 
 use actix::Addr;
 use common::{
@@ -20,6 +20,7 @@ use tungstenite::Message;
 
 #[rstest]
 #[tokio::test]
+#[timeout(Duration::from_secs(10))]
 async fn lobby_locked_client_cannot_connect(
     create_server: (JoinHandle<()>, Addr<Lobby>),
 ) -> anyhow::Result<()> {

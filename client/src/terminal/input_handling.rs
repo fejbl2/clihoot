@@ -43,7 +43,7 @@ impl TerminalHandleInput for StudentTerminal {
                         if selected >= 3 {
                             selected = 0;
                         }
-                        list_state.select(Some(selected))
+                        list_state.select(Some(selected));
                     }
                     KeyCode::Up | KeyCode::Char('k' | 'w') => {
                         if selected == 0 {
@@ -51,7 +51,7 @@ impl TerminalHandleInput for StudentTerminal {
                         } else {
                             selected -= 1;
                         }
-                        list_state.select(Some(selected))
+                        list_state.select(Some(selected));
                     }
                     _ => {}
                 };

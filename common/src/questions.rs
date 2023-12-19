@@ -52,7 +52,7 @@ fn new_uuid() -> Uuid {
 pub struct Question {
     pub text: String,
     pub code_block: Option<CodeBlock>,
-    pub time_seconds: u32,
+    pub time_seconds: usize,
     #[serde(deserialize_with = "deserialize_choices")]
     pub choices: Vec<Choice>,
 }
@@ -61,7 +61,7 @@ pub struct Question {
 pub struct QuestionCensored {
     pub text: String,
     pub code_block: Option<CodeBlock>,
-    pub time_seconds: u32,
+    pub time_seconds: usize,
     pub choices: Vec<ChoiceCensored>,
 }
 

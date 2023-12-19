@@ -1,4 +1,5 @@
 use actix::prelude::{Actor, Context};
+
 use anyhow::Ok;
 use common::{
     model::{
@@ -102,12 +103,12 @@ impl Lobby {
             .ok_or_else(|| anyhow::anyhow!("No results for this question"))?;
 
         for result in results {
-            for answer in result.1.selected_answers.iter() {
+            for answer in &result.1.selected_answers {
                 if let Some(choice_stats) = stats.get_mut(answer) {
                     choice_stats.players_answered_count += 1;
                 } else {
                     // never happens
-                    panic!("Answer {} not found in stats", answer);
+                    panic!("Answer {answer} not found in stats");
                 }
             }
         }
@@ -165,8 +166,7 @@ impl Lobby {
                             self.results
                                 .get(&question_index)
                                 .and_then(|results| results.get(&player.uuid))
-                                .map(|record| record.points_awarded)
-                                .unwrap_or(0)
+                                .map_or(0, |record| record.points_awarded)
                         })
                         .sum();
 
@@ -192,8 +192,7 @@ impl Lobby {
         let answered_count = self
             .results
             .get(&index)
-            .map(|results| results.len())
-            .unwrap_or(0);
+            .map_or(0, std::collections::HashMap::len);
 
         // construct a message object
         let message = QuestionUpdate {
@@ -213,8 +212,11 @@ impl Lobby {
         Ok(())
     }
 
-    pub fn send_question(&self, index: usize) -> anyhow::Result<()> {
+    pub fn send_question(&self, index: usize) -> anyhow::Result<usize> {
         let question = self.questions[index].clone();
+
+        let answer_time = question.time_seconds;
+        let reading_time = question.get_reading_time_estimate();
 
         // construct a message object
         let message = NextQuestion {
@@ -234,7 +236,7 @@ impl Lobby {
 
         teacher.do_send(message);
 
-        Ok(())
+        Ok(reading_time + answer_time)
     }
 
     #[allow(dead_code)]
