@@ -7,6 +7,9 @@ default:
     image: rust:latest
     tags:
     - shared-fi
+    before_script:
+        - apt update && apt install -y libasound2-dev
+
 
 stages:
     - build
