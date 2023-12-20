@@ -5,6 +5,7 @@ use common::terminal::handle_terminal_events::handle_events;
 use common::terminal::messages::Initialize;
 use common::terminal::terminal_actor::TerminalActor;
 use ratatui::widgets::ListState;
+use uuid::Uuid;
 
 #[derive(Debug, Clone, Copy)]
 pub enum Color {
@@ -44,7 +45,10 @@ impl StudentTerminal {
     }
 }
 
-pub async fn run_student() -> anyhow::Result<(
+pub async fn run_student(
+    _uuid: Uuid,
+    _quiz_name: String,
+) -> anyhow::Result<(
     Addr<TerminalActor<StudentTerminal>>,
     JoinHandle<anyhow::Result<()>>,
 )> {

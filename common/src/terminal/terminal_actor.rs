@@ -1,3 +1,5 @@
+use crate::model;
+use crate::model::ServerNetworkMessage;
 use actix::prelude::*;
 use crossterm::{
     event::KeyCode,
@@ -96,5 +98,33 @@ where
     fn handle(&mut self, msg: KeyPress, _ctx: &mut Self::Context) -> Self::Result {
         self.inner.handle_input(msg.key_code)?;
         self.inner.redraw(&mut self.terminal)
+    }
+}
+
+impl<T> Handler<ServerNetworkMessage> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+{
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, _msg: ServerNetworkMessage, _ctx: &mut Self::Context) -> Self::Result {
+        println!("terminal actor get network message from server");
+        todo!()
+    }
+}
+
+impl<T> Handler<model::status_messages::ClientWebsocketStatus> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+{
+    type Result = ();
+
+    fn handle(
+        &mut self,
+        _msg: model::status_messages::ClientWebsocketStatus,
+        _ctx: &mut Self::Context,
+    ) {
+        println!("terminal actor get error message from websocket actor");
+        todo!()
     }
 }
