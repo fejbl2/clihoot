@@ -32,7 +32,7 @@ pub enum CanJoin {
     No(String),
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct TryJoinResponse {
     pub uuid: Uuid,
     pub can_join: CanJoin,
@@ -51,7 +51,7 @@ where
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct JoinResponse {
     pub uuid: Uuid,
     pub can_join: CanJoin,

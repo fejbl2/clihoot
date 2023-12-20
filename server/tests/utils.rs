@@ -2,8 +2,8 @@ use std::{path::Path, thread, time::Duration};
 
 use anyhow::{bail, Ok};
 use common::model::network_messages::{
-    AnswerSelected, CanJoin, JoinRequest, NetworkPlayerData, NextQuestion, PlayersUpdate,
-    QuestionEnded, QuestionUpdate, ShowLeaderboard, TryJoinRequest,
+    AnswerSelected, CanJoin, JoinRequest, JoinResponse, NetworkPlayerData, NextQuestion,
+    PlayersUpdate, QuestionEnded, QuestionUpdate, ShowLeaderboard, TryJoinRequest, TryJoinResponse,
 };
 use common::model::ServerNetworkMessage;
 use common::questions;
@@ -52,7 +52,7 @@ pub async fn connect_to_server() -> (Sender, Receiver) {
 pub async fn try_join_server(
     sender: &mut Sender,
     receiver: &mut Receiver,
-) -> anyhow::Result<(Uuid, Message)> {
+) -> anyhow::Result<(Uuid, TryJoinResponse)> {
     thread::sleep(Duration::from_millis(100));
 
     let id = Uuid::new_v4();
@@ -64,6 +64,16 @@ pub async fn try_join_server(
 
     let msg = receiver.next().await.expect("Failed to receive message")?;
 
+    let Message::Text(msg) = msg else {
+        bail!("Expected Text message")
+    };
+
+    let msg = serde_json::from_str::<ServerNetworkMessage>(&msg)?;
+
+    let ServerNetworkMessage::TryJoinResponse(msg) = msg else {
+        bail!("Expected TryJoinResponse")
+    };
+
     Ok((id, msg))
 }
 
@@ -72,7 +82,7 @@ pub async fn join_server(
     sender: &mut Sender,
     receiver: &mut Receiver,
     id: Uuid,
-) -> anyhow::Result<(NetworkPlayerData, Message)> {
+) -> anyhow::Result<(NetworkPlayerData, JoinResponse)> {
     thread::sleep(Duration::from_millis(100));
 
     let random_string_color = Uuid::new_v4().to_string();
@@ -94,6 +104,16 @@ pub async fn join_server(
 
     let msg = receiver.next().await.expect("Failed to receive message")?;
 
+    let Message::Text(msg) = msg else {
+        bail!("Expected Text message")
+    };
+
+    let msg = serde_json::from_str::<ServerNetworkMessage>(&msg)?;
+
+    let ServerNetworkMessage::JoinResponse(msg) = msg else {
+        bail!("Expected JoinResponse")
+    };
+
     Ok((player_data, msg))
 }
 
@@ -104,20 +124,7 @@ pub async fn join_server(
 pub async fn join_new_player() -> anyhow::Result<(Sender, Receiver, NetworkPlayerData)> {
     let (mut sender, mut receiver) = connect_to_server().await;
     let (id, _msg) = try_join_server(&mut sender, &mut receiver).await?;
-    let (player_data, msg) = join_server(&mut sender, &mut receiver, id).await?;
-
-    // Message must be Text
-    assert!(msg.is_text());
-    let msg = msg.to_text()?;
-
-    // deserialize into ServerNetworkMessage
-    let msg: ServerNetworkMessage = serde_json::from_str(msg)?;
-
-    // it must be a JoinResponse
-    let res = match msg {
-        ServerNetworkMessage::JoinResponse(res) => res,
-        _ => bail!("Unexpected message"),
-    };
+    let (player_data, res) = join_server(&mut sender, &mut receiver, id).await?;
 
     // And it must be correct
     assert_eq!(res.can_join, CanJoin::Yes);

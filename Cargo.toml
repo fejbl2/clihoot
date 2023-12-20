@@ -5,3 +5,5 @@ members = [
     "client",
     "common",
 ]
+
+resolver = "2"
