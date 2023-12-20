@@ -7,10 +7,7 @@ use std::{thread::JoinHandle, time::Duration};
 use actix::Addr;
 use common::{
     constants::DEFAULT_QUIZ_NAME,
-    model::{
-        network_messages::{CanJoin, JoinResponse, TryJoinResponse},
-        ServerNetworkMessage,
-    },
+    model::network_messages::{CanJoin, JoinResponse, TryJoinResponse},
 };
 use rstest::rstest;
 use server::{
@@ -23,7 +20,6 @@ use crate::{
     fixtures::create_server_and_teacher::create_server_and_teacher,
     mocks::get_server_state_handler::GetServerState,
 };
-use tungstenite::Message;
 
 #[rstest]
 #[tokio::test]
@@ -38,13 +34,11 @@ async fn client_connects_and_joins(
 
     assert_eq!(
         msg,
-        Message::Text(serde_json::to_string(
-            &ServerNetworkMessage::TryJoinResponse(TryJoinResponse {
-                can_join: CanJoin::Yes,
-                uuid: id,
-                quiz_name: DEFAULT_QUIZ_NAME.to_string(),
-            })
-        )?)
+        TryJoinResponse {
+            can_join: CanJoin::Yes,
+            uuid: id,
+            quiz_name: DEFAULT_QUIZ_NAME.to_string(),
+        }
     );
 
     let state = server.send(GetServerState).await?;
@@ -60,14 +54,12 @@ async fn client_connects_and_joins(
 
     assert_eq!(
         msg,
-        Message::Text(serde_json::to_string(&ServerNetworkMessage::JoinResponse(
-            JoinResponse {
-                players: vec![player_data],
-                can_join: CanJoin::Yes,
-                uuid: id,
-                quiz_name: DEFAULT_QUIZ_NAME.to_string(),
-            }
-        ))?)
+        JoinResponse {
+            players: vec![player_data],
+            can_join: CanJoin::Yes,
+            uuid: id,
+            quiz_name: DEFAULT_QUIZ_NAME.to_string(),
+        }
     );
 
     let state = server.send(GetServerState).await?;
