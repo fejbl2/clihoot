@@ -10,7 +10,10 @@ use common::{
     messages::network::{CanJoin, TryJoinResponse},
 };
 use rstest::rstest;
-use server::{lobby::state::Lobby, messages::lobby::HardStop};
+use server::{
+    lobby::state::Lobby,
+    messages::lobby::{self},
+};
 
 use crate::fixtures::create_server::create_server;
 

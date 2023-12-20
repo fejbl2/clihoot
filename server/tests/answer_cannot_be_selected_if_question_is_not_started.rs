@@ -14,7 +14,10 @@ use futures_util::SinkExt;
 use rstest::rstest;
 use server::{
     lobby::state::{Lobby, Phase},
-    messages::{lobby::HardStop, teacher::HardStop},
+    messages::{
+        lobby::{self},
+        teacher::{self},
+    },
     teacher::init::Teacher,
 };
 use tungstenite::{

@@ -1,18 +1,12 @@
-mod args;
-mod messages;
-mod server;
-mod teacher;
-mod websocket;
-
 use std::{
     sync::mpsc::{self},
     thread,
 };
 
-use crate::{args::Args, server::init::run_server, teacher::init::run_teacher};
 use anyhow::anyhow;
 use clap::Parser;
 use common::questions::QuestionSet;
+use server::{args::Args, lobby::init::run_server, teacher::init::run_teacher};
 
 fn main() -> anyhow::Result<()> {
     let args: Args = Args::parse();

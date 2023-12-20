@@ -11,7 +11,10 @@ use common::messages::network::PlayersUpdate;
 use rstest::rstest;
 use server::{
     lobby::state::Lobby,
-    messages::lobby::{HardStop, KickPlayer},
+    messages::{
+        lobby::{self, KickPlayer},
+        teacher,
+    },
     teacher::init::Teacher,
 };
 use tungstenite::protocol::{frame::coding::CloseCode, CloseFrame};

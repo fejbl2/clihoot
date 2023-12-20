@@ -13,7 +13,10 @@ use common::{
 use rstest::rstest;
 use server::{
     lobby::state::{Lobby, Phase},
-    messages::lobby::{HardStop, StartQuestion, SwitchToLeaderboard},
+    messages::{
+        lobby::{self, StartQuestion, SwitchToLeaderboard},
+        teacher,
+    },
 };
 use uuid::Uuid;
 

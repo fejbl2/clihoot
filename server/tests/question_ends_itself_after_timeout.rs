@@ -8,8 +8,8 @@ use std::vec;
 use common::questions::{Choice, Question, QuestionSet};
 
 use rstest::rstest;
-use server::messages::lobby::{HardStop, StartQuestion};
-use server::messages::teacher::HardStop;
+use server::messages::lobby::{self, StartQuestion};
+use server::messages::teacher;
 use uuid::Uuid;
 
 use crate::fixtures::create_server::create_server;

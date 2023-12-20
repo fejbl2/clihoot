@@ -11,7 +11,7 @@ use common::messages::network::PlayersUpdate;
 use rstest::rstest;
 use server::{
     lobby::state::Lobby,
-    messages::{lobby::HardStop, teacher::HardStop},
+    messages::{lobby, teacher},
     teacher::init::Teacher,
 };
 

@@ -1,6 +1,7 @@
 use actix::AsyncContext;
 use actix::{Actor, Addr, Running};
 
+use crate::lobby::state::Lobby;
 use crate::messages::websocket::WebsocketGracefulStop;
 use common::messages::ClientNetworkMessage;
 use futures_util::stream::{SplitSink, SplitStream};
@@ -15,7 +16,6 @@ use tokio::task::JoinHandle;
 use tungstenite::Message;
 use uuid::Uuid;
 
-use crate::lobby::state::Lobby;
 use crate::messages::websocket::{DisconnectFromLobby, WebsocketHardStop};
 
 pub struct Websocket {

@@ -13,7 +13,10 @@ use common::{
 use rstest::rstest;
 use server::{
     lobby::state::Lobby,
-    messages::lobby::{HardStop, SetLockMessage, StartQuestion},
+    messages::{
+        lobby::{self, SetLockMessage, StartQuestion},
+        teacher,
+    },
     teacher::init::Teacher,
 };
 

@@ -10,10 +10,11 @@ use actix::Addr;
 use common::test_utils::compare_censored_questions;
 use common::{assert_censored_question_eq, questions::QuestionCensored};
 use rstest::rstest;
-use server::messages::teacher::{self, HardStop};
+use server::messages::lobby;
+use server::messages::teacher::{self};
 use server::{
     lobby::state::{Lobby, Phase},
-    messages::lobby::{HardStop, StartQuestion},
+    messages::lobby::StartQuestion,
     teacher::init::Teacher,
 };
 

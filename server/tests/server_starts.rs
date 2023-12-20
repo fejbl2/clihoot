@@ -12,10 +12,8 @@ use crate::{
 use actix::Addr;
 use common::{assert_questionset_eq, test_utils::compare_question_sets};
 use rstest::rstest;
-use server::{
-    lobby::state::{Lobby, Phase},
-    messages::lobby::HardStop,
-};
+use server::lobby::state::{Lobby, Phase};
+use server::messages::lobby;
 
 #[rstest]
 #[tokio::test]
