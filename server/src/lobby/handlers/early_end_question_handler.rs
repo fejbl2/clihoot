@@ -2,14 +2,14 @@ use actix::{Context, Handler};
 use anyhow::bail;
 
 use crate::{
-    messages::teacher_messages::EarlyEndQuestion,
-    server::state::{Lobby, Phase},
+    lobby::state::{Lobby, Phase},
+    messages::lobby::EndQuestion,
 };
 
-impl Handler<EarlyEndQuestion> for Lobby {
+impl Handler<EndQuestion> for Lobby {
     type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, msg: EarlyEndQuestion, _: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: EndQuestion, _: &mut Context<Self>) -> Self::Result {
         // check that it's the correct phase
         let Phase::ActiveQuestion(question) = self.phase else {
             bail!("Received EarlyEndQuestion in Lobby, but the lobby is not in the ActiveQuestion phase; ignoring");

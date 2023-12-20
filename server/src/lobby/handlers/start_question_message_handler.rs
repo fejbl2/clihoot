@@ -3,21 +3,21 @@ use std::time::Duration;
 use actix::{Addr, AsyncContext, Context, Handler};
 
 use crate::{
-    messages::teacher_messages::{EarlyEndQuestion, StartQuestionMessage},
-    server::state::{Lobby, Phase},
+    lobby::state::{Lobby, Phase},
+    messages::lobby::{EndQuestion, StartQuestion},
 };
 
 async fn notify_end_question_after(duration: Duration, index: usize, addr: Addr<Lobby>) {
     println!("Waiting for {:?} seconds", duration.as_secs());
     tokio::time::sleep(duration).await;
     println!("Sending EarlyEndQuestion");
-    addr.do_send(EarlyEndQuestion { index });
+    addr.do_send(EndQuestion { index });
 }
 
-impl Handler<StartQuestionMessage> for Lobby {
+impl Handler<StartQuestion> for Lobby {
     type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, _msg: StartQuestionMessage, ctx: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, _msg: StartQuestion, ctx: &mut Context<Self>) -> Self::Result {
         // * find the next question
         // * set the phase to `ActiveQuestion`
         // * send the question to all clients as well as the teacher

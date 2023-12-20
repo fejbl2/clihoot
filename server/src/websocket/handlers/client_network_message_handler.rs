@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use actix::{Addr, AsyncContext, Handler};
-use common::model::{
-    network_messages::{AnswerSelected, JoinRequest, TryJoinRequest},
+use common::messages::{
+    network::{AnswerSelected, JoinRequest, TryJoinRequest},
     ClientNetworkMessage, ServerNetworkMessage,
 };
 use futures_util::stream::SplitSink;
@@ -10,8 +10,8 @@ use tokio::{net::TcpStream, sync::Mutex};
 use tungstenite::Message;
 
 use crate::{
-    messages::{client_messages, websocket_messages::WebsocketGracefulStop},
-    server::state::Lobby,
+    lobby::state::Lobby,
+    messages::{client, websocket::WebsocketGracefulStop},
     websocket::{ws_utils::send_message, Websocket},
 };
 
@@ -53,7 +53,7 @@ async fn handle_join_request(
     addr: Addr<Websocket>,
 ) -> anyhow::Result<()> {
     let res = lobby
-        .send(client_messages::JoinRequest {
+        .send(client::JoinRequest {
             player_data: msg.player_data,
             addr,
         })

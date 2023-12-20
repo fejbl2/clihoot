@@ -12,7 +12,7 @@ use uuid::Uuid;
 // helper structs:
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
-pub struct NetworkPlayerData {
+pub struct PlayerData {
     pub uuid: Uuid,
     pub nickname: String,
     pub color: String, // TODO enum?
@@ -56,7 +56,7 @@ pub struct JoinResponse {
     pub uuid: Uuid,
     pub can_join: CanJoin,
     pub quiz_name: String,
-    pub players: Vec<NetworkPlayerData>,
+    pub players: Vec<PlayerData>,
 }
 
 impl<A, M> MessageResponse<A, M> for JoinResponse
@@ -73,12 +73,12 @@ where
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct JoinRequest {
-    pub player_data: NetworkPlayerData,
+    pub player_data: PlayerData,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PlayersUpdate {
-    pub players: Vec<NetworkPlayerData>,
+    pub players: Vec<PlayerData>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Message, PartialEq)]
@@ -138,7 +138,7 @@ pub struct QuestionEnded {
 #[derive(Debug, Serialize, Deserialize, Clone, Message, PartialEq)]
 #[rtype(result = "anyhow::Result<()>")]
 pub struct ShowLeaderboard {
-    pub players: Vec<(NetworkPlayerData, usize)>, // players with score
+    pub players: Vec<(PlayerData, usize)>, // players with score
     pub was_final_round: bool,
 }
 

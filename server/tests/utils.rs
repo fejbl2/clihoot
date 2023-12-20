@@ -1,13 +1,13 @@
 use std::{path::Path, thread, time::Duration};
 
 use anyhow::{bail, Ok};
-use common::model::network_messages::{
-    AnswerSelected, CanJoin, JoinRequest, JoinResponse, NetworkPlayerData, NextQuestion,
-    PlayersUpdate, QuestionEnded, QuestionUpdate, ShowLeaderboard, TryJoinRequest, TryJoinResponse,
+use common::messages::network::{
+    AnswerSelected, CanJoin, JoinRequest, JoinResponse, NextQuestion, PlayerData, PlayersUpdate,
+    QuestionEnded, QuestionUpdate, ShowLeaderboard, TryJoinRequest, TryJoinResponse,
 };
-use common::model::ServerNetworkMessage;
+use common::messages::ServerNetworkMessage;
 use common::questions;
-use common::{constants::DEFAULT_PORT, model::ClientNetworkMessage};
+use common::{constants::DEFAULT_PORT, messages::ClientNetworkMessage};
 use futures_util::SinkExt;
 use futures_util::{
     stream::{SplitSink, SplitStream},
@@ -82,13 +82,13 @@ pub async fn join_server(
     sender: &mut Sender,
     receiver: &mut Receiver,
     id: Uuid,
-) -> anyhow::Result<(NetworkPlayerData, JoinResponse)> {
+) -> anyhow::Result<(PlayerData, JoinResponse)> {
     thread::sleep(Duration::from_millis(100));
 
     let random_string_color = Uuid::new_v4().to_string();
     let random_string_nickname = Uuid::new_v4().to_string();
 
-    let player_data = NetworkPlayerData {
+    let player_data = PlayerData {
         color: random_string_color,
         nickname: random_string_nickname,
         uuid: id,
@@ -121,7 +121,7 @@ pub async fn join_server(
 /// # Errors
 /// - if the server cannot be joined, will panic.
 #[allow(dead_code)]
-pub async fn join_new_player() -> anyhow::Result<(Sender, Receiver, NetworkPlayerData)> {
+pub async fn join_new_player() -> anyhow::Result<(Sender, Receiver, PlayerData)> {
     let (mut sender, mut receiver) = connect_to_server().await;
     let (id, _msg) = try_join_server(&mut sender, &mut receiver).await?;
     let (player_data, res) = join_server(&mut sender, &mut receiver, id).await?;
@@ -148,9 +148,8 @@ pub async fn receive_server_network_msg(
 pub async fn receive_close_frame(receiver: &mut Receiver) -> anyhow::Result<CloseFrame> {
     let msg = receiver.next().await.expect("Failed to receive message")?;
 
-    let msg = match msg {
-        Message::Close(Some(frame)) => frame,
-        _ => bail!("Expected CloseFrame"),
+    let Message::Close(Some(msg)) = msg else {
+        bail!("Expected CloseFrame")
     };
 
     Ok(msg)
@@ -158,9 +157,9 @@ pub async fn receive_close_frame(receiver: &mut Receiver) -> anyhow::Result<Clos
 
 #[allow(dead_code)]
 pub async fn receive_next_question(receiver: &mut Receiver) -> anyhow::Result<NextQuestion> {
-    let question = match receive_server_network_msg(receiver).await? {
-        ServerNetworkMessage::NextQuestion(q) => q,
-        _ => bail!("Expected NextQuestion"),
+    let ServerNetworkMessage::NextQuestion(question) = receive_server_network_msg(receiver).await?
+    else {
+        bail!("Expected NextQuestion")
     };
 
     Ok(question)
@@ -168,9 +167,9 @@ pub async fn receive_next_question(receiver: &mut Receiver) -> anyhow::Result<Ne
 
 #[allow(dead_code)]
 pub async fn receive_question_update(receiver: &mut Receiver) -> anyhow::Result<QuestionUpdate> {
-    let update = match receive_server_network_msg(receiver).await? {
-        ServerNetworkMessage::QuestionUpdate(q) => q,
-        _ => bail!("Expected QuestionUpdate"),
+    let ServerNetworkMessage::QuestionUpdate(update) = receive_server_network_msg(receiver).await?
+    else {
+        bail!("Expected QuestionUpdate")
     };
 
     Ok(update)
@@ -178,9 +177,9 @@ pub async fn receive_question_update(receiver: &mut Receiver) -> anyhow::Result<
 
 #[allow(dead_code)]
 pub async fn receive_question_ended(receiver: &mut Receiver) -> anyhow::Result<QuestionEnded> {
-    let ended = match receive_server_network_msg(receiver).await? {
-        ServerNetworkMessage::QuestionEnded(q) => q,
-        _ => bail!("Expected QuestionEnded"),
+    let ServerNetworkMessage::QuestionEnded(ended) = receive_server_network_msg(receiver).await?
+    else {
+        bail!("Expected QuestionEnded")
     };
 
     Ok(ended)
@@ -188,9 +187,9 @@ pub async fn receive_question_ended(receiver: &mut Receiver) -> anyhow::Result<Q
 
 #[allow(dead_code)]
 pub async fn receive_players_update(receiver: &mut Receiver) -> anyhow::Result<PlayersUpdate> {
-    let update = match receive_server_network_msg(receiver).await? {
-        ServerNetworkMessage::PlayersUpdate(q) => q,
-        _ => bail!("Expected PlayersUpdate"),
+    let ServerNetworkMessage::PlayersUpdate(update) = receive_server_network_msg(receiver).await?
+    else {
+        bail!("Expected PlayersUpdate")
     };
 
     Ok(update)
@@ -198,9 +197,9 @@ pub async fn receive_players_update(receiver: &mut Receiver) -> anyhow::Result<P
 
 #[allow(dead_code)]
 pub async fn receive_show_leaderboard(receiver: &mut Receiver) -> anyhow::Result<ShowLeaderboard> {
-    let show = match receive_server_network_msg(receiver).await? {
-        ServerNetworkMessage::ShowLeaderboard(q) => q,
-        _ => bail!("Expected ShowLeaderboard"),
+    let ServerNetworkMessage::ShowLeaderboard(show) = receive_server_network_msg(receiver).await?
+    else {
+        bail!("Expected ShowLeaderboard")
     };
 
     Ok(show)
@@ -209,7 +208,7 @@ pub async fn receive_show_leaderboard(receiver: &mut Receiver) -> anyhow::Result
 #[allow(dead_code)]
 pub async fn send_question_answer(
     sender: &mut Sender,
-    player: &NetworkPlayerData,
+    player: &PlayerData,
     question: &questions::QuestionCensored,
     index: usize,
     selected_options: Vec<usize>, // indexes of selected options

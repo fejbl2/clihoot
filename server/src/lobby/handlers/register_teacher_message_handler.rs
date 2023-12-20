@@ -1,11 +1,11 @@
 use actix::{Context, Handler};
 
-use crate::{messages::teacher_messages::RegisterTeacherMessage, server::state::Lobby};
+use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
 
-impl Handler<RegisterTeacherMessage> for Lobby {
+impl Handler<RegisterTeacher> for Lobby {
     type Result = ();
 
-    fn handle(&mut self, msg: RegisterTeacherMessage, _: &mut Context<Self>) -> Self::Result {
+    fn handle(&mut self, msg: RegisterTeacher, _: &mut Context<Self>) -> Self::Result {
         println!("Received RegisterTeacherMessage in Lobby; unlocking lobby");
         self.teacher = Some(msg.teacher);
 

@@ -1,5 +1,5 @@
 use anyhow::anyhow;
-use common::{model::network_messages::AnswerSelected, questions::QuestionSet};
+use common::{messages::network::AnswerSelected, questions::QuestionSet};
 use uuid::Uuid;
 
 use super::state::QuestionRecords;

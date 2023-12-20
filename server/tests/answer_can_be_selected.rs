@@ -11,12 +11,15 @@ use std::{
 
 use actix::Addr;
 
-use common::{model::network_messages::ChoiceStats, questions::QuestionCensored};
+use common::{messages::network::ChoiceStats, questions::QuestionCensored};
 
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{ServerHardStop, StartQuestionMessage, TeacherHardStop},
-    server::state::{Lobby, Phase},
+    lobby::state::{Lobby, Phase},
+    messages::{
+        lobby::{self, StartQuestion},
+        teacher,
+    },
     teacher::init::Teacher,
 };
 
@@ -36,7 +39,7 @@ async fn answer_can_be_selected(
     let (mut sender, mut receiver, player) = utils::join_new_player().await?;
 
     // start the round
-    server.send(StartQuestionMessage).await??;
+    server.send(StartQuestion).await??;
 
     let state = server.send(GetServerState).await?;
     assert_eq!(state.phase, Phase::ActiveQuestion(0));
@@ -112,10 +115,10 @@ async fn answer_can_be_selected(
         question.question
     );
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

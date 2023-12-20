@@ -7,14 +7,17 @@ use std::{borrow::Cow, thread::JoinHandle, time::Duration, vec};
 use actix::Addr;
 use common::{
     constants::DEFAULT_GOODBYE_MESSAGE,
-    model::{network_messages::AnswerSelected, ClientNetworkMessage},
+    messages::{network::AnswerSelected, ClientNetworkMessage},
 };
 
 use futures_util::SinkExt;
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{ServerHardStop, TeacherHardStop},
-    server::state::{Lobby, Phase},
+    lobby::state::{Lobby, Phase},
+    messages::{
+        lobby::{self},
+        teacher::{self},
+    },
     teacher::init::Teacher,
 };
 use tungstenite::{
@@ -67,10 +70,10 @@ async fn answer_cannot_be_selected_if_question_is_not_started(
     assert!(state.waiting_players.is_empty());
     assert!(state.joined_players.is_empty());
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

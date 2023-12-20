@@ -2,8 +2,8 @@ use actix::{Context, Handler};
 use anyhow::bail;
 
 use crate::{
-    messages::teacher_messages::SwitchToLeaderboard,
-    server::state::{Lobby, Phase},
+    lobby::state::{Lobby, Phase},
+    messages::lobby::SwitchToLeaderboard,
 };
 
 impl Handler<SwitchToLeaderboard> for Lobby {

@@ -1,5 +1,5 @@
 use actix::{dev::ContextFutureSpawner, Handler};
-use common::model::ServerNetworkMessage;
+use common::messages::ServerNetworkMessage;
 
 use crate::websocket::{ws_utils::prepare_message, Websocket};
 

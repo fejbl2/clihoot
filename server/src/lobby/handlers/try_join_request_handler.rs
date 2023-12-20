@@ -1,10 +1,10 @@
 use actix::{Context, Handler};
 use common::{
     constants::LOBBY_LOCKED_MSG,
-    model::network_messages::{CanJoin, TryJoinRequest, TryJoinResponse},
+    messages::network::{CanJoin, TryJoinRequest, TryJoinResponse},
 };
 
-use crate::server::state::Lobby;
+use crate::lobby::state::Lobby;
 
 impl Handler<TryJoinRequest> for Lobby {
     type Result = TryJoinResponse;
