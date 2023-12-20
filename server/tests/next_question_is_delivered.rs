@@ -10,9 +10,10 @@ use actix::Addr;
 use common::test_utils::compare_censored_questions;
 use common::{assert_censored_question_eq, questions::QuestionCensored};
 use rstest::rstest;
+use server::messages::teacher::{self, HardStop};
 use server::{
-    messages::teacher_messages::{ServerHardStop, StartQuestionMessage, TeacherHardStop},
-    server::state::{Lobby, Phase},
+    lobby::state::{Lobby, Phase},
+    messages::lobby::{HardStop, StartQuestion},
     teacher::init::Teacher,
 };
 
@@ -32,7 +33,7 @@ async fn next_question_is_delivered(
     let (_sender, mut receiver, _data) = utils::join_new_player().await?;
 
     // The teacher now starts the question
-    server.send(StartQuestionMessage).await??;
+    server.send(StartQuestion).await??;
 
     // and the client should receive the question message
     let questions = sample_questions();
@@ -54,10 +55,10 @@ async fn next_question_is_delivered(
     let state = server.send(GetServerState).await?;
     assert_eq!(state.phase, Phase::ActiveQuestion(0));
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

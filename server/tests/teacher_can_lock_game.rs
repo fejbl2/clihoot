@@ -8,14 +8,12 @@ use actix::Addr;
 
 use common::{
     constants::{DEFAULT_QUIZ_NAME, LOBBY_LOCKED_MSG},
-    model::network_messages::{CanJoin, TryJoinResponse},
+    messages::network::{CanJoin, TryJoinResponse},
 };
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{
-        ServerHardStop, SetLockMessage, StartQuestionMessage, TeacherHardStop,
-    },
-    server::state::Lobby,
+    lobby::state::Lobby,
+    messages::lobby::{HardStop, SetLockMessage, StartQuestion},
     teacher::init::Teacher,
 };
 
@@ -35,7 +33,7 @@ async fn teacher_can_lock_game(
     let (_sender, _receiver, _player) = utils::join_new_player().await?;
 
     // start the round
-    server.send(StartQuestionMessage).await??;
+    server.send(StartQuestion).await??;
 
     let state = server.send(GetServerState).await?;
     assert!(!state.locked);
@@ -65,10 +63,10 @@ async fn teacher_can_lock_game(
     assert!(!state.locked);
     assert_eq!(state.joined_players.len(), 2);
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

@@ -1,5 +1,5 @@
 use actix::{Context, Handler};
-use common::model::network_messages::NextQuestion;
+use common::messages::network::NextQuestion;
 
 use crate::teacher::init::Teacher;
 

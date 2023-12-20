@@ -3,7 +3,7 @@ use std::{
     thread::{self, JoinHandle},
 };
 
-use ::server::server::state::Lobby;
+use ::server::lobby::state::Lobby;
 use actix::Addr;
 use rstest::fixture;
 use server::teacher::init::{run_teacher, Teacher};

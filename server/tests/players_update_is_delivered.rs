@@ -6,12 +6,12 @@ use std::{thread::JoinHandle, time::Duration};
 
 use actix::Addr;
 
-use common::model::network_messages::PlayersUpdate;
+use common::messages::network::PlayersUpdate;
 
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{ServerHardStop, TeacherHardStop},
-    server::state::Lobby,
+    lobby::state::Lobby,
+    messages::{lobby::HardStop, teacher::HardStop},
     teacher::init::Teacher,
 };
 
@@ -52,10 +52,10 @@ async fn players_update_is_delivered(
     assert!(state.joined_players.contains_key(&fst_data.uuid));
     assert!(state.joined_players.contains_key(&snd_data.uuid));
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

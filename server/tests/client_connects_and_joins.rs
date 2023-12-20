@@ -7,12 +7,12 @@ use std::{thread::JoinHandle, time::Duration};
 use actix::Addr;
 use common::{
     constants::DEFAULT_QUIZ_NAME,
-    model::network_messages::{CanJoin, JoinResponse, TryJoinResponse},
+    messages::network::{CanJoin, JoinResponse, TryJoinResponse},
 };
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{ServerHardStop, TeacherHardStop},
-    server::state::{Lobby, Phase},
+    lobby::state::{Lobby, Phase},
+    messages::{lobby::HardStop, teacher::HardStop},
     teacher::init::Teacher,
 };
 
@@ -71,10 +71,10 @@ async fn client_connects_and_joins(
     assert_eq!(state.phase, Phase::WaitingForPlayers);
     assert_ne!(state.teacher, None);
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

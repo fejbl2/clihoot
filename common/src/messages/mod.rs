@@ -1,13 +1,13 @@
 use serde::{Deserialize, Serialize};
 
-use self::network_messages::{
+use self::network::{
     AnswerSelected, ClientDisconnected, JoinRequest, JoinResponse, NextQuestion, PlayersUpdate,
     QuestionEnded, QuestionUpdate, ShowLeaderboard, TeacherDisconnected, TryJoinRequest,
     TryJoinResponse,
 };
 use actix::Message;
 
-pub mod network_messages;
+pub mod network;
 
 /// The messages that can be sent over the websocket FROM the client TO server
 #[derive(Debug, Serialize, Deserialize, Message, Clone)]

@@ -1,5 +1,5 @@
 use actix::{Context, Handler, Message};
-use server::server::state::Lobby;
+use server::lobby::state::Lobby;
 
 #[derive(Message, Debug)]
 #[rtype(result = "Lobby")]

@@ -8,7 +8,7 @@ use tungstenite::{
 };
 
 use crate::{
-    messages::websocket_messages::{WebsocketGracefulStop, WebsocketHardStop},
+    messages::websocket::{WebsocketGracefulStop, WebsocketHardStop},
     websocket::{ws_utils::prepare_explicit_message, Websocket},
 };
 

@@ -7,15 +7,13 @@ use std::{collections::HashMap, thread, time::Duration, vec};
 use actix::Addr;
 use anyhow::anyhow;
 use common::{
-    model::network_messages::{ChoiceStats, NetworkPlayerData, QuestionEnded},
+    messages::network::{ChoiceStats, PlayerData, QuestionEnded},
     questions::{Choice, CodeBlock, Question, QuestionSet},
 };
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{
-        ServerHardStop, StartQuestionMessage, SwitchToLeaderboard, TeacherHardStop,
-    },
-    server::state::{Lobby, Phase},
+    lobby::state::{Lobby, Phase},
+    messages::lobby::{HardStop, StartQuestion, SwitchToLeaderboard},
 };
 use uuid::Uuid;
 
@@ -103,10 +101,10 @@ struct Game {
     questions: QuestionSet,
     fst_sender: utils::Sender,
     fst_receiver: utils::Receiver,
-    fst_player: NetworkPlayerData,
+    fst_player: PlayerData,
     snd_sender: utils::Sender,
     snd_receiver: utils::Receiver,
-    snd_player: NetworkPlayerData,
+    snd_player: PlayerData,
     server: Addr<Lobby>,
     server_thread: std::thread::JoinHandle<()>,
     teacher: Addr<server::teacher::init::Teacher>,
@@ -140,7 +138,7 @@ async fn init_game(questions: QuestionSet) -> anyhow::Result<Game> {
 
 async fn play_first_round(game: &mut Game) -> anyhow::Result<(QuestionEnded, QuestionEnded)> {
     //// GAME - ROUND 1 - both answer correctly ////
-    game.server.send(StartQuestionMessage).await??;
+    game.server.send(StartQuestion).await??;
 
     let fst_q1 = utils::receive_next_question(&mut game.fst_receiver).await?;
     let snd_q1 = utils::receive_next_question(&mut game.snd_receiver).await?;
@@ -220,7 +218,7 @@ async fn conclude_game(game: &mut Game) -> anyhow::Result<(usize, usize)> {
 
 async fn play_second_round(game: &mut Game) -> anyhow::Result<(QuestionEnded, QuestionEnded)> {
     //// GAME - ROUND 2 - one selects both answers, the second selects only one answer ////
-    game.server.send(StartQuestionMessage).await??;
+    game.server.send(StartQuestion).await??;
 
     let fst_q2 = utils::receive_next_question(&mut game.fst_receiver).await?;
     let snd_q2 = utils::receive_next_question(&mut game.snd_receiver).await?;
@@ -280,10 +278,10 @@ async fn two_question_game_simulation() -> anyhow::Result<()> {
     thread::sleep(Duration::from_millis(100));
     assert_state_after_ending(&mut game, fst_points_2, snd_points_2).await?;
 
-    game.server.send(ServerHardStop).await?;
+    game.server.send(lobby::HardStop).await?;
     game.server_thread.join().expect("Server thread panicked");
 
-    game.teacher.send(TeacherHardStop).await?;
+    game.teacher.send(teacher::HardStop).await?;
     game.teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

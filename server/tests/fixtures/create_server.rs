@@ -4,7 +4,7 @@ use std::{
 };
 
 use crate::{fixtures::sample_questions::sample_questions, utils};
-use ::server::server::{init::run_server, state::Lobby};
+use ::server::lobby::{init::run_server, state::Lobby};
 use actix::Addr;
 use common::{constants::DEFAULT_PORT, questions::QuestionSet};
 use rstest::fixture;

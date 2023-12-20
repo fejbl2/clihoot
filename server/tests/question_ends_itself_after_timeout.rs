@@ -8,7 +8,8 @@ use std::vec;
 use common::questions::{Choice, Question, QuestionSet};
 
 use rstest::rstest;
-use server::messages::teacher_messages::{ServerHardStop, StartQuestionMessage, TeacherHardStop};
+use server::messages::lobby::{HardStop, StartQuestion};
+use server::messages::teacher::HardStop;
 use uuid::Uuid;
 
 use crate::fixtures::create_server::create_server;
@@ -44,7 +45,7 @@ async fn question_ends_itself_after_timeout_test_implementation() -> anyhow::Res
     let _fst_players_update = utils::receive_players_update(&mut fst_receiver).await?;
 
     // start the round
-    server.send(StartQuestionMessage).await??;
+    server.send(StartQuestion).await??;
 
     // read the question from websocket
     let fst = utils::receive_next_question(&mut fst_receiver).await?;
@@ -75,10 +76,10 @@ async fn question_ends_itself_after_timeout_test_implementation() -> anyhow::Res
     fst_ended.player_answer = None;
     assert_eq!(fst_ended, snd_ended);
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

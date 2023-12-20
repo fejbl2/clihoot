@@ -6,7 +6,7 @@ use actix::{
 };
 use actix_rt::System;
 
-use crate::{messages::teacher_messages::RegisterTeacherMessage, server::state::Lobby};
+use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
 
 pub struct Teacher {
     pub lobby: Addr<Lobby>,
@@ -18,7 +18,7 @@ impl Actor for Teacher {
     fn started(&mut self, ctx: &mut Self::Context) {
         println!("Teacher started, sending RegisterTeacherMessage to lobby");
 
-        self.lobby.do_send(RegisterTeacherMessage {
+        self.lobby.do_send(RegisterTeacher {
             teacher: ctx.address(),
         });
     }

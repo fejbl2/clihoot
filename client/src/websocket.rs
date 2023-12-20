@@ -11,8 +11,8 @@ use tokio_tungstenite::MaybeTlsStream;
 use tokio_tungstenite::{connect_async, tungstenite, WebSocketStream};
 use tungstenite::Error::ConnectionClosed;
 
-use common::model::network_messages::TryJoinRequest;
-use common::model::{ClientNetworkMessage, ServerNetworkMessage};
+use common::messages::network::TryJoinRequest;
+use common::messages::{ClientNetworkMessage, ServerNetworkMessage};
 use url::Url;
 use uuid::Uuid;
 
@@ -161,7 +161,7 @@ async fn listen_for_messages(
     websocket_actor_address: Addr<WebsocketActor>,
 ) -> anyhow::Result<()> {
     // listen for messages from server
-    while let Ok(incoming_msg) = rx_stream.next().await.map_or(Err(ConnectionClosed), Ok)? {
+    while let Ok(incoming_msg) = rx_stream.next().await.ok_or(ConnectionClosed)? {
         match incoming_msg {
             tungstenite::Message::Text(text_msg) => {
                 let deserialized_msg: ServerNetworkMessage =
