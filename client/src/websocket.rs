@@ -11,9 +11,7 @@ use tokio_tungstenite::MaybeTlsStream;
 use tokio_tungstenite::{connect_async, tungstenite, WebSocketStream};
 use tungstenite::Error::ConnectionClosed;
 
-use common::model;
 use common::model::network_messages::TryJoinRequest;
-use common::model::ServerNetworkMessage::TryJoinResponse;
 use common::model::{ClientNetworkMessage, ServerNetworkMessage};
 use url::Url;
 use uuid::Uuid;
@@ -106,23 +104,24 @@ async fn send_message_directly(
 }
 
 impl Handler<ServerNetworkMessage> for WebsocketActor {
-    type Result = ();
+    type Result = anyhow::Result<()>;
 
     fn handle(&mut self, msg: ServerNetworkMessage, _: &mut Self::Context) -> Self::Result {
-        if let TryJoinResponse(model::network_messages::TryJoinResponse {}) = msg {
-            // todo: spawn terminal actor
-            // TODO register terminal actor at websocket
-            /*addr_websocket_actor
-            .send(Subscribe(addr_client.recipient()))
-            .await
-            .unwrap();*/
-
-            return;
-        }
+        // if let TryJoinResponse(model::network_messages::TryJoinResponse {}) = msg {
+        //     // todo: spawn terminal actor
+        //     // TODO register terminal actor at websocket
+        //     /*addr_websocket_actor
+        //     .send(Subscribe(addr_client.recipient()))
+        //     .await
+        //     .unwrap();*/
+        //     return;
+        // }
 
         for sub in &self.subscribers {
             sub.do_send(msg.clone());
         }
+
+        Ok(())
     }
 }
 
