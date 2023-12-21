@@ -11,7 +11,7 @@ use tokio_tungstenite::MaybeTlsStream;
 use tokio_tungstenite::{connect_async, tungstenite, WebSocketStream};
 use tungstenite::Error::ConnectionClosed;
 
-use client::terminal::student::run_student;
+use crate::terminal::student::run_student;
 use common::messages::network::CanJoin::No;
 use common::messages::network::TryJoinRequest;
 use common::messages::status_messages::ClientWebsocketStatus;

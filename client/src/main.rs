@@ -1,12 +1,10 @@
-use crate::websocket::WebsocketActor;
 use actix::{Actor, System};
 use anyhow::Result;
 use clap::Parser;
+use client::websocket::WebsocketActor;
 use std::str::FromStr;
 use url::Url;
 use uuid::Uuid;
-
-mod websocket;
 
 fn url_parser(arg: &str) -> Result<Url, String> {
     let destination_addr = format!("ws://{arg}");
