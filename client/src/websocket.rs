@@ -81,7 +81,7 @@ impl WebsocketActor {
             println!("server does not allow us to join, reason: {}", reason);
         }
 
-        let my_address = ctx.address().clone();
+        let my_address = ctx.address();
 
         async move {
             if let Ok((student_actor_addr, _result)) = run_student(uuid, quiz_name).await {
@@ -168,11 +168,20 @@ impl Handler<ServerNetworkMessage> for WebsocketActor {
 impl Handler<ClientWebsocketStatus> for WebsocketActor {
     type Result = ();
 
-    fn handle(&mut self, msg: ClientWebsocketStatus, _ctx: &mut Self::Context) {
+    fn handle(&mut self, msg: ClientWebsocketStatus, ctx: &mut Self::Context) {
         println!("get status message: {:?}", msg);
 
         for sub in &self.subscribers_status {
             sub.do_send(msg.clone());
+        }
+
+        match msg {
+            ClientWebsocketStatus::ListeningFail
+            | ClientWebsocketStatus::CantSendMessage
+            | ClientWebsocketStatus::SocketClosed
+            | ClientWebsocketStatus::CloseFrameReceived(_) => {
+                ctx.stop(); // stop websocket actor
+            }
         }
     }
 }
@@ -232,9 +241,15 @@ async fn listen_for_messages(
                     serde_json::from_str(text_msg.as_str())?;
                 websocket_actor_address.do_send(deserialized_msg);
             }
-            tungstenite::Message::Close(_) => {
+            tungstenite::Message::Close(content) => {
+                let close_reason = match content {
+                    None => "Reason not specified.".to_string(),
+                    Some(content_some) => content_some.reason.to_string(),
+                };
+
                 // close the connection
-                websocket_actor_address.do_send(ClientWebsocketStatus::SocketClosed);
+                websocket_actor_address
+                    .do_send(ClientWebsocketStatus::CloseFrameReceived(close_reason));
                 return Ok(());
             }
             _ => {}

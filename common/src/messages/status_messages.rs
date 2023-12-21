@@ -6,4 +6,5 @@ pub enum ClientWebsocketStatus {
     ListeningFail,
     CantSendMessage,
     SocketClosed,
+    CloseFrameReceived(String),
 }
