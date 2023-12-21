@@ -8,6 +8,7 @@ use self::network::{
 use actix::Message;
 
 pub mod network;
+pub mod status_messages;
 
 /// The messages that can be sent over the websocket FROM the client TO server
 #[derive(Debug, Serialize, Deserialize, Message, Clone)]

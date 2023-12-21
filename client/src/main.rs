@@ -1,11 +1,10 @@
-use crate::websocket::WebsocketActor;
 use actix::{Actor, System};
 use anyhow::Result;
 use clap::Parser;
+use client::websocket::WebsocketActor;
 use std::str::FromStr;
 use url::Url;
-
-mod websocket;
+use uuid::Uuid;
 
 fn url_parser(arg: &str) -> Result<Url, String> {
     let destination_addr = format!("ws://{arg}");
@@ -28,7 +27,7 @@ fn main() -> Result<()> {
 
     sys.block_on(async {
         // start websocket actor
-        let Ok(websocket_actor) = WebsocketActor::new(url.clone()).await else {
+        let Ok(websocket_actor) = WebsocketActor::new(url.clone(), Uuid::new_v4()).await else {
             println!(
                 "I can't contact the specified clihoot server on address: '{url}' I am sorry 😿"
             );
