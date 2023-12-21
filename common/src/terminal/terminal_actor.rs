@@ -11,6 +11,7 @@ use std::io::stdout;
 use std::io::Stdout;
 use std::marker::Unpin;
 
+use crate::model::ServerNetworkMessage;
 use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
 
 pub trait TerminalDraw {
@@ -19,6 +20,13 @@ pub trait TerminalDraw {
 
 pub trait TerminalHandleInput {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()>;
+}
+
+pub trait TerminalHandleServerNetworkMessage {
+    fn handle_network_message(
+        &mut self,
+        network_message: ServerNetworkMessage,
+    ) -> anyhow::Result<()>;
 }
 
 pub struct TerminalActor<T>
@@ -103,13 +111,13 @@ where
 
 impl<T> Handler<ServerNetworkMessage> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleServerNetworkMessage,
 {
     type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, _msg: ServerNetworkMessage, _ctx: &mut Self::Context) -> Self::Result {
-        println!("terminal actor get network message from server");
-        todo!()
+    fn handle(&mut self, msg: ServerNetworkMessage, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_network_message(msg)?;
+        self.inner.redraw(&mut self.terminal)
     }
 }
 
