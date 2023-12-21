@@ -7,10 +7,13 @@ use std::{thread::JoinHandle, time::Duration};
 use actix::Addr;
 use common::{
     constants::{DEFAULT_QUIZ_NAME, LOBBY_LOCKED_MSG},
-    model::network_messages::{CanJoin, TryJoinResponse},
+    messages::network::{CanJoin, TryJoinResponse},
 };
 use rstest::rstest;
-use server::{messages::teacher_messages::ServerHardStop, server::state::Lobby};
+use server::{
+    lobby::state::Lobby,
+    messages::lobby::{self},
+};
 
 use crate::fixtures::create_server::create_server;
 
@@ -35,7 +38,7 @@ async fn lobby_locked_client_cannot_connect(
         }
     );
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
     Ok(())

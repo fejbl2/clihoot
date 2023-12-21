@@ -13,25 +13,21 @@ pub struct SetLockMessage {
 /// The teacher sends this to the lobby to register itself
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
-pub struct RegisterTeacherMessage {
+pub struct RegisterTeacher {
     pub teacher: Addr<Teacher>,
 }
 
 #[derive(Message, Debug)]
 #[rtype(result = "anyhow::Result<()>")]
-pub struct StartQuestionMessage;
+pub struct StartQuestion;
 
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
-pub struct ServerHardStop;
-
-#[derive(Message, Debug)]
-#[rtype(result = "()")]
-pub struct TeacherHardStop;
+pub struct HardStop;
 
 #[derive(Message, Debug)]
 #[rtype(result = "anyhow::Result<()>")]
-pub struct EarlyEndQuestion {
+pub struct EndQuestion {
     pub index: usize,
 }
 

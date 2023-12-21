@@ -1,8 +1,8 @@
 use actix::{Context, Handler};
 
 use crate::{
-    messages::{teacher_messages::KickPlayer, websocket_messages::WebsocketGracefulStop},
-    server::state::Lobby,
+    lobby::state::Lobby,
+    messages::{lobby::KickPlayer, websocket::WebsocketGracefulStop},
 };
 
 impl Handler<KickPlayer> for Lobby {

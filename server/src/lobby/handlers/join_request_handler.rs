@@ -1,12 +1,12 @@
 use actix::Handler;
 use common::{
     constants::LOBBY_LOCKED_MSG,
-    model::network_messages::{CanJoin, JoinResponse},
+    messages::network::{CanJoin, JoinResponse},
 };
 
 use crate::{
-    messages::client_messages::JoinRequest,
-    server::state::{JoinedPlayer, Lobby},
+    lobby::state::{JoinedPlayer, Lobby},
+    messages::client::JoinRequest,
 };
 
 impl Handler<JoinRequest> for Lobby {

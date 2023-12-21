@@ -12,10 +12,11 @@ use actix::Addr;
 
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{
-        ServerHardStop, StartQuestionMessage, SwitchToLeaderboard, TeacherHardStop,
+    lobby::state::{Lobby, Phase},
+    messages::{
+        lobby::{self, StartQuestion, SwitchToLeaderboard},
+        teacher,
     },
-    server::state::{Lobby, Phase},
     teacher::init::Teacher,
 };
 
@@ -35,7 +36,7 @@ async fn teacher_can_switch_to_leaderboard(
     let (mut sender, mut receiver, player) = utils::join_new_player().await?;
 
     // start the round
-    server.send(StartQuestionMessage).await??;
+    server.send(StartQuestion).await??;
 
     // try to send switch to leaderboard, should fail
     assert!(server.send(SwitchToLeaderboard).await?.is_err());
@@ -65,10 +66,10 @@ async fn teacher_can_switch_to_leaderboard(
     assert!(msg.was_final_round);
     assert_eq!(msg.players, vec![(player, 0)]); // 0 because we have the wrong answer
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

@@ -1,6 +1,6 @@
 use actix::{Context, Handler};
 
-use crate::{messages::teacher_messages::SetLockMessage, server::state::Lobby};
+use crate::{lobby::state::Lobby, messages::lobby::SetLockMessage};
 
 impl Handler<SetLockMessage> for Lobby {
     type Result = ();

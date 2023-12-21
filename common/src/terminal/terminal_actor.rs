@@ -1,5 +1,4 @@
-use crate::model;
-use crate::model::ServerNetworkMessage;
+use crate::messages::ServerNetworkMessage;
 use actix::prelude::*;
 use crossterm::{
     event::KeyCode,
@@ -10,6 +9,7 @@ use ratatui::{backend::CrosstermBackend, Terminal};
 use std::io::stdout;
 use std::io::Stdout;
 use std::marker::Unpin;
+use crate::messages::status_messages::ClientWebsocketStatus;
 
 use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
 
@@ -113,7 +113,7 @@ where
     }
 }
 
-impl<T> Handler<model::status_messages::ClientWebsocketStatus> for TerminalActor<T>
+impl<T> Handler<ClientWebsocketStatus> for TerminalActor<T>
 where
     T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
 {
@@ -121,7 +121,7 @@ where
 
     fn handle(
         &mut self,
-        _msg: model::status_messages::ClientWebsocketStatus,
+        _msg: ClientWebsocketStatus,
         _ctx: &mut Self::Context,
     ) {
         println!("terminal actor get error message from websocket actor");

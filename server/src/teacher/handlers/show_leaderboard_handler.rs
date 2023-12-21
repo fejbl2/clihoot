@@ -1,5 +1,5 @@
 use actix::{Context, Handler};
-use common::model::network_messages::ShowLeaderboard;
+use common::messages::network::ShowLeaderboard;
 
 use crate::teacher::init::Teacher;
 

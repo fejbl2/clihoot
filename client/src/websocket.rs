@@ -12,12 +12,11 @@ use tokio_tungstenite::{connect_async, tungstenite, WebSocketStream};
 use tungstenite::Error::ConnectionClosed;
 
 use client::terminal::student::run_student;
-use common::model;
-use common::model::network_messages::CanJoin::No;
-use common::model::network_messages::TryJoinRequest;
-use common::model::status_messages::ClientWebsocketStatus;
-use common::model::ServerNetworkMessage::TryJoinResponse;
-use common::model::{ClientNetworkMessage, ServerNetworkMessage};
+use common::messages::network::CanJoin::No;
+use common::messages::network::TryJoinRequest;
+use common::messages::status_messages::ClientWebsocketStatus;
+use common::messages::ServerNetworkMessage::TryJoinResponse;
+use common::messages::{network, ClientNetworkMessage, ServerNetworkMessage};
 use url::Url;
 use uuid::Uuid;
 
@@ -69,7 +68,7 @@ impl WebsocketActor {
         ctx: &mut <WebsocketActor as Actor>::Context,
     ) {
         // check if the message is the type we are looking for, otherwise ignore
-        let TryJoinResponse(model::network_messages::TryJoinResponse {
+        let TryJoinResponse(network::TryJoinResponse {
             uuid,
             can_join,
             quiz_name,
@@ -226,7 +225,7 @@ async fn listen_for_messages(
     websocket_actor_address: Addr<WebsocketActor>,
 ) -> anyhow::Result<()> {
     // listen for messages from server
-    while let Ok(incoming_msg) = rx_stream.next().await.map_or(Err(ConnectionClosed), Ok)? {
+    while let Ok(incoming_msg) = rx_stream.next().await.ok_or(ConnectionClosed)? {
         match incoming_msg {
             tungstenite::Message::Text(text_msg) => {
                 let deserialized_msg: ServerNetworkMessage =

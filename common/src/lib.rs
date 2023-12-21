@@ -1,5 +1,5 @@
 pub mod constants;
-pub mod model;
+pub mod messages;
 pub mod questions;
 pub mod terminal;
 pub mod test_macros;

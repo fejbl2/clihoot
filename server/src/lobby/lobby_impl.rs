@@ -2,10 +2,10 @@ use actix::prelude::{Actor, Context};
 
 use anyhow::Ok;
 use common::{
-    model::{
-        network_messages::{
-            ChoiceStats, NetworkPlayerData, NextQuestion, PlayersUpdate, QuestionEnded,
-            QuestionUpdate, ShowLeaderboard,
+    messages::{
+        network::{
+            ChoiceStats, NextQuestion, PlayerData, PlayersUpdate, QuestionEnded, QuestionUpdate,
+            ShowLeaderboard,
         },
         ServerNetworkMessage,
     },
@@ -39,14 +39,14 @@ impl Lobby {
     }
 
     #[must_use]
-    pub fn get_players(&self) -> Vec<NetworkPlayerData> {
+    pub fn get_players(&self) -> Vec<PlayerData> {
         let mut players: Vec<_> = self.joined_players.values().collect();
 
         players.sort_by_key(|x| x.joined_at);
 
         players
             .into_iter()
-            .map(|val| NetworkPlayerData {
+            .map(|val| PlayerData {
                 color: val.color.clone(),
                 nickname: val.nickname.clone(),
                 uuid: val.uuid,
@@ -54,6 +54,10 @@ impl Lobby {
             .collect()
     }
 
+    /// Returns the index of the next question, or an error if there is no next question
+    /// # Errors
+    /// - when the game has ended
+    /// - when the current phase is not `WaitingForPlayers` or `ShowingLeaderboard`
     pub fn next_question(&self) -> anyhow::Result<usize> {
         if !self.can_show_next_question() {
             return Err(anyhow::anyhow!("Can't show next question"));

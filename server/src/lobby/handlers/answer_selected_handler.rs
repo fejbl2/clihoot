@@ -1,14 +1,14 @@
 use crate::{
-    messages::teacher_messages::EarlyEndQuestion,
-    server::{
+    lobby::{
         point_calculator::calculate_points,
         state::{Lobby, Phase, PlayerQuestionRecord},
     },
+    messages::lobby::EndQuestion,
 };
 use actix::{prelude::Handler, AsyncContext};
 use anyhow::Ok;
 use chrono::Utc;
-use common::model::network_messages::AnswerSelected;
+use common::messages::network::AnswerSelected;
 
 impl Handler<AnswerSelected> for Lobby {
     type Result = anyhow::Result<()>;
@@ -59,7 +59,7 @@ impl Handler<AnswerSelected> for Lobby {
 
         // if the last player answered, notify self of the end of the question
         if self.results.entry(msg.question_index).or_default().len() == self.joined_players.len() {
-            ctx.notify(EarlyEndQuestion {
+            ctx.notify(EndQuestion {
                 index: msg.question_index,
             });
 

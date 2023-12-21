@@ -12,10 +12,8 @@ use crate::{
 use actix::Addr;
 use common::{assert_questionset_eq, test_utils::compare_question_sets};
 use rstest::rstest;
-use server::{
-    messages::teacher_messages::ServerHardStop,
-    server::state::{Lobby, Phase},
-};
+use server::lobby::state::{Lobby, Phase};
+use server::messages::lobby;
 
 #[rstest]
 #[tokio::test]
@@ -33,7 +31,7 @@ async fn server_starts(create_server: (JoinHandle<()>, Addr<Lobby>)) -> anyhow::
     assert_eq!(state.teacher, None);
     assert!(state.waiting_players.is_empty());
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
     Ok(())

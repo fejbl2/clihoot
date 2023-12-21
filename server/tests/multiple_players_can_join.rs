@@ -8,8 +8,11 @@ use actix::Addr;
 
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{ServerHardStop, TeacherHardStop},
-    server::state::Lobby,
+    lobby::state::Lobby,
+    messages::{
+        lobby::{self},
+        teacher,
+    },
     teacher::init::Teacher,
 };
 
@@ -53,10 +56,10 @@ async fn multiple_players_can_join(
         assert!(state.joined_players.contains_key(&player.uuid));
     }
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

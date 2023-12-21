@@ -1,6 +1,6 @@
 use actix::{ActorContext, Handler};
 
-use crate::{messages::websocket_messages::WebsocketHardStop, websocket::Websocket};
+use crate::{messages::websocket::WebsocketHardStop, websocket::Websocket};
 
 impl Handler<WebsocketHardStop> for Websocket {
     type Result = ();

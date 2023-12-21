@@ -6,12 +6,15 @@ use std::{borrow::Cow, thread::JoinHandle, time::Duration, vec};
 
 use actix::Addr;
 
-use common::model::network_messages::PlayersUpdate;
+use common::messages::network::PlayersUpdate;
 
 use rstest::rstest;
 use server::{
-    messages::teacher_messages::{KickPlayer, ServerHardStop, TeacherHardStop},
-    server::state::Lobby,
+    lobby::state::Lobby,
+    messages::{
+        lobby::{self, KickPlayer},
+        teacher,
+    },
     teacher::init::Teacher,
 };
 use tungstenite::protocol::{frame::coding::CloseCode, CloseFrame};
@@ -66,10 +69,10 @@ async fn teacher_can_kick_player(
         }
     );
 
-    server.send(ServerHardStop).await?;
+    server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(TeacherHardStop).await?;
+    teacher.send(teacher::HardStop).await?;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())
