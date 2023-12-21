@@ -22,7 +22,8 @@ pub enum StudentTerminalState {
     Question {
         question: NextQuestion,
         players_answered_count: usize,
-        answered: bool, /*state: Todo*/
+        answered: bool,
+        /*answer_checker_state: Todo*/
     },
     Answers {
         answer: QuestionEnded,
@@ -30,7 +31,7 @@ pub enum StudentTerminalState {
     Results {
         results: ShowLeaderboard,
     },
-    EndGame, // ????
+    EndGame, // show some screen saying that the game ended and the student should just pres ctrl + c to close the app
     Error {
         message: String,
     },
@@ -77,13 +78,3 @@ pub async fn run_student(
     let task = tokio::spawn(handle_events(term.clone()));
     Ok((term, task))
 }
-
-// we can implement handlers for student specific messages:
-//
-// impl Handler<Foo> for TerminalActor<TerminalActorData> {
-//     type Result = anyhow::Result<()>;
-//
-//     fn handle(&mut self, msg: Foo, ctx: &mut Self::Context) -> Self::Result {
-//         ...
-//     }
-// }
