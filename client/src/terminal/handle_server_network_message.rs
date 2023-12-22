@@ -23,7 +23,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     answered: _,
                 } = &mut self.state
                 else {
-                    anyhow::bail!("foo");
+                    anyhow::bail!("");
                 };
 
                 if question.question_index != update.question_index {
@@ -35,7 +35,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 Ok(())
             }
             ServerNetworkMessage::QuestionEnded(question) => {
-                self.state = StudentTerminalState::Answers { answer: question };
+                self.state = StudentTerminalState::Answers { answers: question };
                 Ok(())
             }
             ServerNetworkMessage::ShowLeaderboard(leaderboard) => {
@@ -45,11 +45,17 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 Ok(())
             }
             ServerNetworkMessage::PlayersUpdate(update) => {
-                // TODO check that we are waiting in the lobby
-                // TODO update the players
+                if let StudentTerminalState::WaitingForGame { players } = &mut self.state {
+                    *players = update.players;
+                }
                 Ok(())
             }
-            // TODO join response/tryjoinresponse
+            ServerNetworkMessage::TeacherDisconnected(_) => {
+                self.state = StudentTerminalState::Error {
+                    message: "Teacher disconnected from the game".to_string(),
+                };
+                Ok(())
+            }
             _ => Ok(()),
         }
     }

@@ -1,4 +1,6 @@
 use actix::prelude::*;
+use ratatui::style::Color;
+use ratatui::widgets::ListState;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
 
@@ -6,8 +8,6 @@ use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLea
 use common::terminal::handle_terminal_events::handle_events;
 use common::terminal::messages::Initialize;
 use common::terminal::terminal_actor::TerminalActor;
-use ratatui::style::Color;
-use ratatui::widgets::ListState;
 
 pub enum StudentTerminalState {
     NameSelection {
@@ -26,7 +26,7 @@ pub enum StudentTerminalState {
         /*answer_checker_state: Todo*/
     },
     Answers {
-        answer: QuestionEnded,
+        answers: QuestionEnded,
     },
     Results {
         results: ShowLeaderboard,
