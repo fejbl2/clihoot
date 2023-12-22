@@ -36,11 +36,11 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     answered: _,
                 } = &mut self.state
                 else {
-                    anyhow::bail!("");
+                    anyhow::bail!("Terminal is not showing the question");
                 };
 
                 if question.question_index != update.question_index {
-                    anyhow::bail!("bar");
+                    anyhow::bail!("Terminal is not showing the question with given index");
                 }
 
                 *players_answered_count = update.players_answered_count;
