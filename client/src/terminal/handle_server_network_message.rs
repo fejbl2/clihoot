@@ -1,4 +1,5 @@
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
+use common::messages::network::CanJoin;
 use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
 
@@ -9,6 +10,12 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
     ) -> anyhow::Result<()> {
         match network_message {
             ServerNetworkMessage::JoinResponse(join) => {
+                if let CanJoin::No(message) = join.can_join {
+                    // TODO maybe rather return to the name selections screen
+                    // and input the name again
+                    self.state = StudentTerminalState::Error { message };
+                    return Ok(());
+                }
                 self.state = StudentTerminalState::WaitingForGame {
                     players: join.players,
                 };

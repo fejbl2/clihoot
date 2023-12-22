@@ -42,7 +42,6 @@ impl TerminalHandleInput for StudentTerminal {
                         self.state = StudentTerminalState::WaitingForGame {
                             players: Vec::new(),
                         };
-
                         self.ws_actor_address
                             .do_send(ClientNetworkMessage::JoinRequest(JoinRequest {
                                 player_data: PlayerData {
