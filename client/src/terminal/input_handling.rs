@@ -11,7 +11,6 @@ use common::terminal::terminal_actor::TerminalHandleInput;
 
 impl TerminalHandleInput for StudentTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
-        // TODO define function that handle input for each state
         match &mut self.state {
             StudentTerminalState::NameSelection { name } => match key_code {
                 KeyCode::Backspace => {
@@ -69,6 +68,7 @@ impl TerminalHandleInput for StudentTerminal {
                     _ => {}
                 };
             }
+            // TODO input for choosing the answer when question is displayed
             _ => {}
         };
         Ok(())

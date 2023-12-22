@@ -12,7 +12,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
             ServerNetworkMessage::JoinResponse(join) => {
                 if let CanJoin::No(message) = join.can_join {
                     // TODO maybe rather return to the name selections screen
-                    // and input the name again
+                    // and input the name and color again
                     self.state = StudentTerminalState::Error { message };
                     return Ok(());
                 }
