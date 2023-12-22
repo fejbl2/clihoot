@@ -38,18 +38,21 @@ pub enum StudentTerminalState {
 }
 
 pub struct StudentTerminal {
+    pub uuid: Uuid,
     pub name: String,
     pub color: Color,
     pub quiz_name: String,
     pub state: StudentTerminalState,
 }
 
-impl Default for StudentTerminal {
-    fn default() -> Self {
+impl StudentTerminal {
+    #[must_use]
+    pub fn new(uuid: Uuid, quiz_name: String) -> Self {
         Self {
+            uuid,
             name: String::new(),
             color: Color::default(),
-            quiz_name: String::new(),
+            quiz_name,
             state: StudentTerminalState::NameSelection {
                 name: String::new(),
             },
@@ -57,21 +60,14 @@ impl Default for StudentTerminal {
     }
 }
 
-impl StudentTerminal {
-    #[must_use]
-    pub fn new() -> Self {
-        Self::default()
-    }
-}
-
 pub async fn run_student(
-    _uuid: Uuid,
-    _quiz_name: String,
+    uuid: Uuid,
+    quiz_name: String,
 ) -> anyhow::Result<(
     Addr<TerminalActor<StudentTerminal>>,
     JoinHandle<anyhow::Result<()>>,
 )> {
-    let term = TerminalActor::new(StudentTerminal::new()).start();
+    let term = TerminalActor::new(StudentTerminal::new(uuid, quiz_name)).start();
 
     term.send(Initialize).await??;
 
