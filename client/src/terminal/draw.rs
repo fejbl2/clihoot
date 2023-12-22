@@ -3,7 +3,6 @@ use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalDraw;
 use ratatui::{
     prelude::*,
-    style::Color,
     widgets::{Block, Borders, List, ListItem, Paragraph},
 };
 

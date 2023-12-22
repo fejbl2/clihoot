@@ -1,5 +1,5 @@
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
-use common::model::ServerNetworkMessage;
+use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
 
 impl TerminalHandleServerNetworkMessage for StudentTerminal {

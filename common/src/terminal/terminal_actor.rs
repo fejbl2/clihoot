@@ -1,5 +1,3 @@
-use crate::messages::status_messages::ClientWebsocketStatus;
-use crate::messages::ServerNetworkMessage;
 use actix::prelude::*;
 use crossterm::{
     event::KeyCode,
@@ -11,7 +9,8 @@ use std::io::stdout;
 use std::io::Stdout;
 use std::marker::Unpin;
 
-use crate::model::ServerNetworkMessage;
+use crate::messages::status_messages::ClientWebsocketStatus;
+use crate::messages::ServerNetworkMessage;
 use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
 
 pub trait TerminalDraw {
