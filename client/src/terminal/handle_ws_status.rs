@@ -1,7 +1,3 @@
-use crate::terminal::constants::COLORS;
-use crossterm::event::KeyCode;
-use ratatui::widgets::ListState;
-
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::messages::status_messages::ClientWebsocketStatus;
 use common::terminal::terminal_actor::TerminalHandleClientWebsocketStatus;

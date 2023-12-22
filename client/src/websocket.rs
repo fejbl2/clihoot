@@ -84,7 +84,9 @@ impl WebsocketActor {
         let my_address = ctx.address();
 
         async move {
-            if let Ok((student_actor_addr, _result)) = run_student(uuid, quiz_name).await {
+            if let Ok((student_actor_addr, _result)) =
+                run_student(uuid, quiz_name, my_address.clone()).await
+            {
                 // register student actor for network messages
                 my_address.do_send(Subscribe(student_actor_addr.clone().recipient()));
 
@@ -166,9 +168,9 @@ impl Handler<ServerNetworkMessage> for WebsocketActor {
 }
 
 impl Handler<ClientWebsocketStatus> for WebsocketActor {
-    type Result = ();
+    type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, msg: ClientWebsocketStatus, ctx: &mut Self::Context) {
+    fn handle(&mut self, msg: ClientWebsocketStatus, ctx: &mut Self::Context) -> Self::Result {
         println!("get status message: {:?}", msg);
 
         for sub in &self.subscribers_status {
@@ -183,6 +185,7 @@ impl Handler<ClientWebsocketStatus> for WebsocketActor {
                 ctx.stop(); // stop websocket actor
             }
         }
+        Ok(())
     }
 }
 

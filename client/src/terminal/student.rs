@@ -4,6 +4,7 @@ use ratatui::widgets::ListState;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
 
+use crate::websocket::WebsocketActor;
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 use common::terminal::handle_terminal_events::handle_events;
 use common::terminal::messages::Initialize;
@@ -43,17 +44,19 @@ pub struct StudentTerminal {
     pub name: String,
     pub color: Color,
     pub quiz_name: String,
+    pub ws_actor_address: Addr<WebsocketActor>,
     pub state: StudentTerminalState,
 }
 
 impl StudentTerminal {
     #[must_use]
-    pub fn new(uuid: Uuid, quiz_name: String) -> Self {
+    pub fn new(uuid: Uuid, quiz_name: String, ws_addr: Addr<WebsocketActor>) -> Self {
         Self {
             uuid,
             name: String::new(),
             color: Color::default(),
             quiz_name,
+            ws_actor_address: ws_addr,
             state: StudentTerminalState::NameSelection {
                 name: String::new(),
             },
@@ -64,11 +67,12 @@ impl StudentTerminal {
 pub async fn run_student(
     uuid: Uuid,
     quiz_name: String,
+    ws_actor_addr: Addr<WebsocketActor>,
 ) -> anyhow::Result<(
     Addr<TerminalActor<StudentTerminal>>,
     JoinHandle<anyhow::Result<()>>,
 )> {
-    let term = TerminalActor::new(StudentTerminal::new(uuid, quiz_name)).start();
+    let term = TerminalActor::new(StudentTerminal::new(uuid, quiz_name, ws_actor_addr)).start();
 
     term.send(Initialize).await??;
 

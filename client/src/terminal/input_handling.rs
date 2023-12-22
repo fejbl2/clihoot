@@ -3,6 +3,10 @@ use crossterm::event::KeyCode;
 use ratatui::widgets::ListState;
 
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
+use common::messages::{
+    network::{JoinRequest, PlayerData},
+    ClientNetworkMessage,
+};
 use common::terminal::terminal_actor::TerminalHandleInput;
 
 impl TerminalHandleInput for StudentTerminal {
@@ -35,10 +39,18 @@ impl TerminalHandleInput for StudentTerminal {
                     }
                     KeyCode::Enter => {
                         self.color = COLORS[list_state.selected().unwrap_or(0)];
-                        // TODO send join request
                         self.state = StudentTerminalState::WaitingForGame {
                             players: Vec::new(),
-                        }
+                        };
+
+                        self.ws_actor_address
+                            .do_send(ClientNetworkMessage::JoinRequest(JoinRequest {
+                                player_data: PlayerData {
+                                    color: self.color.to_string(),
+                                    uuid: self.uuid,
+                                    nickname: self.name.to_string(),
+                                },
+                            }));
                     }
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
                         selected += 1;
