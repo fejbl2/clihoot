@@ -28,6 +28,10 @@ pub trait TerminalHandleServerNetworkMessage {
     ) -> anyhow::Result<()>;
 }
 
+pub trait TerminalHandleClientWebsocketStatus {
+    fn handle_client_ws_status(&mut self, ws_status: ClientWebsocketStatus) -> anyhow::Result<()>;
+}
+
 pub struct TerminalActor<T>
 where
     T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
@@ -122,12 +126,12 @@ where
 
 impl<T> Handler<ClientWebsocketStatus> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleClientWebsocketStatus,
 {
-    type Result = ();
+    type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, _msg: ClientWebsocketStatus, _ctx: &mut Self::Context) {
-        println!("terminal actor get error message from websocket actor");
-        todo!()
+    fn handle(&mut self, msg: ClientWebsocketStatus, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_client_ws_status(msg)?;
+        self.inner.redraw(&mut self.terminal)
     }
 }
