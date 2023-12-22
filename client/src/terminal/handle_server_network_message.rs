@@ -8,6 +8,12 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
         network_message: ServerNetworkMessage,
     ) -> anyhow::Result<()> {
         match network_message {
+            ServerNetworkMessage::JoinResponse(join) => {
+                self.state = StudentTerminalState::WaitingForGame {
+                    players: join.players,
+                };
+                Ok(())
+            }
             ServerNetworkMessage::NextQuestion(question) => {
                 self.state = StudentTerminalState::Question {
                     question,
