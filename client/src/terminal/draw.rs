@@ -53,8 +53,8 @@ impl TerminalDraw for StudentTerminal {
                 term.draw(|frame| {
                     frame.render_widget(
                         Paragraph::new(format!(
-                            "Your name is \"{}\" and your color is \"{:?}\".",
-                            self.name, self.color
+                            "Your name is \"{}\" and your color is \"{:?}\" current state of terminal is \"{:?}\".",
+                            self.name, self.color, self.state
                         ))
                         .block(Block::default().title("Greeting").borders(Borders::ALL)),
                         frame.size(),

@@ -9,6 +9,7 @@ use common::terminal::handle_terminal_events::handle_events;
 use common::terminal::messages::Initialize;
 use common::terminal::terminal_actor::TerminalActor;
 
+#[derive(Debug)]
 pub enum StudentTerminalState {
     NameSelection {
         name: String,

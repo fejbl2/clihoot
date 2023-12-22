@@ -1,6 +1,5 @@
 use crate::terminal::constants::COLORS;
 use crossterm::event::KeyCode;
-use ratatui::style::Color;
 use ratatui::widgets::ListState;
 
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
@@ -36,7 +35,10 @@ impl TerminalHandleInput for StudentTerminal {
                     }
                     KeyCode::Enter => {
                         self.color = COLORS[list_state.selected().unwrap_or(0)];
-                        self.state = StudentTerminalState::EndGame;
+                        // TODO send join request
+                        self.state = StudentTerminalState::WaitingForGame {
+                            players: Vec::new(),
+                        }
                     }
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
                         selected += 1;
