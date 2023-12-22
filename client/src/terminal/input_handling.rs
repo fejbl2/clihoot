@@ -4,7 +4,7 @@ use ratatui::widgets::ListState;
 
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::messages::{
-    network::{JoinRequest, PlayerData},
+    network::{AnswerSelected, JoinRequest, PlayerData},
     ClientNetworkMessage,
 };
 use common::terminal::terminal_actor::TerminalHandleInput;
@@ -68,7 +68,22 @@ impl TerminalHandleInput for StudentTerminal {
                     _ => {}
                 };
             }
-            // TODO input for choosing the answer when question is displayed
+            StudentTerminalState::Question {
+                question,
+                players_answered_count: _,
+                answered,
+            } => {
+                if key_code == KeyCode::Enter {
+                    *answered = true;
+
+                    self.ws_actor_address
+                        .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
+                            player_uuid: self.uuid,
+                            question_index: question.question_index,
+                            answers: Vec::new(), // TODO send actual answers
+                        }))
+                }
+            }
             _ => {}
         };
         Ok(())
