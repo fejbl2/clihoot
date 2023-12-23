@@ -19,7 +19,6 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 self.state = StudentTerminalState::WaitingForGame {
                     players: join.players,
                 };
-                Ok(())
             }
             ServerNetworkMessage::NextQuestion(question) => {
                 self.state = StudentTerminalState::Question {
@@ -27,7 +26,6 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     players_answered_count: 0,
                     answered: false,
                 };
-                Ok(())
             }
             ServerNetworkMessage::QuestionUpdate(update) => {
                 let StudentTerminalState::Question {
@@ -44,32 +42,27 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 }
 
                 *players_answered_count = update.players_answered_count;
-
-                Ok(())
             }
             ServerNetworkMessage::QuestionEnded(question) => {
                 self.state = StudentTerminalState::Answers { answers: question };
-                Ok(())
             }
             ServerNetworkMessage::ShowLeaderboard(leaderboard) => {
                 self.state = StudentTerminalState::Results {
                     results: leaderboard,
                 };
-                Ok(())
             }
             ServerNetworkMessage::PlayersUpdate(update) => {
                 if let StudentTerminalState::WaitingForGame { players } = &mut self.state {
                     *players = update.players;
                 }
-                Ok(())
             }
             ServerNetworkMessage::TeacherDisconnected(_) => {
                 self.state = StudentTerminalState::Error {
                     message: "Teacher disconnected from the game".to_string(),
                 };
-                Ok(())
             }
-            _ => Ok(()),
+            _ => {}
         }
+        Ok(())
     }
 }
