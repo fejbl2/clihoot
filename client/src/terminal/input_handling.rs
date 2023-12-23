@@ -19,7 +19,7 @@ impl TerminalHandleInput for StudentTerminal {
                 KeyCode::Char(char) => {
                     name.push(char);
                 }
-                KeyCode::Enter => {
+                KeyCode::Enter if !name.is_empty() => {
                     self.name = (*name).to_string();
                     self.state = StudentTerminalState::ColorSelection {
                         list_state: ListState::default().with_selected(Some(0)),
