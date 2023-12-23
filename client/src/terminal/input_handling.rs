@@ -1,14 +1,16 @@
+use crate::terminal::constants::COLORS;
 use crossterm::event::KeyCode;
 use ratatui::widgets::ListState;
 
-use crate::terminal::student::{Color, StudentTerminal, StudentTerminalState};
+use crate::terminal::student::{StudentTerminal, StudentTerminalState};
+use common::messages::{
+    network::{AnswerSelected, JoinRequest, PlayerData},
+    ClientNetworkMessage,
+};
 use common::terminal::terminal_actor::TerminalHandleInput;
-
-const COLORS: [Color; 3] = [Color::Red, Color::Green, Color::Blue];
 
 impl TerminalHandleInput for StudentTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
-        // TODO define function that handle input for each state
         match &mut self.state {
             StudentTerminalState::NameSelection { name } => match key_code {
                 KeyCode::Backspace => {
@@ -17,7 +19,7 @@ impl TerminalHandleInput for StudentTerminal {
                 KeyCode::Char(char) => {
                     name.push(char);
                 }
-                KeyCode::Enter => {
+                KeyCode::Enter if !name.is_empty() => {
                     self.name = (*name).to_string();
                     self.state = StudentTerminalState::ColorSelection {
                         list_state: ListState::default().with_selected(Some(0)),
@@ -36,11 +38,21 @@ impl TerminalHandleInput for StudentTerminal {
                     }
                     KeyCode::Enter => {
                         self.color = COLORS[list_state.selected().unwrap_or(0)];
-                        self.state = StudentTerminalState::Todo;
+                        self.state = StudentTerminalState::WaitingForGame {
+                            players: Vec::new(),
+                        };
+                        self.ws_actor_address
+                            .do_send(ClientNetworkMessage::JoinRequest(JoinRequest {
+                                player_data: PlayerData {
+                                    color: self.color.to_string(),
+                                    uuid: self.uuid,
+                                    nickname: self.name.to_string(),
+                                },
+                            }));
                     }
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
                         selected += 1;
-                        if selected >= 3 {
+                        if selected >= COLORS.len() {
                             selected = 0;
                         }
                         list_state.select(Some(selected));
@@ -56,7 +68,23 @@ impl TerminalHandleInput for StudentTerminal {
                     _ => {}
                 };
             }
-            StudentTerminalState::Todo => {}
+            StudentTerminalState::Question {
+                question,
+                players_answered_count: _,
+                answered,
+            } => {
+                if key_code == KeyCode::Enter {
+                    *answered = true;
+
+                    self.ws_actor_address
+                        .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
+                            player_uuid: self.uuid,
+                            question_index: question.question_index,
+                            answers: Vec::new(), // TODO send actual answers
+                        }))
+                }
+            }
+            _ => {}
         };
         Ok(())
     }

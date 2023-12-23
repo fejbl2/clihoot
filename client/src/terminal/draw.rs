@@ -1,11 +1,10 @@
-use crate::terminal::student::{Color, StudentTerminal, StudentTerminalState};
+use crate::terminal::constants::COLORS;
+use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalDraw;
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders, List, ListItem, Paragraph},
 };
-
-const COLORS: [Color; 3] = [Color::Red, Color::Green, Color::Blue];
 
 impl TerminalDraw for StudentTerminal {
     fn redraw(
@@ -32,10 +31,12 @@ impl TerminalDraw for StudentTerminal {
                         .title("Select your color")
                         .borders(Borders::ALL);
 
-                    // TOOD constant for this
+                    // TODO constant for this
                     let items: Vec<_> = COLORS
                         .iter()
-                        .map(|color| ListItem::new(format!("{color:?}")))
+                        .map(|color| {
+                            ListItem::new(format!("{color:?}")).style(Style::default().fg(*color))
+                        })
                         .collect();
 
                     frame.render_stateful_widget(
@@ -48,12 +49,12 @@ impl TerminalDraw for StudentTerminal {
                     );
                 })?;
             }
-            StudentTerminalState::Todo => {
+            _ => {
                 term.draw(|frame| {
                     frame.render_widget(
                         Paragraph::new(format!(
-                            "Your name is \"{}\" and your color is \"{:?}\".",
-                            self.name, self.color
+                            "Your name is \"{}\" and your color is \"{:?}\"\nCurrent state of terminal is \"{:?}\".",
+                            self.name, self.color, self.state
                         ))
                         .block(Block::default().title("Greeting").borders(Borders::ALL)),
                         frame.size(),

@@ -1,5 +1,3 @@
-use crate::messages::status_messages::ClientWebsocketStatus;
-use crate::messages::ServerNetworkMessage;
 use actix::prelude::*;
 use crossterm::{
     event::KeyCode,
@@ -11,6 +9,8 @@ use std::io::stdout;
 use std::io::Stdout;
 use std::marker::Unpin;
 
+use crate::messages::status_messages::ClientWebsocketStatus;
+use crate::messages::ServerNetworkMessage;
 use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
 
 pub trait TerminalDraw {
@@ -19,6 +19,17 @@ pub trait TerminalDraw {
 
 pub trait TerminalHandleInput {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()>;
+}
+
+pub trait TerminalHandleServerNetworkMessage {
+    fn handle_network_message(
+        &mut self,
+        network_message: ServerNetworkMessage,
+    ) -> anyhow::Result<()>;
+}
+
+pub trait TerminalHandleClientWebsocketStatus {
+    fn handle_client_ws_status(&mut self, ws_status: ClientWebsocketStatus) -> anyhow::Result<()>;
 }
 
 pub struct TerminalActor<T>
@@ -103,24 +114,24 @@ where
 
 impl<T> Handler<ServerNetworkMessage> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleServerNetworkMessage,
 {
     type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, _msg: ServerNetworkMessage, _ctx: &mut Self::Context) -> Self::Result {
-        println!("terminal actor get network message from server");
-        todo!()
+    fn handle(&mut self, msg: ServerNetworkMessage, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_network_message(msg)?;
+        self.inner.redraw(&mut self.terminal)
     }
 }
 
 impl<T> Handler<ClientWebsocketStatus> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleClientWebsocketStatus,
 {
-    type Result = ();
+    type Result = anyhow::Result<()>;
 
-    fn handle(&mut self, _msg: ClientWebsocketStatus, _ctx: &mut Self::Context) {
-        println!("terminal actor get error message from websocket actor");
-        todo!()
+    fn handle(&mut self, msg: ClientWebsocketStatus, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_client_ws_status(msg)?;
+        self.inner.redraw(&mut self.terminal)
     }
 }
