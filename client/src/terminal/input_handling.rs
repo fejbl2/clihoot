@@ -12,6 +12,14 @@ use common::terminal::terminal_actor::TerminalHandleInput;
 impl TerminalHandleInput for StudentTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
         match &mut self.state {
+            StudentTerminalState::StartGame => match key_code {
+                KeyCode::Enter => {
+                    self.state = StudentTerminalState::NameSelection {
+                        name: String::new(),
+                    };
+                }
+                _ => {}
+            },
             StudentTerminalState::NameSelection { name } => match key_code {
                 KeyCode::Backspace => {
                     name.pop();

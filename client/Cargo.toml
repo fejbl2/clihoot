@@ -24,3 +24,4 @@ crossterm = { version = "0.27.0", features = ["event-stream"] }
 futures = "0.3.29"
 ratatui = "0.24.0"
 tokio = { version = "1.35.0", features = ["full"] }
+figlet-rs = "0.1.5"
