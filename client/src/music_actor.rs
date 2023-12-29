@@ -83,12 +83,6 @@ impl MusicActor {
     }
 }
 
-impl Drop for MusicActor {
-    fn drop(&mut self) {
-        println!("DROPPED")
-    }
-}
-
 impl Actor for MusicActor {
     type Context = Context<Self>;
 }
@@ -126,7 +120,7 @@ impl Handler<SoundEffectMessage> for MusicActor {
         if let Ok(source) = rodio::Decoder::new(reader) {
             stream_handle.play_raw(source.convert_samples()).unwrap();
         } else {
-            eprintln!("Failed to decode the music.");
+            eprintln!("Failed to decode the sound effect.");
         }
     }
 }
