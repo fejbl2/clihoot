@@ -38,7 +38,7 @@ fn main() -> Result<()> {
 
         // start websocket actor
         let Ok(websocket_actor) =
-            WebsocketActor::new(url.clone(), Uuid::new_v4(), addr_music_actor.clone()).await
+            WebsocketActor::new(url.clone(), Uuid::new_v4(), addr_music_actor).await
         else {
             println!(
                 "I can't contact the specified clihoot server on address: '{url}' I am sorry 😿"
