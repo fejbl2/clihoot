@@ -4,14 +4,14 @@ use rodio::OutputStream;
 use rodio::Sink;
 use std::io::{BufReader, Cursor};
 
-const HAPPY_MUSIC: &[u8] = include_bytes!("../assets/happy.wav");
+const LOBBY_MUSIC: &[u8] = include_bytes!("../assets/lobby.mp3");
 const SAD_MUSIC: &[u8] = include_bytes!("../assets/sad.wav");
 const ANGRY_MUSIC: &[u8] = include_bytes!("../assets/angry.wav");
 
 #[derive(Message)]
 #[rtype(result = "()")]
 pub enum MusicMessage {
-    Happy,
+    Lobby,
     Sad,
     Angry,
 }
@@ -19,7 +19,7 @@ pub enum MusicMessage {
 impl MusicMessage {
     fn get_content(&self) -> &'static [u8] {
         match self {
-            MusicMessage::Happy => HAPPY_MUSIC,
+            MusicMessage::Lobby => LOBBY_MUSIC,
             MusicMessage::Sad => SAD_MUSIC,
             MusicMessage::Angry => ANGRY_MUSIC,
         }
@@ -46,6 +46,12 @@ impl MusicActor {
             sink: None,
             _stream: None,
         }
+    }
+}
+
+impl Drop for MusicActor {
+    fn drop(&mut self) {
+        println!("DROPPED")
     }
 }
 

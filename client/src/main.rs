@@ -1,10 +1,19 @@
+mod music_actor;
+
 use actix::{Actor, System};
 use anyhow::Result;
 use clap::Parser;
 use client::websocket::WebsocketActor;
 use std::str::FromStr;
+use std::thread;
+use std::time::Duration;
 use url::Url;
 use uuid::Uuid;
+
+use actix::prelude::*;
+use client::music_actor::MusicActor;
+use client::music_actor::MusicMessage;
+use futures::SinkExt;
 
 fn url_parser(arg: &str) -> Result<Url, String> {
     let destination_addr = format!("ws://{arg}");
@@ -25,9 +34,13 @@ fn main() -> Result<()> {
 
     let sys = actix::System::new();
 
-    sys.block_on(async {
+    sys.block_on(async move {
+        let addr_music_actor = MusicActor::new().start();
+
         // start websocket actor
-        let Ok(websocket_actor) = WebsocketActor::new(url.clone(), Uuid::new_v4()).await else {
+        let Ok(websocket_actor) =
+            WebsocketActor::new(url.clone(), Uuid::new_v4(), addr_music_actor.clone()).await
+        else {
             println!(
                 "I can't contact the specified clihoot server on address: '{url}' I am sorry 😿"
             );
@@ -36,40 +49,10 @@ fn main() -> Result<()> {
         };
 
         let _addr_websocket_actor = websocket_actor.start();
+
+        addr_music_actor.do_send(MusicMessage::Lobby);
     });
     sys.run()?;
-    // mod music_actor;
-
-    // use actix::prelude::*;
-    // use client::terminal::student::run_student;
-    // use music_actor::MusicActor;
-    // use music_actor::MusicMessage;
-    // use std::thread;
-    // use std::time::Duration;
-
-    // #[actix_rt::main]
-    // async fn main() -> anyhow::Result<()> {
-    //     let music_actor = MusicActor::new().start();
-    //     println!("Music actor is created.");
-
-    //     music_actor.send(MusicMessage::Happy).await.unwrap();
-    //     println!("Happy music is playing.");
-
-    //     thread::sleep(Duration::from_millis(5000));
-
-    //     music_actor.send(MusicMessage::Sad).await.unwrap();
-    //     println!("Sad music is playing.");
-
-    //     thread::sleep(Duration::from_millis(5000));
-
-    //     music_actor.send(MusicMessage::Angry).await.unwrap();
-    //     println!("Angry music is playing.");
-
-    //     thread::sleep(Duration::from_millis(10000));
-
-    //     let (_term, task) = run_student().await?;
-
-    //     task.await??;
 
     Ok(())
 }

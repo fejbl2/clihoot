@@ -11,6 +11,7 @@ use tokio_tungstenite::MaybeTlsStream;
 use tokio_tungstenite::{connect_async, tungstenite, WebSocketStream};
 use tungstenite::Error::ConnectionClosed;
 
+use crate::music_actor::MusicActor;
 use crate::terminal::student::run_student;
 use common::messages::network::CanJoin::No;
 use common::messages::network::TryJoinRequest;
@@ -39,10 +40,15 @@ pub struct WebsocketActor {
     ws_stream_rx: Option<SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>>,
     subscribers_network_messages: Vec<Recipient<ServerNetworkMessage>>,
     subscribers_status: Vec<Recipient<ClientWebsocketStatus>>,
+    music_actor_addr: Addr<MusicActor>,
 }
 
 impl WebsocketActor {
-    pub async fn new(url: Url, uuid: Uuid) -> anyhow::Result<Self> {
+    pub async fn new(
+        url: Url,
+        uuid: Uuid,
+        music_actor_addr: Addr<MusicActor>,
+    ) -> anyhow::Result<Self> {
         let (ws_stream, _) = connect_async(url).await?;
 
         let (tx, rx) = ws_stream.split();
@@ -59,6 +65,7 @@ impl WebsocketActor {
             ws_stream_tx: tx_rc,
             subscribers_network_messages: vec![],
             subscribers_status: vec![],
+            music_actor_addr,
         })
     }
 
@@ -82,10 +89,11 @@ impl WebsocketActor {
         }
 
         let my_address = ctx.address();
+        let music_address = self.music_actor_addr.clone();
 
         async move {
             if let Ok((student_actor_addr, _result)) =
-                run_student(uuid, quiz_name, my_address.clone()).await
+                run_student(uuid, quiz_name, my_address.clone(), music_address).await
             {
                 // register student actor for network messages
                 my_address.do_send(Subscribe(student_actor_addr.clone().recipient()));
