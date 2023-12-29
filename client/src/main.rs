@@ -6,9 +6,7 @@ use std::str::FromStr;
 use url::Url;
 use uuid::Uuid;
 
-use actix::prelude::*;
 use client::music_actor::MusicActor;
-use client::music_actor::MusicMessage;
 
 fn url_parser(arg: &str) -> Result<Url, String> {
     let destination_addr = format!("ws://{arg}");
@@ -50,8 +48,6 @@ fn main() -> Result<()> {
         };
 
         let _addr_websocket_actor = websocket_actor.start();
-
-        addr_music_actor.do_send(MusicMessage::Lobby);
     });
     sys.run()?;
 

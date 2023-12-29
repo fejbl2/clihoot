@@ -4,7 +4,7 @@ use ratatui::widgets::ListState;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
 
-use crate::music_actor::MusicActor;
+use crate::music_actor::{MusicActor, MusicMessage};
 use crate::websocket::WebsocketActor;
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 use common::terminal::handle_terminal_events::handle_events;
@@ -85,11 +85,13 @@ pub async fn run_student(
         uuid,
         quiz_name,
         ws_actor_addr,
-        music_actor_addr,
+        music_actor_addr.clone(),
     ))
     .start();
 
     term.send(Initialize).await??;
+
+    music_actor_addr.do_send(MusicMessage::Lobby);
 
     let task = tokio::spawn(handle_events(term.clone()));
     Ok((term, task))
