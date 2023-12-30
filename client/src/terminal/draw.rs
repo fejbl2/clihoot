@@ -1,12 +1,9 @@
 use crate::terminal::draw_states::{
-    render_color_selection, render_name_selection, render_waiting, render_welcome,
+    render_color_selection, render_end_game, render_error, render_name_selection, render_waiting,
+    render_welcome,
 };
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalDraw;
-use ratatui::{
-    prelude::*,
-    widgets::{Block, Borders, Paragraph},
-};
 
 impl TerminalDraw for StudentTerminal {
     fn redraw(
@@ -39,13 +36,21 @@ impl TerminalDraw for StudentTerminal {
                 })?;
                 Ok(())
             }
+            StudentTerminalState::EndGame => {
+                term.draw(|frame| {
+                    render_end_game(frame);
+                })?;
+                Ok(())
+            }
+            StudentTerminalState::Error { message } => {
+                term.draw(|frame| {
+                    render_error(frame, message);
+                })?;
+                Ok(())
+            }
             _ => {
                 term.draw(|frame| {
-                    frame.render_widget(
-                        Paragraph::new("Not implemented yet")
-                            .block(Block::default().title("Error").borders(Borders::ALL)),
-                        frame.size(),
-                    );
+                    render_error(frame, "The state is not implemented yet");
                 })?;
                 Ok(())
             }

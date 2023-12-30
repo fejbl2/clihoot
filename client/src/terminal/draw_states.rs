@@ -4,11 +4,9 @@ use common::messages::network::PlayerData;
 use figlet_rs::FIGfont;
 use ratatui::{
     prelude::*,
-    widgets::{
-        block::Title, Block, Borders, List, ListItem, ListState, Padding, Paragraph,
-    },
+    widgets::{block::Title, Block, Borders, List, ListItem, ListState, Padding, Paragraph},
 };
-use std::str::FromStr;
+use std::{rc::Rc, str::FromStr};
 
 fn get_outer_block() -> Block<'static> {
     let title = Title::from("Clihoot: Here will be name");
@@ -30,85 +28,116 @@ fn get_inner_block(title: String) -> Block<'static> {
     block
 }
 
-pub fn render_welcome(frame: &mut Frame) {
-    let standard_font = FIGfont::standard().unwrap();
-    let figure_w1 = standard_font.convert("Welcome").unwrap();
-    let figure_w2 = standard_font.convert("to").unwrap();
-    let figure_w3 = standard_font.convert("Clihoot!").unwrap();
+fn get_empty_block() -> Block<'static> {
+    let block = Block::default().borders(Borders::NONE);
+    block
+}
 
+fn get_bordered_block() -> Block<'static> {
+    let block = Block::default().borders(Borders::ALL);
+    block
+}
+
+fn render_ascii_art(frame: &mut Frame, lines: &[&str]) {
     let outer_block = get_outer_block();
-    let _inner_block = Block::new().borders(Borders::NONE);
     let inner = outer_block.inner(frame.size());
+
+    let mut constraints = vec![];
+    for _ in lines {
+        let constraint = Constraint::Percentage((100 / lines.len()).try_into().unwrap());
+        constraints.push(constraint);
+    }
 
     let layout = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Percentage(33),
-            Constraint::Percentage(33),
-            Constraint::Percentage(33),
-        ])
+        .constraints(constraints)
         .split(inner);
 
-    let paragraph = Paragraph::new(figure_w1.to_string())
-        .block(Block::default().borders(Borders::NONE))
-        .alignment(Alignment::Center);
-    let paragraph2 = Paragraph::new(figure_w2.to_string())
-        .block(Block::default().borders(Borders::NONE))
-        .alignment(Alignment::Center);
-    let paragraph3 = Paragraph::new(figure_w3.to_string())
-        .block(Block::default().borders(Borders::NONE))
-        .alignment(Alignment::Center);
-
     frame.render_widget(outer_block, frame.size());
-    frame.render_widget(paragraph, layout[0]);
-    frame.render_widget(paragraph2, layout[1]);
-    frame.render_widget(paragraph3, layout[2]);
+
+    let standard_font = FIGfont::standard().unwrap();
+
+    for i in 0..lines.len() {
+        let figure = standard_font.convert(lines[i]).unwrap();
+        let paragraph = Paragraph::new(figure.to_string())
+            .block(get_empty_block())
+            .alignment(Alignment::Center);
+        frame.render_widget(paragraph, layout[i]);
+    }
 }
 
-pub fn render_name_selection(frame: &mut Frame, name: &str) {
+fn render_welcome_layout(
+    frame: &mut Frame,
+    constraints: Vec<Constraint>,
+    paragraph_name: String,
+) -> Rc<[Rect]> {
     let outer_block = get_outer_block();
     let inner_block = get_inner_block("Welcome!".to_string());
     let inner = outer_block.inner(frame.size());
 
-    let name_space_block = Block::default().borders(Borders::ALL);
-    let name_space = inner_block.inner(inner);
+    let content_space = inner_block.inner(inner);
 
     let layout = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Length(1),
-            Constraint::Length(3),
-            Constraint::Percentage(80),
-        ])
-        .split(name_space);
+        .constraints(constraints)
+        .split(content_space);
 
-    let paragraph = Paragraph::new("Name: ").block(Block::default().borders(Borders::NONE));
-    let paragraph_name = Paragraph::new(format!("{name}|")).block(name_space_block.clone());
-    let paragraph_used_name = Paragraph::new("Si jebnuty!!!")
-        .fg(Color::Red)
-        .block(Block::default().borders(Borders::NONE));
+    let paragraph = Paragraph::new(paragraph_name).block(get_empty_block());
 
     frame.render_widget(outer_block, frame.size());
     frame.render_widget(inner_block, inner);
     frame.render_widget(paragraph, layout[0]);
+
+    layout
+}
+
+fn render_simple_message(frame: &mut Frame, title: String, message: &str) {
+    let outer_block = get_outer_block();
+    let inner_block = get_inner_block(title);
+    let inner = outer_block.inner(frame.size());
+
+    let content_space = inner_block.inner(inner);
+
+    let paragraph = Paragraph::new(message)
+        .block(get_empty_block())
+        .alignment(Alignment::Center);
+
+    frame.render_widget(outer_block, frame.size());
+    frame.render_widget(inner_block, inner);
+    frame.render_widget(paragraph, content_space);
+}
+
+pub fn render_welcome(frame: &mut Frame) {
+    let lines = ["Welcome", "to", "Clihoot!"];
+    render_ascii_art(frame, &lines);
+}
+
+pub fn render_name_selection(frame: &mut Frame, name: &str) {
+    let layout = render_welcome_layout(
+        frame,
+        vec![
+            Constraint::Length(1),
+            Constraint::Length(3),
+            Constraint::Percentage(80),
+        ],
+        "Name: ".to_string(),
+    );
+
+    let paragraph_name = Paragraph::new(format!("{name}|")).block(get_bordered_block());
+    let paragraph_used_name = Paragraph::new("Si jebnuty!!!")
+        .fg(Color::Red)
+        .block(Block::default().borders(Borders::NONE));
+
     frame.render_widget(paragraph_name, layout[1]);
     frame.render_widget(paragraph_used_name, layout[2]);
 }
 
 pub fn render_color_selection(frame: &mut Frame, _color: Color, list_state: &mut ListState) {
-    let outer_block = get_outer_block();
-    let inner_block = get_inner_block("Welcome!".to_string());
-    let inner = outer_block.inner(frame.size());
-
-    let color_space_block = Block::default().borders(Borders::ALL);
-    let color_space = inner_block.inner(inner);
-
-    let layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(vec![Constraint::Length(1), Constraint::Percentage(90)])
-        .split(color_space);
-
-    let paragraph = Paragraph::new("Color: ").block(Block::default().borders(Borders::NONE));
+    let layout = render_welcome_layout(
+        frame,
+        vec![Constraint::Length(1), Constraint::Percentage(90)],
+        "Color: ".to_string(),
+    );
 
     // TOOD constant for this
     let items: Vec<_> = COLORS
@@ -117,31 +146,19 @@ pub fn render_color_selection(frame: &mut Frame, _color: Color, list_state: &mut
         .collect();
 
     let list = List::new(items)
-        .block(color_space_block)
+        .block(get_bordered_block())
         .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
         .highlight_symbol(">> ");
 
-    frame.render_widget(outer_block, frame.size());
-    frame.render_widget(inner_block, inner);
-    frame.render_widget(paragraph, layout[0]);
     frame.render_stateful_widget(list, layout[1], list_state);
 }
 
 pub fn render_waiting(frame: &mut Frame, players: &mut [PlayerData]) {
-    let outer_block = get_outer_block();
-    let inner_block = get_inner_block("Welcome!".to_string());
-    let inner = outer_block.inner(frame.size());
-
-    let content_space_block = Block::default().borders(Borders::ALL);
-    let content_space = inner_block.inner(inner);
-
-    let layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(vec![Constraint::Length(1), Constraint::Percentage(90)])
-        .split(content_space);
-
-    let paragraph = Paragraph::new("Waiting for teacher to start:")
-        .block(Block::default().borders(Borders::NONE));
+    let layout = render_welcome_layout(
+        frame,
+        vec![Constraint::Length(1), Constraint::Percentage(90)],
+        "Waiting for the game to start:".to_string(),
+    );
 
     let items: Vec<_> = players
         .iter()
@@ -153,11 +170,8 @@ pub fn render_waiting(frame: &mut Frame, players: &mut [PlayerData]) {
         })
         .collect();
 
-    let list = List::new(items).block(content_space_block);
+    let list = List::new(items).block(get_bordered_block());
 
-    frame.render_widget(outer_block, frame.size());
-    frame.render_widget(inner_block, inner);
-    frame.render_widget(paragraph, layout[0]);
     frame.render_widget(list, layout[1]);
 }
 
@@ -184,14 +198,23 @@ pub fn render_results(frame: &mut Frame, results: &[String]) {
     frame.render_widget(paragraph, frame.size());
 }
 
-pub fn render_teacher_welcome(frame: &mut Frame) {
-    let paragraph = Paragraph::new("Welcome teacher!")
-        .block(Block::default().title("Welcome").borders(Borders::ALL));
-    frame.render_widget(paragraph, frame.size());
+pub fn render_end_game(frame: &mut Frame) {
+    let lines = ["Game", "Over", "Thank you!"];
+    render_ascii_art(frame, &lines);
 }
 
-pub fn render_teacher_lobby(frame: &mut Frame) {
-    let paragraph = Paragraph::new("Waiting for others to join...")
-        .block(Block::default().title("Waiting").borders(Borders::ALL));
-    frame.render_widget(paragraph, frame.size());
+pub fn render_teacher_welcome(frame: &mut Frame) {
+    render_simple_message(
+        frame,
+        "Welcome!".to_string(),
+        "To start the game press ENTER",
+    );
+}
+
+pub fn render_teacher_lobby(frame: &mut Frame, players: &mut [PlayerData]) {
+    render_waiting(frame, players);
+}
+
+pub fn render_error(frame: &mut Frame, message: &str) {
+    render_simple_message(frame, "Error!".to_string(), message);
 }
