@@ -2,6 +2,7 @@ use crate::terminal::constants::COLORS;
 use crossterm::event::KeyCode;
 use ratatui::widgets::ListState;
 
+use crate::music_actor::SoundEffectMessage;
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::messages::{
     network::{AnswerSelected, JoinRequest, PlayerData},
@@ -12,14 +13,13 @@ use common::terminal::terminal_actor::TerminalHandleInput;
 impl TerminalHandleInput for StudentTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
         match &mut self.state {
-            StudentTerminalState::StartGame => match key_code {
-                KeyCode::Enter => {
+            StudentTerminalState::StartGame => {
+                if key_code == KeyCode::Enter {
                     self.state = StudentTerminalState::NameSelection {
                         name: String::new(),
                     };
                 }
-                _ => {}
-            },
+            }
             StudentTerminalState::NameSelection { name } => match key_code {
                 KeyCode::Backspace => {
                     name.pop();
@@ -31,7 +31,8 @@ impl TerminalHandleInput for StudentTerminal {
                     self.name = (*name).to_string();
                     self.state = StudentTerminalState::ColorSelection {
                         list_state: ListState::default().with_selected(Some(0)),
-                    }
+                    };
+                    self.music_address.do_send(SoundEffectMessage::EnterPressed);
                 }
                 _ => {}
             },
@@ -57,6 +58,7 @@ impl TerminalHandleInput for StudentTerminal {
                                     nickname: self.name.to_string(),
                                 },
                             }));
+                        self.music_address.do_send(SoundEffectMessage::EnterPressed);
                     }
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
                         selected += 1;
@@ -64,14 +66,16 @@ impl TerminalHandleInput for StudentTerminal {
                             selected = 0;
                         }
                         list_state.select(Some(selected));
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                     }
                     KeyCode::Up | KeyCode::Char('k' | 'w') => {
                         if selected == 0 {
-                            selected = 2;
+                            selected = COLORS.len() - 1;
                         } else {
                             selected -= 1;
                         }
                         list_state.select(Some(selected));
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                     }
                     _ => {}
                 };
