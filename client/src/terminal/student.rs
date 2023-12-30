@@ -4,6 +4,7 @@ use ratatui::widgets::ListState;
 use tokio::task::JoinHandle;
 use uuid::Uuid;
 
+use crate::music_actor::{MusicActor, MusicMessage};
 use crate::websocket::WebsocketActor;
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 use common::terminal::handle_terminal_events::handle_events;
@@ -46,11 +47,17 @@ pub struct StudentTerminal {
     pub quiz_name: String,
     pub ws_actor_address: Addr<WebsocketActor>,
     pub state: StudentTerminalState,
+    pub music_address: Addr<MusicActor>,
 }
 
 impl StudentTerminal {
     #[must_use]
-    pub fn new(uuid: Uuid, quiz_name: String, ws_addr: Addr<WebsocketActor>) -> Self {
+    pub fn new(
+        uuid: Uuid,
+        quiz_name: String,
+        ws_addr: Addr<WebsocketActor>,
+        music_address: Addr<MusicActor>,
+    ) -> Self {
         Self {
             uuid,
             name: String::new(),
@@ -60,6 +67,7 @@ impl StudentTerminal {
             state: StudentTerminalState::NameSelection {
                 name: String::new(),
             },
+            music_address,
         }
     }
 }
@@ -68,13 +76,22 @@ pub async fn run_student(
     uuid: Uuid,
     quiz_name: String,
     ws_actor_addr: Addr<WebsocketActor>,
+    music_actor_addr: Addr<MusicActor>,
 ) -> anyhow::Result<(
     Addr<TerminalActor<StudentTerminal>>,
     JoinHandle<anyhow::Result<()>>,
 )> {
-    let term = TerminalActor::new(StudentTerminal::new(uuid, quiz_name, ws_actor_addr)).start();
+    let term = TerminalActor::new(StudentTerminal::new(
+        uuid,
+        quiz_name,
+        ws_actor_addr,
+        music_actor_addr.clone(),
+    ))
+    .start();
 
     term.send(Initialize).await??;
+
+    music_actor_addr.do_send(MusicMessage::Lobby);
 
     let task = tokio::spawn(handle_events(term.clone()));
     Ok((term, task))
