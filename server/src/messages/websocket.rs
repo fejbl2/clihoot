@@ -11,10 +11,6 @@ pub struct WebsocketGracefulStop {
 #[rtype(result = "()")]
 pub struct WebsocketHardStop;
 
-#[derive(Message)]
-#[rtype(result = "()")]
-pub struct SendPing;
-
 //WsConn sends this to a lobby to say "take me out please"
 #[derive(Message, Debug)]
 #[rtype(result = "()")]
