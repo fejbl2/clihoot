@@ -86,12 +86,12 @@ impl Actor for Websocket {
 
 async fn read_messages_from_socket<'a>(
     mut receiver: SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>,
-    _who: SocketAddr,
+    who: SocketAddr,
     addr: Addr<Websocket>,
 ) {
     while let Some(msg) = receiver.next().await {
         let Ok(msg) = msg else {
-            println!("Hanging up on the client bcs reading from socket failed");
+            println!("Hanging up on '{}' because reading from socket failed", who);
             addr.do_send(WebsocketHardStop);
             return;
         };

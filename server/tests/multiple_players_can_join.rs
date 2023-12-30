@@ -39,10 +39,10 @@ async fn multiple_players_can_join(
     // wait for all promises at once
     let players = futures_util::future::join_all(players).await;
 
-    // map the results to the player data
-    let players = players
-        .into_iter()
-        .map(|res| res.unwrap().2)
+    // map the results to the player data, while KEEPING the orig references (so that clients are not dropped)
+    let player_ids = players
+        .iter()
+        .map(|res| res.as_ref().unwrap().2.clone())
         .collect::<Vec<_>>();
 
     // Get server state and assert that both are there
@@ -52,7 +52,7 @@ async fn multiple_players_can_join(
     assert_eq!(state.joined_players.len(), players_count);
 
     // assert that all players are in the joined players
-    for player in players {
+    for player in player_ids {
         assert!(state.joined_players.contains_key(&player.uuid));
     }
 
