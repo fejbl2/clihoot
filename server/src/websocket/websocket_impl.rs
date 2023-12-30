@@ -2,14 +2,17 @@ use actix::AsyncContext;
 use actix::{Actor, Addr, Running};
 
 use crate::lobby::state::Lobby;
-use crate::messages::websocket::WebsocketGracefulStop;
+use crate::messages::websocket::{SendPing, WebsocketGracefulStop};
 use common::messages::ClientNetworkMessage;
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::StreamExt;
+use std::result::Result::Ok;
+use std::time::Duration;
 use tokio::sync::Mutex;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
+
 use tokio::net::TcpStream;
 use tokio::task::JoinHandle;
 
@@ -86,29 +89,52 @@ async fn read_messages_from_socket<'a>(
     _who: SocketAddr,
     addr: Addr<Websocket>,
 ) {
-    while let Some(Ok(msg)) = receiver.next().await {
-        match msg {
-            Message::Text(msg) => {
-                // try to parse the JSON s to a `NetworkMessage`
-                match serde_json::from_str::<ClientNetworkMessage>(&msg) {
-                    Ok(msg) => {
-                        addr.do_send(msg);
+    // Every 5 seconds, send a ping to the client and expect the a pong to be received within 2 seconds
+    let mut awaiting_pong = false;
+    loop {
+        tokio::select! {
+            _ = tokio::time::sleep(Duration::from_secs(5)), if !awaiting_pong => {
+                awaiting_pong = true;
+                println!("Sending ping to client, starting to await pong");
+                addr.do_send(SendPing);
+            }
+            _ = tokio::time::sleep(Duration::from_nanos(10)), if awaiting_pong => {
+                println!("Did not receive pong in time, hanging up on the client");
+                addr.do_send(WebsocketHardStop);
+            }
+            Some(msg) = receiver.next() => {
+                awaiting_pong = false;
+
+                let Ok(msg) = msg else {
+                    println!("Hanging up on the client bcs reading from socket failed");
+                    addr.do_send(WebsocketHardStop);
+                    return;
+                };
+
+                match msg {
+                    Message::Text(msg) => {
+                        // try to parse the JSON s to a `NetworkMessage`
+                        match serde_json::from_str::<ClientNetworkMessage>(&msg) {
+                            Ok(msg) => {
+                                addr.do_send(msg);
+                            }
+                            Err(e) => {
+                                println!("Hanging up on the client bcs parsing message failed: {e}");
+                                addr.do_send(WebsocketGracefulStop { reason: None });
+                            }
+                        }
                     }
-                    Err(e) => {
-                        println!("Hanging up on the client bcs parsing message failed: {e}");
-                        addr.do_send(WebsocketGracefulStop { reason: None });
-                    }
+                    Message::Close(_) => {
+                        // cannot call `ctx.stop();` because we are in another Task:
+                        // instead, we send a message to ourselves to stop
+                        addr.do_send(WebsocketHardStop);
+
+                        // also quit the loop
+                        return;
+                    },
+                    _ => (),
                 }
             }
-            Message::Close(_) => {
-                // cannot call `ctx.stop();` because we are in another Task:
-                // instead, we send a message to ourselves to stop
-                addr.do_send(WebsocketHardStop);
-
-                // also quit the loop
-                return;
-            }
-            _ => (),
         }
     }
 }
