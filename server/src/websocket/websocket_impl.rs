@@ -6,10 +6,13 @@ use crate::messages::websocket::WebsocketGracefulStop;
 use common::messages::ClientNetworkMessage;
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::StreamExt;
+use std::result::Result::Ok;
+
 use tokio::sync::Mutex;
 
 use std::net::SocketAddr;
 use std::sync::Arc;
+
 use tokio::net::TcpStream;
 use tokio::task::JoinHandle;
 
@@ -83,10 +86,16 @@ impl Actor for Websocket {
 
 async fn read_messages_from_socket<'a>(
     mut receiver: SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>,
-    _who: SocketAddr,
+    who: SocketAddr,
     addr: Addr<Websocket>,
 ) {
-    while let Some(Ok(msg)) = receiver.next().await {
+    while let Some(msg) = receiver.next().await {
+        let Ok(msg) = msg else {
+            println!("Hanging up on '{}' because reading from socket failed", who);
+            addr.do_send(WebsocketHardStop);
+            return;
+        };
+
         match msg {
             Message::Text(msg) => {
                 // try to parse the JSON s to a `NetworkMessage`
