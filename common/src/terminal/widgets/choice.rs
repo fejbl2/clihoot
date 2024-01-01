@@ -1,11 +1,12 @@
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, StatefulWidget, Widget, Wrap};
+use std::cmp::PartialEq;
 use std::collections::HashSet;
 use uuid::Uuid;
 
 use crate::questions::{Choice, ChoiceCensored, Question, QuestionCensored};
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ChoiceItem {
     content: String,
     is_right: bool,
@@ -49,9 +50,22 @@ impl Styled for ChoiceItem {
     }
 }
 
-#[derive(Default, Debug)]
+#[derive(Default, Debug, PartialEq)]
 pub struct ChoiceGrid {
-    pub items: Vec<Vec<ChoiceItem>>,
+    items: Vec<Vec<ChoiceItem>>,
+    is_empty: bool,
+}
+
+impl ChoiceGrid {
+    pub fn new(items: Vec<Vec<ChoiceItem>>) -> Self {
+        let is_empty = items.is_empty() || items.iter().any(|row| row.is_empty());
+
+        Self { items, is_empty }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.is_empty
+    }
 }
 
 fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<ChoiceItem>> {
@@ -65,18 +79,14 @@ fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<ChoiceItem>> {
 impl From<QuestionCensored> for ChoiceGrid {
     fn from(value: QuestionCensored) -> Self {
         let items: Vec<ChoiceItem> = value.choices.into_iter().map(From::from).collect();
-        Self {
-            items: create_grid(items),
-        }
+        Self::new(create_grid(items))
     }
 }
 
 impl From<Question> for ChoiceGrid {
     fn from(value: Question) -> Self {
         let items: Vec<ChoiceItem> = value.choices.into_iter().map(From::from).collect();
-        Self {
-            items: create_grid(items),
-        }
+        Self::new(create_grid(items))
     }
 }
 
@@ -102,7 +112,8 @@ impl ChoiceSelectorState {
     }
 
     // update `row` and `col` in case the configuration of the grid has changed
-    fn move_to_last_known_choice(&mut self, grid: &ChoiceGrid) {
+    // gets called before all other methods that mutate the state
+    pub fn move_to_last_known_choice(&mut self, grid: &ChoiceGrid) {
         let Some(last_under_cursor) = self.last_under_cursor else {
             return;
         };
@@ -122,6 +133,7 @@ impl ChoiceSelectorState {
                 if item.uuid == last_under_cursor {
                     self.row = i;
                     self.col = j;
+                    return;
                 }
             }
         }
@@ -137,6 +149,10 @@ impl ChoiceSelectorState {
     }
 
     pub fn move_up(&mut self, grid: &ChoiceGrid) {
+        if grid.is_empty() {
+            return;
+        }
+
         self.move_to_last_known_choice(grid);
         if self.row == 0 {
             self.row = grid.items.len() - 1;
@@ -149,6 +165,10 @@ impl ChoiceSelectorState {
     }
 
     pub fn move_down(&mut self, grid: &ChoiceGrid) {
+        if grid.is_empty() {
+            return;
+        }
+
         self.move_to_last_known_choice(grid);
         self.row = (self.row + 1) % grid.items.len();
 
@@ -157,6 +177,10 @@ impl ChoiceSelectorState {
     }
 
     pub fn move_left(&mut self, grid: &ChoiceGrid) {
+        if grid.is_empty() {
+            return;
+        }
+
         self.move_to_last_known_choice(grid);
         let row_len = grid.items[self.row].len();
         if self.col == 0 {
@@ -168,6 +192,10 @@ impl ChoiceSelectorState {
     }
 
     pub fn move_right(&mut self, grid: &ChoiceGrid) {
+        if grid.is_empty() {
+            return;
+        }
+
         self.move_to_last_known_choice(grid);
         let row_len = grid.items[self.row].len();
         self.col = (self.col + 1) % row_len;
@@ -180,6 +208,10 @@ impl ChoiceSelectorState {
     }
 
     pub fn toggle_selection(&mut self, grid: &ChoiceGrid) {
+        if grid.is_empty() {
+            return;
+        }
+
         self.move_to_last_known_choice(grid);
 
         let item = grid.items[self.row][self.col].uuid;
@@ -236,8 +268,8 @@ impl<'a> ChoiceSelector<'a> {
 impl<'a> StatefulWidget for ChoiceSelector<'a> {
     type State = ChoiceSelectorState;
 
-    // make sure that the ChoiceSelectorState is used with the same grid as the
-    // ChoiceSelector that is is used to draw
+    // when rendering the widget, make sure that the ChoiceSelectorState is used
+    // with the same grid that is used for the rendering
     fn render(mut self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
         let choice_selector_area = match self.block.take() {
             Some(b) => {
@@ -247,6 +279,11 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
             }
             None => area,
         };
+
+        // don't try to draw anything if the grid is empty or has empty rows
+        if self.grid.is_empty() {
+            return;
+        }
 
         let items = &mut self.grid.items;
 

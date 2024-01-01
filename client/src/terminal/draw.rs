@@ -86,26 +86,24 @@ impl TerminalDraw for StudentTerminal {
                     let default_block = Block::default().title("natpis").borders(Borders::ALL);
 
                     let mut state = ChoiceSelectorState::default();
-                    let grid = ChoiceGrid {
-                        items: vec![
-                            vec![
-                                ChoiceItem::new("42".to_string(), false, uuid::Uuid::new_v4()),
-                                ChoiceItem::new("69".to_string(), false, uuid::Uuid::new_v4()),
-                            ],
-                            vec![ChoiceItem::new(
-                                "maly jazvecik".to_string(),
-                                false,
-                                uuid::Uuid::new_v4(),
-                            )],
-                            vec![
-                                ChoiceItem::new("kto".to_string(), false, uuid::Uuid::new_v4()),
-                                ChoiceItem::new("sa".to_string(), false, uuid::Uuid::new_v4()),
-                                ChoiceItem::new("tu".to_string(), false, uuid::Uuid::new_v4()),
-                                ChoiceItem::new("vcera".to_string(), false, uuid::Uuid::new_v4()),
-                                ChoiceItem::new("dosral".to_string(), false, uuid::Uuid::new_v4()),
-                            ],
+                    let grid = ChoiceGrid::new(vec![
+                        vec![
+                            ChoiceItem::new("42".to_string(), false, uuid::Uuid::new_v4()),
+                            ChoiceItem::new("69".to_string(), false, uuid::Uuid::new_v4()),
                         ],
-                    };
+                        vec![ChoiceItem::new(
+                            "maly jazvecik".to_string(),
+                            false,
+                            uuid::Uuid::new_v4(),
+                        )],
+                        vec![
+                            ChoiceItem::new("kto".to_string(), false, uuid::Uuid::new_v4()),
+                            ChoiceItem::new("sa".to_string(), false, uuid::Uuid::new_v4()),
+                            ChoiceItem::new("tu".to_string(), false, uuid::Uuid::new_v4()),
+                            ChoiceItem::new("vcera".to_string(), false, uuid::Uuid::new_v4()),
+                            ChoiceItem::new("dosral".to_string(), false, uuid::Uuid::new_v4()),
+                        ],
+                    ]);
 
                     state.move_up(&grid);
                     state.move_right(&grid);
