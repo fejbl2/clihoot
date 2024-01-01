@@ -115,18 +115,25 @@ impl TerminalHandleInput for StudentTerminal {
                 question,
                 players_answered_count: _,
                 answered,
-            } => {
-                if key_code == KeyCode::Enter {
+                choice_selector_state,
+            } => match key_code {
+                KeyCode::Enter => {
                     *answered = true;
 
                     self.ws_actor_address
                         .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
                             player_uuid: self.uuid,
                             question_index: question.question_index,
-                            answers: Vec::new(), // TODO send actual answers
+                            answers: choice_selector_state.selected(),
                         }))
                 }
-            }
+                KeyCode::Char(' ') => choice_selector_state.toggle_selection(), // spacebar
+                KeyCode::Down | KeyCode::Char('j' | 's') => choice_selector_state.move_down(),
+                KeyCode::Up | KeyCode::Char('k' | 'w') => choice_selector_state.move_up(),
+                KeyCode::Right | KeyCode::Char('d' | 'l') => choice_selector_state.move_right(),
+                KeyCode::Left | KeyCode::Char('a' | 'h') => choice_selector_state.move_left(),
+                _ => {}
+            },
             _ => {}
         };
         Ok(())

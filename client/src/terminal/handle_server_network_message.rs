@@ -30,9 +30,10 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
             }
             ServerNetworkMessage::NextQuestion(question) => {
                 self.state = StudentTerminalState::Question {
-                    question,
+                    question: question.clone(),
                     players_answered_count: 0,
                     answered: false,
+                    choice_selector_state: question.question.into(),
                 };
             }
             ServerNetworkMessage::QuestionUpdate(update) => {
@@ -40,6 +41,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     question,
                     players_answered_count,
                     answered: _,
+                    choice_selector_state: _,
                 } = &mut self.state
                 else {
                     anyhow::bail!("Terminal is not showing the question");

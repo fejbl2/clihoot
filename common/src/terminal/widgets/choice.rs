@@ -3,20 +3,36 @@ use ratatui::widgets::{Block, Borders, Paragraph, StatefulWidget, Widget, Wrap};
 use std::collections::HashSet;
 use uuid::Uuid;
 
-#[derive(Debug)]
+use crate::questions::{Choice, ChoiceCensored, Question, QuestionCensored};
+
+#[derive(Debug, Clone)]
 pub struct ChoiceItem {
     content: String,
+    is_right: bool,
     uuid: Uuid,
     style: Style,
 }
 
 impl ChoiceItem {
-    pub fn new(content: String, uuid: Uuid) -> Self {
+    pub fn new(content: String, is_right: bool, uuid: Uuid) -> Self {
         Self {
             content,
+            is_right,
             uuid,
             style: Style::default(),
         }
+    }
+}
+
+impl From<ChoiceCensored> for ChoiceItem {
+    fn from(value: ChoiceCensored) -> Self {
+        Self::new(value.text, false, value.id)
+    }
+}
+
+impl From<Choice> for ChoiceItem {
+    fn from(value: Choice) -> Self {
+        Self::new(value.text, value.is_right, value.id)
     }
 }
 
@@ -33,12 +49,36 @@ impl Styled for ChoiceItem {
     }
 }
 
+type ChoiceGrid = Vec<Vec<ChoiceItem>>;
+
 #[derive(Debug, Default)]
 pub struct ChoiceSelectorState {
     row: usize,
     col: usize,
-    items: Vec<Vec<ChoiceItem>>,
+    items: ChoiceGrid,
     selected: HashSet<Uuid>,
+}
+
+fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<ChoiceItem>> {
+    if items.len() <= 3 {
+        return vec![items];
+    }
+
+    items.chunks(2).map(|chunk| chunk.to_vec()).collect()
+}
+
+impl From<QuestionCensored> for ChoiceSelectorState {
+    fn from(value: QuestionCensored) -> Self {
+        let items: Vec<ChoiceItem> = value.choices.into_iter().map(From::from).collect();
+        Self::new(create_grid(items))
+    }
+}
+
+impl From<Question> for ChoiceSelectorState {
+    fn from(value: Question) -> Self {
+        let items: Vec<ChoiceItem> = value.choices.into_iter().map(From::from).collect();
+        Self::new(create_grid(items))
+    }
 }
 
 impl ChoiceSelectorState {
@@ -108,11 +148,12 @@ impl ChoiceSelectorState {
 
 #[derive(Default)]
 pub struct ChoiceSelector<'a> {
-    // the items that are gonna be displayed are part of the ChoiceSelectorState
-    // we can handle input and moving around the grind more easily that way
     pub block: Option<Block<'a>>,
     pub current_item_style: Style,
     pub selected_item_style: Style,
+    pub right_item_style: Style,
+    // the items that are gonna be displayed are part of the ChoiceSelectorState
+    // that way, we can handle input and moving around the grind more easily
 }
 
 impl<'a> ChoiceSelector<'a> {
@@ -121,6 +162,7 @@ impl<'a> ChoiceSelector<'a> {
             block: None,
             current_item_style: Style::default().italic(),
             selected_item_style: Style::default().bold(),
+            right_item_style: Style::default(),
         }
     }
 
@@ -136,6 +178,11 @@ impl<'a> ChoiceSelector<'a> {
 
     pub fn selected_item_style(mut self, style: Style) -> Self {
         self.selected_item_style = style;
+        self
+    }
+
+    pub fn right_item_style(mut self, style: Style) -> Self {
+        self.right_item_style = style;
         self
     }
 }
@@ -175,6 +222,9 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                 }
                 if state.selected.contains(&item.uuid) {
                     style = style.patch(self.selected_item_style);
+                }
+                if item.is_right {
+                    style = style.patch(self.right_item_style);
                 }
 
                 Paragraph::new(item.content.clone())
