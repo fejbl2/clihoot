@@ -3,6 +3,8 @@ use common::constants::NICKNAME_ALREADY_TAKEN_MSG;
 use common::messages::network::CanJoin;
 use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
+use common::terminal::widgets::choice::ChoiceSelectorState;
+
 use ratatui::widgets::ListState;
 
 impl TerminalHandleServerNetworkMessage for StudentTerminal {
@@ -33,7 +35,8 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     question: question.clone(),
                     players_answered_count: 0,
                     answered: false,
-                    choice_selector_state: question.question.into(),
+                    choice_grid: question.question.into(),
+                    choice_selector_state: ChoiceSelectorState::default(),
                 };
             }
             ServerNetworkMessage::QuestionUpdate(update) => {
@@ -41,6 +44,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     question,
                     players_answered_count,
                     answered: _,
+                    choice_grid: _,
                     choice_selector_state: _,
                 } = &mut self.state
                 else {

@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::questions::{Choice, ChoiceCensored, Question, QuestionCensored};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ChoiceItem {
     content: String,
     is_right: bool,
@@ -49,14 +49,9 @@ impl Styled for ChoiceItem {
     }
 }
 
-type ChoiceGrid = Vec<Vec<ChoiceItem>>;
-
-#[derive(Debug, Default)]
-pub struct ChoiceSelectorState {
-    row: usize,
-    col: usize,
-    items: ChoiceGrid,
-    selected: HashSet<Uuid>,
+#[derive(Default, Debug)]
+pub struct ChoiceGrid {
+    pub items: Vec<Vec<ChoiceItem>>,
 }
 
 fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<ChoiceItem>> {
@@ -67,57 +62,65 @@ fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<ChoiceItem>> {
     items.chunks(2).map(|chunk| chunk.to_vec()).collect()
 }
 
-impl From<QuestionCensored> for ChoiceSelectorState {
+impl From<QuestionCensored> for ChoiceGrid {
     fn from(value: QuestionCensored) -> Self {
         let items: Vec<ChoiceItem> = value.choices.into_iter().map(From::from).collect();
-        Self::new(create_grid(items))
+        Self {
+            items: create_grid(items),
+        }
     }
 }
 
-impl From<Question> for ChoiceSelectorState {
+impl From<Question> for ChoiceGrid {
     fn from(value: Question) -> Self {
         let items: Vec<ChoiceItem> = value.choices.into_iter().map(From::from).collect();
-        Self::new(create_grid(items))
+        Self {
+            items: create_grid(items),
+        }
     }
+}
+
+#[derive(Debug, Default)]
+pub struct ChoiceSelectorState {
+    row: usize,
+    col: usize,
+    selected: HashSet<Uuid>,
 }
 
 impl ChoiceSelectorState {
-    pub fn new(items: Vec<Vec<ChoiceItem>>) -> Self {
-        Self {
-            row: 0,
-            col: 0,
-            items,
-            selected: HashSet::new(),
+    // place the cursor to the last row or to the last item in the row if it is out of bounds
+    // also useful moving up/down and the rows dont have the same ammount of items
+    fn normalize_cursor(&mut self, grid: &ChoiceGrid) {
+        if self.row >= grid.items.len() {
+            self.row = grid.items.len() - 1;
         }
-    }
-
-    // place the cursor to the last item in the row if it is out of bounds
-    // useful when moving up/down and the rows dont have the same ammount of items
-    fn normalize_cursor(&mut self) {
-        let row_len = self.items[self.row].len();
+        let row_len = grid.items[self.row].len();
         if self.col >= row_len {
             self.col = row_len - 1
         }
     }
 
-    pub fn move_up(&mut self) {
+    pub fn move_up(&mut self, grid: &ChoiceGrid) {
+        self.normalize_cursor(grid);
         if self.row == 0 {
-            self.row = self.items.len() - 1;
+            self.row = grid.items.len() - 1;
         } else {
             self.row -= 1;
         }
 
-        self.normalize_cursor();
+        self.normalize_cursor(grid);
     }
 
-    pub fn move_down(&mut self) {
-        self.row = (self.row + 1) % self.items.len();
+    pub fn move_down(&mut self, grid: &ChoiceGrid) {
+        self.normalize_cursor(grid);
+        self.row = (self.row + 1) % grid.items.len();
 
-        self.normalize_cursor();
+        self.normalize_cursor(grid);
     }
 
-    pub fn move_left(&mut self) {
-        let row_len = self.items[self.row].len();
+    pub fn move_left(&mut self, grid: &ChoiceGrid) {
+        self.normalize_cursor(grid);
+        let row_len = grid.items[self.row].len();
         if self.col == 0 {
             self.col = row_len - 1;
         } else {
@@ -125,8 +128,9 @@ impl ChoiceSelectorState {
         }
     }
 
-    pub fn move_right(&mut self) {
-        let row_len = self.items[self.row].len();
+    pub fn move_right(&mut self, grid: &ChoiceGrid) {
+        self.normalize_cursor(grid);
+        let row_len = grid.items[self.row].len();
         self.col = (self.col + 1) % row_len;
     }
 
@@ -135,8 +139,10 @@ impl ChoiceSelectorState {
         self.selected.clone().into_iter().collect()
     }
 
-    pub fn toggle_selection(&mut self) {
-        let item = self.items[self.row][self.col].uuid;
+    pub fn toggle_selection(&mut self, grid: &ChoiceGrid) {
+        self.normalize_cursor(grid);
+
+        let item = grid.items[self.row][self.col].uuid;
 
         if self.selected.contains(&item) {
             self.selected.remove(&item);
@@ -148,17 +154,17 @@ impl ChoiceSelectorState {
 
 #[derive(Default)]
 pub struct ChoiceSelector<'a> {
+    grid: ChoiceGrid,
     pub block: Option<Block<'a>>,
     pub current_item_style: Style,
     pub selected_item_style: Style,
     pub right_item_style: Style,
-    // the items that are gonna be displayed are part of the ChoiceSelectorState
-    // that way, we can handle input and moving around the grind more easily
 }
 
 impl<'a> ChoiceSelector<'a> {
-    pub fn new() -> Self {
+    pub fn new(grid: ChoiceGrid) -> Self {
         Self {
+            grid,
             block: None,
             current_item_style: Style::default().italic(),
             selected_item_style: Style::default().bold(),
@@ -190,6 +196,8 @@ impl<'a> ChoiceSelector<'a> {
 impl<'a> StatefulWidget for ChoiceSelector<'a> {
     type State = ChoiceSelectorState;
 
+    // make sure that the ChoiceSelectorState is used with the same grid as the
+    // ChoiceSelector that is is used to draw
     fn render(mut self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
         let choice_selector_area = match self.block.take() {
             Some(b) => {
@@ -200,7 +208,7 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
             None => area,
         };
 
-        let items = &mut state.items;
+        let items = &mut self.grid.items;
 
         let item_height = choice_selector_area.height / items.len() as u16;
         let (x, y) = (choice_selector_area.x, choice_selector_area.y);
@@ -234,5 +242,12 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                     .render(area, buf);
             }
         }
+    }
+}
+
+impl<'a> Widget for ChoiceSelector<'a> {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        let mut state = ChoiceSelectorState::default();
+        StatefulWidget::render(self, area, buf, &mut state);
     }
 }

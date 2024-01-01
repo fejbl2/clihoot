@@ -5,7 +5,9 @@ use common::terminal::terminal_actor::TerminalDraw;
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
-use common::terminal::widgets::choice::{ChoiceItem, ChoiceSelector, ChoiceSelectorState};
+use common::terminal::widgets::choice::{
+    ChoiceGrid, ChoiceItem, ChoiceSelector, ChoiceSelectorState,
+};
 use ratatui::widgets::{Block, Borders};
 
 impl TerminalDraw for StudentTerminal {
@@ -42,6 +44,7 @@ impl TerminalDraw for StudentTerminal {
                 question,
                 players_answered_count,
                 answered,
+                choice_grid: _,
                 choice_selector_state: _,
             } => {
                 term.draw(|frame| {
@@ -82,36 +85,39 @@ impl TerminalDraw for StudentTerminal {
                 term.draw(|frame| {
                     let default_block = Block::default().title("natpis").borders(Borders::ALL);
 
-                    let mut state = ChoiceSelectorState::new(vec![
-                        vec![
-                            ChoiceItem::new("42".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("69".to_string(), false, uuid::Uuid::new_v4()),
+                    let mut state = ChoiceSelectorState::default();
+                    let grid = ChoiceGrid {
+                        items: vec![
+                            vec![
+                                ChoiceItem::new("42".to_string(), false, uuid::Uuid::new_v4()),
+                                ChoiceItem::new("69".to_string(), false, uuid::Uuid::new_v4()),
+                            ],
+                            vec![ChoiceItem::new(
+                                "maly jazvecik".to_string(),
+                                false,
+                                uuid::Uuid::new_v4(),
+                            )],
+                            vec![
+                                ChoiceItem::new("kto".to_string(), false, uuid::Uuid::new_v4()),
+                                ChoiceItem::new("sa".to_string(), false, uuid::Uuid::new_v4()),
+                                ChoiceItem::new("tu".to_string(), false, uuid::Uuid::new_v4()),
+                                ChoiceItem::new("vcera".to_string(), false, uuid::Uuid::new_v4()),
+                                ChoiceItem::new("dosral".to_string(), false, uuid::Uuid::new_v4()),
+                            ],
                         ],
-                        vec![ChoiceItem::new(
-                            "maly jazvecik".to_string(),
-                            false,
-                            uuid::Uuid::new_v4(),
-                        )],
-                        vec![
-                            ChoiceItem::new("kto".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("sa".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("tu".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("vcera".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("dosral".to_string(), false, uuid::Uuid::new_v4()),
-                        ],
-                    ]);
+                    };
 
-                    state.move_up();
-                    state.move_right();
-                    state.move_left();
-                    state.move_left();
-                    state.move_down();
-                    state.move_down();
-                    state.move_down();
-                    state.toggle_selection();
+                    state.move_up(&grid);
+                    state.move_right(&grid);
+                    state.move_left(&grid);
+                    state.move_left(&grid);
+                    state.move_down(&grid);
+                    state.move_down(&grid);
+                    state.move_down(&grid);
+                    state.toggle_selection(&grid);
 
                     frame.render_stateful_widget(
-                        ChoiceSelector::new().block(default_block),
+                        ChoiceSelector::new(grid).block(default_block),
                         frame.size(),
                         &mut state,
                     );

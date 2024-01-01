@@ -115,6 +115,7 @@ impl TerminalHandleInput for StudentTerminal {
                 question,
                 players_answered_count: _,
                 answered,
+                choice_grid,
                 choice_selector_state,
             } => match key_code {
                 KeyCode::Enter => {
@@ -127,11 +128,19 @@ impl TerminalHandleInput for StudentTerminal {
                             answers: choice_selector_state.selected(),
                         }))
                 }
-                KeyCode::Char(' ') => choice_selector_state.toggle_selection(), // spacebar
-                KeyCode::Down | KeyCode::Char('j' | 's') => choice_selector_state.move_down(),
-                KeyCode::Up | KeyCode::Char('k' | 'w') => choice_selector_state.move_up(),
-                KeyCode::Right | KeyCode::Char('d' | 'l') => choice_selector_state.move_right(),
-                KeyCode::Left | KeyCode::Char('a' | 'h') => choice_selector_state.move_left(),
+                KeyCode::Char(' ') => choice_selector_state.toggle_selection(&choice_grid), // spacebar
+                KeyCode::Down | KeyCode::Char('j' | 's') => {
+                    choice_selector_state.move_down(&choice_grid)
+                }
+                KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                    choice_selector_state.move_up(&choice_grid)
+                }
+                KeyCode::Right | KeyCode::Char('d' | 'l') => {
+                    choice_selector_state.move_right(&choice_grid)
+                }
+                KeyCode::Left | KeyCode::Char('a' | 'h') => {
+                    choice_selector_state.move_left(&choice_grid)
+                }
                 _ => {}
             },
             _ => {}
