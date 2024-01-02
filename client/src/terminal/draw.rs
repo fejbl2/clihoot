@@ -14,43 +14,46 @@ impl TerminalDraw for StudentTerminal {
         match &mut self.state {
             StudentTerminalState::StartGame => {
                 term.draw(|frame| {
-                    render_welcome(frame);
+                    let _ = render_welcome(frame);
                 })?;
                 Ok(())
             }
             StudentTerminalState::NameSelection { name } => {
                 term.draw(|frame| {
-                    render_name_selection(frame, name);
+                    let _ = render_name_selection(frame, name, true);
                 })?;
                 Ok(())
             }
             StudentTerminalState::ColorSelection { list_state } => {
                 term.draw(|frame| {
-                    render_color_selection(frame, self.color, list_state);
+                    let _ = render_color_selection(frame, self.color, list_state);
                 })?;
                 Ok(())
             }
-            StudentTerminalState::WaitingForGame { players } => {
+            StudentTerminalState::WaitingForGame {
+                list_state,
+                players,
+            } => {
                 term.draw(|frame| {
-                    render_waiting(frame, players);
+                    let _ = render_waiting(frame, players, list_state);
                 })?;
                 Ok(())
             }
             StudentTerminalState::EndGame => {
                 term.draw(|frame| {
-                    render_end_game(frame);
+                    let _ = render_end_game(frame);
                 })?;
                 Ok(())
             }
             StudentTerminalState::Error { message } => {
                 term.draw(|frame| {
-                    render_error(frame, message);
+                    let _ = render_error(frame, message);
                 })?;
                 Ok(())
             }
             _ => {
                 term.draw(|frame| {
-                    render_error(frame, "The state is not implemented yet");
+                    let _ = render_error(frame, "The state is not implemented yet");
                 })?;
                 Ok(())
             }

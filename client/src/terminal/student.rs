@@ -21,6 +21,7 @@ pub enum StudentTerminalState {
         list_state: ListState,
     },
     WaitingForGame {
+        list_state: ListState,
         players: Vec<PlayerData>,
     },
     Question {

@@ -1,5 +1,6 @@
 use crate::terminal::constants::COLORS;
 
+use anyhow::anyhow;
 use common::messages::network::PlayerData;
 use figlet_rs::FIGfont;
 use ratatui::{
@@ -8,8 +9,8 @@ use ratatui::{
 };
 use std::{rc::Rc, str::FromStr};
 
-fn get_outer_block() -> Block<'static> {
-    let title = Title::from("Clihoot: Here will be name");
+fn get_outer_block(name: &str) -> Block<'static> {
+    let title = Title::from("Clihoot: ".to_owned() + name);
     let block = Block::default()
         .title(title)
         .title_style(style::Style::default().bold())
@@ -38,15 +39,16 @@ fn get_bordered_block() -> Block<'static> {
     block
 }
 
-fn render_ascii_art(frame: &mut Frame, lines: &[&str]) {
-    let outer_block = get_outer_block();
+fn render_ascii_art(frame: &mut Frame, lines: &[&str], text: &str) -> anyhow::Result<()> {
+    let outer_block = get_outer_block("Quiz name");
     let inner = outer_block.inner(frame.size());
 
     let mut constraints = vec![];
     for _ in lines {
-        let constraint = Constraint::Percentage((100 / lines.len()).try_into().unwrap());
+        let constraint = Constraint::Percentage((95 / lines.len()).try_into()?);
         constraints.push(constraint);
     }
+    constraints.push(Constraint::Min(1));
 
     let layout = Layout::default()
         .direction(Direction::Vertical)
@@ -55,15 +57,33 @@ fn render_ascii_art(frame: &mut Frame, lines: &[&str]) {
 
     frame.render_widget(outer_block, frame.size());
 
-    let standard_font = FIGfont::standard().unwrap();
+    if frame.size().height > 18 {
+        let standard_font = FIGfont::standard().map_err(|_| anyhow!("Couldn't get font"))?;
 
-    for i in 0..lines.len() {
-        let figure = standard_font.convert(lines[i]).unwrap();
-        let paragraph = Paragraph::new(figure.to_string())
-            .block(get_empty_block())
-            .alignment(Alignment::Center);
-        frame.render_widget(paragraph, layout[i]);
+        for i in 0..lines.len() {
+            let figure = standard_font
+                .convert(lines[i])
+                .ok_or(anyhow!("Couldn't convert text to figure"))?;
+            let paragraph = Paragraph::new(figure.to_string())
+                .block(get_empty_block())
+                .alignment(Alignment::Center);
+            frame.render_widget(paragraph, layout[i]);
+        }
+    } else {
+        for i in 0..lines.len() {
+            let paragraph = Paragraph::new(lines[i])
+                .block(get_empty_block())
+                .alignment(Alignment::Center);
+            frame.render_widget(paragraph, layout[i]);
+        }
     }
+
+    let paragraph = Paragraph::new(text)
+        .block(get_empty_block())
+        .alignment(Alignment::Center);
+    frame.render_widget(paragraph, layout[lines.len()]);
+
+    Ok(())
 }
 
 fn render_welcome_layout(
@@ -71,7 +91,7 @@ fn render_welcome_layout(
     constraints: Vec<Constraint>,
     paragraph_name: String,
 ) -> Rc<[Rect]> {
-    let outer_block = get_outer_block();
+    let outer_block = get_outer_block("Quiz name");
     let inner_block = get_inner_block("Welcome!".to_string());
     let inner = outer_block.inner(frame.size());
 
@@ -91,8 +111,8 @@ fn render_welcome_layout(
     layout
 }
 
-fn render_simple_message(frame: &mut Frame, title: String, message: &str) {
-    let outer_block = get_outer_block();
+fn render_simple_message(frame: &mut Frame, title: String, message: &str) -> anyhow::Result<()> {
+    let outer_block = get_outer_block("Quiz name");
     let inner_block = get_inner_block(title);
     let inner = outer_block.inner(frame.size());
 
@@ -105,14 +125,18 @@ fn render_simple_message(frame: &mut Frame, title: String, message: &str) {
     frame.render_widget(outer_block, frame.size());
     frame.render_widget(inner_block, inner);
     frame.render_widget(paragraph, content_space);
+
+    Ok(())
 }
 
-pub fn render_welcome(frame: &mut Frame) {
+pub fn render_welcome(frame: &mut Frame) -> anyhow::Result<()> {
     let lines = ["Welcome", "to", "Clihoot!"];
-    render_ascii_art(frame, &lines);
+    render_ascii_art(frame, &lines, "Press ENTER to start")?;
+
+    Ok(())
 }
 
-pub fn render_name_selection(frame: &mut Frame, name: &str) {
+pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool) -> anyhow::Result<()> {
     let layout = render_welcome_layout(
         frame,
         vec![
@@ -124,22 +148,29 @@ pub fn render_name_selection(frame: &mut Frame, name: &str) {
     );
 
     let paragraph_name = Paragraph::new(format!("{name}|")).block(get_bordered_block());
-    let paragraph_used_name = Paragraph::new("Si jebnuty!!!")
+    let paragraph_used_name = Paragraph::new("Name already used")
         .fg(Color::Red)
-        .block(Block::default().borders(Borders::NONE));
+        .block(get_empty_block());
 
     frame.render_widget(paragraph_name, layout[1]);
-    frame.render_widget(paragraph_used_name, layout[2]);
+    if name_used {
+        frame.render_widget(paragraph_used_name, layout[2]);
+    }
+
+    Ok(())
 }
 
-pub fn render_color_selection(frame: &mut Frame, _color: Color, list_state: &mut ListState) {
+pub fn render_color_selection(
+    frame: &mut Frame,
+    _color: Color,
+    list_state: &mut ListState,
+) -> anyhow::Result<()> {
     let layout = render_welcome_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
         "Color: ".to_string(),
     );
 
-    // TOOD constant for this
     let items: Vec<_> = COLORS
         .iter()
         .map(|color| ListItem::new(format!("{color:?}")).style(style::Style::default().fg(*color)))
@@ -151,9 +182,15 @@ pub fn render_color_selection(frame: &mut Frame, _color: Color, list_state: &mut
         .highlight_symbol(">> ");
 
     frame.render_stateful_widget(list, layout[1], list_state);
+
+    Ok(())
 }
 
-pub fn render_waiting(frame: &mut Frame, players: &mut [PlayerData]) {
+pub fn render_waiting(
+    frame: &mut Frame,
+    players: &mut [PlayerData],
+    list_state: &mut ListState,
+) -> anyhow::Result<()> {
     let layout = render_welcome_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
@@ -170,51 +207,84 @@ pub fn render_waiting(frame: &mut Frame, players: &mut [PlayerData]) {
         })
         .collect();
 
-    let list = List::new(items).block(get_bordered_block());
+    let list = List::new(items)
+        .block(get_bordered_block())
+        .highlight_symbol(">> ");
 
-    frame.render_widget(list, layout[1]);
+    frame.render_stateful_widget(list, layout[1], list_state);
+
+    Ok(())
 }
 
-pub fn render_question(frame: &mut Frame, question: &str, answers: &[String]) {
+pub fn render_question(
+    frame: &mut Frame,
+    question: &str,
+    answers: &[String],
+) -> anyhow::Result<()> {
+    let paragraph = Paragraph::new(format!("{}\n\n{}", question, answers.join("\n")))
+        .block(get_outer_block("Quiz name"));
+    frame.render_widget(paragraph, frame.size());
+
+    Ok(())
+}
+
+pub fn render_question_waiting(frame: &mut Frame) -> anyhow::Result<()> {
     let paragraph =
-        Paragraph::new(format!("{}\n\n{}", question, answers.join("\n"))).block(get_outer_block());
+        Paragraph::new("Waiting for others to answer...").block(get_outer_block("Quiz name"));
     frame.render_widget(paragraph, frame.size());
+
+    Ok(())
 }
 
-pub fn render_question_waiting(frame: &mut Frame) {
-    let paragraph = Paragraph::new("Waiting for others to answer...").block(get_outer_block());
-    frame.render_widget(paragraph, frame.size());
-}
-
-pub fn render_question_answers(frame: &mut Frame, question: &str, results: &[String]) {
+pub fn render_question_answers(
+    frame: &mut Frame,
+    question: &str,
+    results: &[String],
+) -> anyhow::Result<()> {
     let paragraph = Paragraph::new(format!("{}\n\n{}", question, results.join("\n")))
         .block(Block::default().title("Results").borders(Borders::ALL));
     frame.render_widget(paragraph, frame.size());
+
+    Ok(())
 }
 
-pub fn render_results(frame: &mut Frame, results: &[String]) {
+pub fn render_results(frame: &mut Frame, results: &[String]) -> anyhow::Result<()> {
     let paragraph = Paragraph::new(format!("{}\n\n{}", "Final results", results.join("\n")))
         .block(Block::default().title("Results").borders(Borders::ALL));
     frame.render_widget(paragraph, frame.size());
+
+    Ok(())
 }
 
-pub fn render_end_game(frame: &mut Frame) {
+pub fn render_end_game(frame: &mut Frame) -> anyhow::Result<()> {
     let lines = ["Game", "Over", "Thank you!"];
-    render_ascii_art(frame, &lines);
+    render_ascii_art(frame, &lines, "Press ENTER to exit")?;
+
+    Ok(())
 }
 
-pub fn render_teacher_welcome(frame: &mut Frame) {
+pub fn render_teacher_welcome(frame: &mut Frame) -> anyhow::Result<()> {
     render_simple_message(
         frame,
         "Welcome!".to_string(),
         "To start the game press ENTER",
-    );
+    )?;
+
+    Ok(())
 }
 
-pub fn render_teacher_lobby(frame: &mut Frame, players: &mut [PlayerData]) {
-    render_waiting(frame, players);
+pub fn render_teacher_lobby(
+    frame: &mut Frame,
+    players: &mut [PlayerData],
+    list_state: &mut ListState,
+) -> anyhow::Result<()> {
+    render_waiting(frame, players, list_state)?;
+
+    Ok(())
 }
 
-pub fn render_error(frame: &mut Frame, message: &str) {
-    render_simple_message(frame, "Error!".to_string(), message);
+pub fn render_error(frame: &mut Frame, message: &str) -> anyhow::Result<()> {
+    render_simple_message(frame, "Error!".to_string(), message)?;
+
+    Ok(())
 }

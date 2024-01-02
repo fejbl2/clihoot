@@ -91,7 +91,7 @@ async fn read_messages_from_socket<'a>(
 ) {
     while let Some(msg) = receiver.next().await {
         let Ok(msg) = msg else {
-            println!("Hanging up on '{}' because reading from socket failed", who);
+            println!("Hanging up on '{who}' because reading from socket failed");
             addr.do_send(WebsocketHardStop);
             return;
         };
