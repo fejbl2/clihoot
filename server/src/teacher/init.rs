@@ -8,6 +8,8 @@ use actix_rt::System;
 
 use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
 
+use log::{debug, warn};
+
 pub struct Teacher {
     pub lobby: Addr<Lobby>,
 }
@@ -16,7 +18,7 @@ impl Actor for Teacher {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        println!("Teacher started, sending RegisterTeacherMessage to lobby");
+        debug!("Teacher started, sending RegisterTeacherMessage to lobby");
 
         self.lobby.do_send(RegisterTeacher {
             teacher: ctx.address(),
@@ -24,12 +26,12 @@ impl Actor for Teacher {
     }
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::prelude::Running {
-        println!("Teacher stopping");
+        debug!("Teacher stopping");
         actix::prelude::Running::Stop
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        println!("Teacher stopped");
+        debug!("Teacher stopped");
     }
 }
 
@@ -63,7 +65,7 @@ async fn init(lobby: Addr<Lobby>, tx: Sender<Addr<Teacher>>) -> anyhow::Result<(
         tokio::signal::ctrl_c()
             .await
             .expect("Failed to register CTRL-C handler");
-        println!("CTRL-C received, shutting down");
+        warn!("CTRL-C received, shutting down");
         System::current().stop();
     });
 

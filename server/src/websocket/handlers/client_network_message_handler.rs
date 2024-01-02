@@ -15,6 +15,8 @@ use crate::{
     websocket::{ws_utils::send_message, Websocket},
 };
 
+use log::error;
+
 async fn handle_try_join_request(
     lobby: Addr<Lobby>,
     msg: TryJoinRequest,
@@ -38,7 +40,7 @@ async fn handle_answer_selected(
 
     if let Err(e) = res {
         // an error means that the client tries to cheat and therefore, we will disconnect
-        println!("Player tried to cheat: {e}");
+        error!("Player tried to cheat: {e}");
         addr.do_send(WebsocketGracefulStop { reason: None });
         return Err(e);
     }
@@ -75,7 +77,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
         match msg {
             ClientNetworkMessage::TryJoinRequest(msg) => {
                 if self.player_id.is_some() {
-                    println!("Player tried to cheat by sending another TryJoinRequest",);
+                    error!("Player tried to cheat by sending another TryJoinRequest",);
                     ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }
@@ -91,7 +93,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
             ClientNetworkMessage::JoinRequest(msg) => {
                 // If player is cheating by sending a different uuid, just hang up
                 if self.player_id != Some(msg.player_data.uuid) {
-                    println!("Player tried to cheat by sending a different uuid",);
+                    error!("Player tried to cheat by sending a different uuid",);
                     ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }
@@ -106,7 +108,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
             ClientNetworkMessage::AnswerSelected(msg) => {
                 // If player is cheating by sending a different uuid, just hang up
                 if self.player_id != Some(msg.player_uuid) {
-                    println!("Player tried to cheat by sending a different uuid");
+                    error!("Player tried to cheat by sending a different uuid");
                     ctx.notify(WebsocketGracefulStop { reason: None });
                     return;
                 }

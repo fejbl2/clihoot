@@ -12,6 +12,7 @@ use common::{
     questions::{QuestionCensored, QuestionSet},
 };
 
+use log::debug;
 use rand::prelude::*;
 
 use std::collections::HashMap;
@@ -295,15 +296,15 @@ impl Actor for Lobby {
     type Context = Context<Self>;
 
     fn started(&mut self, _ctx: &mut Self::Context) {
-        println!("Lobby started");
+        debug!("Lobby started");
     }
 
     fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::prelude::Running {
-        println!("Lobby stopping");
+        debug!("Lobby stopping");
         actix::prelude::Running::Stop
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        println!("Lobby stopped");
+        debug!("Lobby stopped");
     }
 }

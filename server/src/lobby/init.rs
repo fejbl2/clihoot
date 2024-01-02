@@ -3,13 +3,13 @@ use actix::{Actor, Addr};
 use actix_rt::System;
 
 use common::questions::QuestionSet;
+use log::{info, warn};
 use tokio::net::TcpListener;
 
 use std::{net::SocketAddr, sync::mpsc::Sender};
 
-use crate::websocket::Websocket;
-
 use super::state::Lobby;
+use crate::websocket::Websocket;
 
 fn create_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
@@ -58,7 +58,7 @@ async fn init(
         tokio::signal::ctrl_c()
             .await
             .expect("Failed to register CTRL-C handler");
-        println!("CTRL-C received, shutting down");
+        warn!("CTRL-C received, shutting down");
         System::current().stop();
     });
 
@@ -71,12 +71,12 @@ async fn accept_connections(addr: SocketAddr, lobby: Addr<Lobby>) -> anyhow::Res
     let listener = TcpListener::bind(addr).await?;
 
     loop {
-        println!("Listening on: {addr:?}, waiting to accept a new connection");
+        info!("Listening on: {addr:?}, waiting to accept a new connection");
 
         // accept a connection
         let (socket, who) = listener.accept().await?;
 
-        println!("Accepted connection from: {who:?}");
+        info!("Accepted connection from: {who:?}");
 
         // spawn a actor for managing the connection
         let ws = Websocket::new(lobby.clone(), socket, who).await?;

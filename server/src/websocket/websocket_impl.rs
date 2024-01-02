@@ -16,10 +16,10 @@ use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::task::JoinHandle;
 
+use crate::messages::websocket::{DisconnectFromLobby, WebsocketHardStop};
+use log::{debug, error, info};
 use tungstenite::Message;
 use uuid::Uuid;
-
-use crate::messages::websocket::{DisconnectFromLobby, WebsocketHardStop};
 
 pub struct Websocket {
     pub lobby_addr: Addr<Lobby>,
@@ -80,7 +80,7 @@ impl Actor for Websocket {
     }
 
     fn stopped(&mut self, _ctx: &mut Self::Context) {
-        println!("Stopped WsConn for {}", self.who);
+        debug!("Stopped WsConn for {}", self.who);
     }
 }
 
@@ -91,7 +91,7 @@ async fn read_messages_from_socket<'a>(
 ) {
     while let Some(msg) = receiver.next().await {
         let Ok(msg) = msg else {
-            println!("Hanging up on '{}' because reading from socket failed", who);
+            info!("Hanging up on '{}' because reading from socket failed", who);
             addr.do_send(WebsocketHardStop);
             return;
         };
@@ -104,7 +104,7 @@ async fn read_messages_from_socket<'a>(
                         addr.do_send(msg);
                     }
                     Err(e) => {
-                        println!("Hanging up on the client bcs parsing message failed: {e}");
+                        error!("Hanging up on the client bcs parsing message failed: {}", e);
                         addr.do_send(WebsocketGracefulStop { reason: None });
                     }
                 }
