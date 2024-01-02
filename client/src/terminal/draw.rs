@@ -10,7 +10,6 @@ impl TerminalDraw for StudentTerminal {
         &mut self,
         term: &mut ratatui::prelude::Terminal<ratatui::prelude::CrosstermBackend<std::io::Stdout>>,
     ) -> anyhow::Result<()> {
-        // TODO define function that would do the drawing
         match &mut self.state {
             StudentTerminalState::StartGame => {
                 term.draw(|frame| {
@@ -18,9 +17,12 @@ impl TerminalDraw for StudentTerminal {
                 })?;
                 Ok(())
             }
-            StudentTerminalState::NameSelection { name } => {
+            StudentTerminalState::NameSelection {
+                name,
+                name_already_used,
+            } => {
                 term.draw(|frame| {
-                    let _ = render_name_selection(frame, name, true);
+                    let _ = render_name_selection(frame, name, *name_already_used);
                 })?;
                 Ok(())
             }
@@ -30,12 +32,9 @@ impl TerminalDraw for StudentTerminal {
                 })?;
                 Ok(())
             }
-            StudentTerminalState::WaitingForGame {
-                list_state,
-                players,
-            } => {
+            StudentTerminalState::WaitingForGame { list_state } => {
                 term.draw(|frame| {
-                    let _ = render_waiting(frame, players, list_state);
+                    let _ = render_waiting(frame, &mut self.players, list_state);
                 })?;
                 Ok(())
             }

@@ -11,15 +11,16 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
     ) -> anyhow::Result<()> {
         match network_message {
             ServerNetworkMessage::JoinResponse(join) => {
-                if let CanJoin::No(message) = join.can_join {
-                    // TODO maybe rather return to the name selections screen
-                    // and input the name and color again
-                    self.state = StudentTerminalState::Error { message };
+                self.players = join.players;
+                if let CanJoin::No(_message) = join.can_join {
+                    self.state = StudentTerminalState::NameSelection {
+                        name: self.name.clone(),
+                        name_already_used: true,
+                    };
                     return Ok(());
                 }
                 self.state = StudentTerminalState::WaitingForGame {
                     list_state: ListState::default().with_selected(Some(0)),
-                    players: join.players,
                 };
             }
             ServerNetworkMessage::NextQuestion(question) => {
@@ -54,13 +55,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 };
             }
             ServerNetworkMessage::PlayersUpdate(update) => {
-                if let StudentTerminalState::WaitingForGame {
-                    players,
-                    list_state: _,
-                } = &mut self.state
-                {
-                    *players = update.players;
-                }
+                self.players = update.players;
             }
             ServerNetworkMessage::TeacherDisconnected(_) => {
                 self.state = StudentTerminalState::Error {
