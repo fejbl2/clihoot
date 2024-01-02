@@ -1,10 +1,9 @@
-use crate::terminal::constants::COLORS;
+use crate::terminal::draw_states::{
+    render_color_selection, render_end_game, render_error, render_name_selection, render_waiting,
+    render_welcome,
+};
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalDraw;
-use ratatui::{
-    prelude::*,
-    widgets::{Block, Borders, List, ListItem, Paragraph},
-};
 
 impl TerminalDraw for StudentTerminal {
     fn redraw(
@@ -13,55 +12,51 @@ impl TerminalDraw for StudentTerminal {
     ) -> anyhow::Result<()> {
         // TODO define function that would do the drawing
         match &mut self.state {
+            StudentTerminalState::StartGame => {
+                term.draw(|frame| {
+                    let _ = render_welcome(frame);
+                })?;
+                Ok(())
+            }
             StudentTerminalState::NameSelection { name } => {
                 term.draw(|frame| {
-                    frame.render_widget(
-                        Paragraph::new(format!("Name: {name}|")).block(
-                            Block::default()
-                                .title("Write your name")
-                                .borders(Borders::ALL),
-                        ),
-                        frame.size(),
-                    );
+                    let _ = render_name_selection(frame, name, true);
                 })?;
+                Ok(())
             }
             StudentTerminalState::ColorSelection { list_state } => {
                 term.draw(|frame| {
-                    let default_block = Block::default()
-                        .title("Select your color")
-                        .borders(Borders::ALL);
-
-                    // TODO constant for this
-                    let items: Vec<_> = COLORS
-                        .iter()
-                        .map(|color| {
-                            ListItem::new(format!("{color:?}")).style(Style::default().fg(*color))
-                        })
-                        .collect();
-
-                    frame.render_stateful_widget(
-                        List::new(items)
-                            .block(default_block)
-                            .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
-                            .highlight_symbol(">> "),
-                        frame.size(),
-                        list_state,
-                    );
+                    let _ = render_color_selection(frame, self.color, list_state);
                 })?;
+                Ok(())
+            }
+            StudentTerminalState::WaitingForGame {
+                list_state,
+                players,
+            } => {
+                term.draw(|frame| {
+                    let _ = render_waiting(frame, players, list_state);
+                })?;
+                Ok(())
+            }
+            StudentTerminalState::EndGame => {
+                term.draw(|frame| {
+                    let _ = render_end_game(frame);
+                })?;
+                Ok(())
+            }
+            StudentTerminalState::Error { message } => {
+                term.draw(|frame| {
+                    let _ = render_error(frame, message);
+                })?;
+                Ok(())
             }
             _ => {
                 term.draw(|frame| {
-                    frame.render_widget(
-                        Paragraph::new(format!(
-                            "Your name is \"{}\" and your color is \"{:?}\"\nCurrent state of terminal is \"{:?}\".",
-                            self.name, self.color, self.state
-                        ))
-                        .block(Block::default().title("Greeting").borders(Borders::ALL)),
-                        frame.size(),
-                    );
+                    let _ = render_error(frame, "The state is not implemented yet");
                 })?;
+                Ok(())
             }
         }
-        Ok(())
     }
 }

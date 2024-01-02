@@ -60,6 +60,7 @@ pub struct MusicActor {
 }
 
 impl MusicActor {
+    #[must_use]
     pub fn new(silent: bool) -> Self {
         if !silent {
             if let Ok((stream, stream_handle)) = OutputStream::try_default() {
