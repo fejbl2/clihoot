@@ -25,3 +25,5 @@ futures = "0.3.29"
 ratatui = "0.24.0"
 tokio = { version = "1.35.0", features = ["full"] }
 figlet-rs = "0.1.5"
+log = "0.4.20"
+simplelog = { version = "0.12.1", features = ["paris", "test", "ansi_term"] }

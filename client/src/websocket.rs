@@ -3,6 +3,7 @@ use actix::{Actor, Context, Message};
 
 use futures::stream::{SplitSink, SplitStream};
 use futures::{SinkExt, StreamExt};
+use log::{debug, info, warn};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -84,8 +85,8 @@ impl WebsocketActor {
             return;
         };
 
-        if let No(_reason) = can_join {
-            //println!("server does not allow us to join, reason: {reason}");
+        if let No(reason) = can_join {
+            info!("server does not allow us to join, reason: {}", reason);
         }
 
         let my_address = ctx.address();
@@ -132,7 +133,7 @@ async fn send_message(
     my_address: Addr<WebsocketActor>,
 ) {
     if let Err(_error) = send_message_directly(stream_tx, message).await {
-        //println!("websocket failed to send message");
+        debug!("websocket failed to send message");
         my_address.do_send(ClientWebsocketStatus::CantSendMessage);
     }
 }
@@ -149,7 +150,7 @@ async fn send_message_directly(
 ) -> anyhow::Result<()> {
     let serialized_message = serde_json::to_string(&message)?;
 
-    //println!("client websocket actor: sending message");
+    debug!("client websocket actor: sending message");
 
     stream_tx
         .borrow_mut()
@@ -163,7 +164,7 @@ impl Handler<ServerNetworkMessage> for WebsocketActor {
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, msg: ServerNetworkMessage, ctx: &mut Self::Context) -> Self::Result {
-        //println!("get message from server: {msg:?}");
+        debug!("get message from server: {:?}", msg);
 
         self.handle_try_join_response(msg.clone(), ctx);
 
@@ -179,7 +180,7 @@ impl Handler<ClientWebsocketStatus> for WebsocketActor {
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, msg: ClientWebsocketStatus, ctx: &mut Self::Context) -> Self::Result {
-        //println!("get status message: {msg:?}");
+        debug!("get status message: {:?}", msg);
 
         for sub in &self.subscribers_status {
             sub.do_send(msg.clone());
@@ -201,7 +202,7 @@ impl Handler<Subscribe> for WebsocketActor {
     type Result = ();
 
     fn handle(&mut self, msg: Subscribe, _: &mut Self::Context) {
-        //println!("new subscribe request for network messages from: {msg:?}");
+        debug!("new subscribe request for network messages from: {:?}", msg);
         self.subscribers_network_messages.push(msg.0);
     }
 }
@@ -210,7 +211,7 @@ impl Handler<SubscribeStatus> for WebsocketActor {
     type Result = ();
 
     fn handle(&mut self, msg: SubscribeStatus, _: &mut Self::Context) {
-        //println!("new subscribe request for error messages from: {msg:?}");
+        debug!("new subscribe request for error messages from: {:?}", msg);
         self.subscribers_status.push(msg.0);
     }
 }
@@ -219,7 +220,7 @@ impl Actor for WebsocketActor {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Context<Self>) {
-        //println!("starting websocket actor");
+        debug!("starting websocket actor");
 
         let ws_stream_rx = self
             .ws_stream_rx
@@ -231,7 +232,7 @@ impl Actor for WebsocketActor {
             if let Err(_error) =
                 listen_for_messages(ws_stream_rx, websocket_actor_address.clone()).await
             {
-                //println!("websocket failed listening");
+                warn!("websocket failed listening");
                 websocket_actor_address.do_send(ClientWebsocketStatus::ListeningFail);
             }
         }
@@ -266,7 +267,7 @@ async fn listen_for_messages(
             _ => {}
         }
     }
-    //println!("client websocket closed.");
+    info!("client websocket closed.");
     websocket_actor_address.do_send(ClientWebsocketStatus::SocketClosed);
     Ok(())
 }

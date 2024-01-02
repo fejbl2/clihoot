@@ -1,16 +1,32 @@
+use std::path::PathBuf;
+
 use clap::Parser;
 use clap_num::number_range;
+
+use log::info;
 
 fn valid_port(s: &str) -> Result<u16, String> {
     number_range(s, 1025u16, u16::MAX)
 }
 
-fn valid_file(file: &str) -> Result<String, String> {
-    if !std::path::Path::new(file).exists() {
-        return Err(format!("File {file} does not exist"));
-    }
+fn valid_questions_file(file: &str) -> Result<PathBuf, String> {
+    // recursively try to find the file from the current directory up to the root
+    let mut current_dir = std::env::current_dir().expect("Failed to get current directory");
+    loop {
+        // if user entered absolute path, this also works thanks to how 'join' works
+        let path = current_dir.join(file);
+        if path.exists() {
+            info!("Using questions file '{}'", path.to_str().unwrap());
+            return Ok(path);
+        }
 
-    Ok(file.to_string())
+        if !current_dir.pop() {
+            break;
+        }
+    }
+    Err(format!(
+        "File {file} does not exist nowhere in the current directory and its parents"
+    ))
 }
 
 #[derive(Parser)]
@@ -21,8 +37,12 @@ pub struct Args {
     pub port: u16,
 
     /// Where to load questions from
-    #[clap(short, long, value_parser=valid_file, default_value="../common/tests/files/ok_code.yaml")]
-    pub questions_file: String,
+    #[clap(short, long, value_parser=valid_questions_file, default_value = "default_questions.yaml")]
+    pub questions_file: PathBuf,
+
+    /// Where to write log messages to
+    #[clap(short, long, default_value = "clihoot_server_logs.log")]
+    pub log_file: PathBuf,
 
     /// Whether to randomize questions order (default: false)
     #[clap(short, long, default_value = "false")]

@@ -7,10 +7,12 @@ use crate::{
     messages::lobby::{EndQuestion, StartQuestion},
 };
 
+use log::debug;
+
 async fn notify_end_question_after(duration: Duration, index: usize, addr: Addr<Lobby>) {
-    println!("Waiting for {:?} seconds", duration.as_secs());
+    debug!("Waiting for {:?} seconds", duration.as_secs());
     tokio::time::sleep(duration).await;
-    println!("Sending EarlyEndQuestion");
+    debug!("Sending EndQuestion");
     addr.do_send(EndQuestion { index });
 }
 
