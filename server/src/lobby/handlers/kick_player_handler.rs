@@ -5,6 +5,8 @@ use crate::{
     messages::{lobby::KickPlayer, websocket::WebsocketGracefulStop},
 };
 
+use log::{info, warn};
+
 impl Handler<KickPlayer> for Lobby {
     type Result = anyhow::Result<()>;
 
@@ -12,7 +14,7 @@ impl Handler<KickPlayer> for Lobby {
         let socket = match { self.joined_players.get(&msg.player_uuid) } {
             Some(socket) => socket.addr.clone(),
             None => {
-                println!("{} was not found in joined_players", msg.player_uuid);
+                warn!("{} was not found in joined_players", msg.player_uuid);
                 return Ok(());
             }
         };
@@ -23,7 +25,7 @@ impl Handler<KickPlayer> for Lobby {
 
         socket.do_send(WebsocketGracefulStop { reason: msg.reason });
 
-        println!("{} was kicked by teacher", msg.player_uuid);
+        info!("{} was kicked by teacher", msg.player_uuid);
 
         self.send_players_update(Some(&msg.player_uuid));
 

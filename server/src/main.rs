@@ -8,8 +8,18 @@ use clap::Parser;
 use common::questions::QuestionSet;
 use server::{args::Args, lobby::init::run_server, teacher::init::run_teacher};
 
+use simplelog::{CombinedLogger, Config, LevelFilter, WriteLogger};
+
+use std::fs::File;
+
 fn main() -> anyhow::Result<()> {
     let args: Args = Args::parse();
+
+    CombinedLogger::init(vec![WriteLogger::new(
+        LevelFilter::Info,
+        Config::default(),
+        File::create(args.log_file)?,
+    )])?;
 
     let path = std::path::Path::new(&args.questions_file);
     let mut questions = QuestionSet::from_file(path)?;
