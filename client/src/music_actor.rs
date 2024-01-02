@@ -4,6 +4,8 @@ use rodio::{OutputStream, OutputStreamHandle};
 use rodio::{Sink, Source};
 use std::io::{BufReader, Cursor};
 
+use log::error;
+
 const LOBBY_MUSIC: &[u8] = include_bytes!("../assets/lobby.mp3");
 const COUNTDOWN_MUSIC: &[u8] = include_bytes!("../assets/countdown.mp3");
 
@@ -70,9 +72,7 @@ impl MusicActor {
                     };
                 }
             }
-            eprintln!(
-                "Failed to open stream to music device, no music will be played during game."
-            );
+            error!("Failed to open stream to music device, no music will be played during game.");
         }
 
         MusicActor {
@@ -102,7 +102,7 @@ impl Handler<MusicMessage> for MusicActor {
         if let Ok(source) = rodio::Decoder::new(reader) {
             sink.append(source);
         } else {
-            eprintln!("Failed to decode the music.");
+            error!("Failed to decode the music.");
         }
     }
 }
@@ -120,7 +120,7 @@ impl Handler<SoundEffectMessage> for MusicActor {
         if let Ok(source) = rodio::Decoder::new(reader) {
             stream_handle.play_raw(source.convert_samples()).unwrap();
         } else {
-            eprintln!("Failed to decode the sound effect.");
+            error!("Failed to decode the sound effect.");
         }
     }
 }
