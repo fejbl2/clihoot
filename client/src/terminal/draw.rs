@@ -5,11 +5,6 @@ use common::terminal::terminal_actor::TerminalDraw;
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
-use common::terminal::widgets::choice::{
-    ChoiceGrid, ChoiceItem, ChoiceSelector, ChoiceSelectorState,
-};
-use ratatui::widgets::{Block, Borders};
-
 impl TerminalDraw for StudentTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
         match &mut self.state {
@@ -78,47 +73,6 @@ impl TerminalDraw for StudentTerminal {
             StudentTerminalState::Error { message } => {
                 term.draw(|frame| {
                     let _ = render::error(frame, message);
-                })?;
-                Ok(())
-            }
-            _ => {
-                term.draw(|frame| {
-                    let default_block = Block::default().title("natpis").borders(Borders::ALL);
-
-                    let mut state = ChoiceSelectorState::default();
-                    let grid = ChoiceGrid::new(vec![
-                        vec![
-                            ChoiceItem::new("42".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("69".to_string(), false, uuid::Uuid::new_v4()),
-                        ],
-                        vec![ChoiceItem::new(
-                            "maly jazvecik".to_string(),
-                            false,
-                            uuid::Uuid::new_v4(),
-                        )],
-                        vec![
-                            ChoiceItem::new("kto".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("sa".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("tu".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("vcera".to_string(), false, uuid::Uuid::new_v4()),
-                            ChoiceItem::new("dosral".to_string(), false, uuid::Uuid::new_v4()),
-                        ],
-                    ]);
-
-                    state.move_up(&grid);
-                    state.move_right(&grid);
-                    state.move_left(&grid);
-                    state.move_left(&grid);
-                    state.move_down(&grid);
-                    state.move_down(&grid);
-                    state.move_down(&grid);
-                    state.toggle_selection(&grid);
-
-                    frame.render_stateful_widget(
-                        ChoiceSelector::new(grid).block(default_block),
-                        frame.size(),
-                        &mut state,
-                    );
                 })?;
                 Ok(())
             }
