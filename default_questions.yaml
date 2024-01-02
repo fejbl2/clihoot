@@ -1,0 +1,17 @@
+questions:
+- text: What does this code do?
+  code_block: 
+    language: rust
+    code: >
+      fn main() {
+          println!("42");
+      }
+  time_seconds: 42
+  choices:
+  - text: Nothing useful
+  - text: It prints 42
+    is_right: true
+  - text: It fails to compile and the compiler will scream at us
+  - text: It answers to the ultimate question of life, the Universe, and Everything
+    is_right: true
+
