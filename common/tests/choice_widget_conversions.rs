@@ -16,7 +16,7 @@ fn test_choice_item_from_censored() {
 
     let wanted = ChoiceItem::new(text.clone(), false, id);
 
-    assert!(choice_item == wanted);
+    assert_eq!(choice_item, wanted);
 }
 
 #[test]
@@ -33,7 +33,7 @@ fn test_choice_item_from_uncensored() {
 
     let wanted = ChoiceItem::new(text.clone(), true, id);
 
-    assert!(choice_item == wanted);
+    assert_eq!(choice_item, wanted);
 }
 
 #[test]
@@ -65,7 +65,7 @@ fn test_choice_grid_from_censored_2_choices() {
         ChoiceItem::new(text.clone(), false, id_2),
     ]]);
 
-    assert!(choice_grid == wanted);
+    assert_eq!(choice_grid, wanted);
 }
 
 #[test]
@@ -103,7 +103,7 @@ fn test_choice_grid_from_censored_3_choices() {
         ChoiceItem::new(text.clone(), false, id_3),
     ]]);
 
-    assert!(choice_grid == wanted);
+    assert_eq!(choice_grid, wanted);
 }
 
 #[test]
@@ -151,7 +151,7 @@ fn test_choice_grid_from_censored_4_choices() {
         ],
     ]);
 
-    assert!(choice_grid == wanted);
+    assert_eq!(choice_grid, wanted);
 }
 
 #[test]
@@ -185,7 +185,7 @@ fn test_choice_grid_from_uncensored_2_choices() {
         ChoiceItem::new(text.clone(), false, id_2),
     ]]);
 
-    assert!(choice_grid == wanted);
+    assert_eq!(choice_grid, wanted);
 }
 
 #[test]
@@ -226,7 +226,7 @@ fn test_choice_grid_from_uncensored_3_choices() {
         ChoiceItem::new(text.clone(), true, id_3),
     ]]);
 
-    assert!(choice_grid == wanted);
+    assert_eq!(choice_grid, wanted);
 }
 
 #[test]
@@ -278,5 +278,5 @@ fn test_choice_grid_from_uncensored_4_choices() {
         ],
     ]);
 
-    assert!(choice_grid == wanted);
+    assert_eq!(choice_grid, wanted);
 }

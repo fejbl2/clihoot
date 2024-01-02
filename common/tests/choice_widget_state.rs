@@ -30,32 +30,39 @@ fn test_one_row_move_around() {
     let grid = one_row_fixture(&uuids);
 
     let mut state = ChoiceSelectorState::default();
-    assert!(state.row() == 0 && state.col() == 0);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
 
     state.move_up(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0]));
 
     state.move_down(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0]));
 
     state.move_right(&grid);
-    assert!(state.row() == 0 && state.col() == 1);
-    assert!(state.last_under_cursor() == Some(uuids[1]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1]));
 
     state.move_left(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0]));
 
     state.move_left(&grid);
-    assert!(state.row() == 0 && state.col() == 2);
-    assert!(state.last_under_cursor() == Some(uuids[2]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 2);
+    assert_eq!(state.last_under_cursor(), Some(uuids[2]));
 
     state.move_right(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0]));
 }
 
 #[test]
@@ -111,44 +118,54 @@ fn test_classic_4_choices_move_around() {
     let grid = multiple_row_fixture(&uuids);
 
     let mut state = ChoiceSelectorState::default();
-    assert!(state.row() == 0 && state.col() == 0);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
 
     state.move_down(&grid);
-    assert!(state.row() == 1 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[1][0]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][0]));
 
     state.move_up(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0][0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0][0]));
 
     state.move_up(&grid);
-    assert!(state.row() == 1 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[1][0]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][0]));
 
     state.move_down(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0][0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0][0]));
 
     state.move_down(&grid);
-    assert!(state.row() == 1 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[1][0]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][0]));
 
     state.move_right(&grid);
-    assert!(state.row() == 1 && state.col() == 1);
-    assert!(state.last_under_cursor() == Some(uuids[1][1]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][1]));
 
     state.move_right(&grid);
-    assert!(state.row() == 1 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[1][0]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][0]));
 
     state.move_left(&grid);
-    assert!(state.row() == 1 && state.col() == 1);
-    assert!(state.last_under_cursor() == Some(uuids[1][1]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][1]));
 
     state.move_left(&grid);
-    assert!(state.row() == 1 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[1][0]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][0]));
 }
 
 #[test]
@@ -213,34 +230,40 @@ fn test_random_grid_move_around() {
     let grid = multiple_row_fixture(&uuids);
 
     let mut state = ChoiceSelectorState::default();
-    assert!(state.row() == 0 && state.col() == 0);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
 
     state.move_right(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0][0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0][0]));
 
     state.move_left(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0][0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0][0]));
 
     state.move_down(&grid);
-    println!("{:?}", state);
-    assert!(state.row() == 1 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[1][0]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][0]));
 
     state.move_right(&grid);
-    assert!(state.row() == 1 && state.col() == 1);
-    assert!(state.last_under_cursor() == Some(uuids[1][1]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][1]));
 
     state.move_right(&grid);
-    assert!(state.row() == 1 && state.col() == 2);
-    assert!(state.last_under_cursor() == Some(uuids[1][2]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 2);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1][2]));
 
     // correctly change the state.col when moving to row with less items
     state.move_up(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[0][0]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[0][0]));
 }
 
 #[test]
@@ -255,13 +278,15 @@ fn test_reconfigure_grid() {
     ]]);
 
     let mut state = ChoiceSelectorState::default();
-    assert!(state.row() == 0 && state.col() == 0);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
 
     // move to the middle item
     state.move_right(&grid);
-    assert!(state.row() == 0 && state.col() == 1);
-    assert!(state.last_under_cursor() == Some(uuids[1]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1]));
 
     // rearange the grid to be one single column with three rows
     let grid = ChoiceGrid::new(vec![
@@ -271,9 +296,9 @@ fn test_reconfigure_grid() {
     ]);
 
     state.move_to_last_known_choice(&grid);
-    println!("{:?}", state);
-    assert!(state.row() == 1 && state.col() == 0);
-    assert!(state.last_under_cursor() == Some(uuids[1]));
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1]));
 
     // rearange back to the original config
     let grid = ChoiceGrid::new(vec![vec![
@@ -284,8 +309,9 @@ fn test_reconfigure_grid() {
 
     // try to select item under the cursor, without calling the move_to_last_known_choice function
     state.toggle_selection(&grid);
-    assert!(state.row() == 0 && state.col() == 1);
-    assert!(state.last_under_cursor() == Some(uuids[1]));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1]));
     let selected = state.selected();
     assert!(selected.len() == 1 && selected.contains(&uuids[1]));
 }
@@ -302,13 +328,15 @@ fn test_grid_changed_completely() {
     ]]);
 
     let mut state = ChoiceSelectorState::default();
-    assert!(state.row() == 0 && state.col() == 0);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
 
     // move to the right
     state.move_right(&grid);
-    assert!(state.row() == 0 && state.col() == 1);
-    assert!(state.last_under_cursor() == Some(uuid_old_2));
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuid_old_2));
 
     // completely change the grid, this should not happen when using the
     // widget, if the user uses the widget like an inteligent human being
@@ -322,7 +350,8 @@ fn test_grid_changed_completely() {
 
     // we should be back at [0, 0] so we can somehow move around again
     state.move_to_last_known_choice(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
 }
 
 #[test]
@@ -334,7 +363,8 @@ fn test_empty_grid() {
 
     // nothing should happen
     state.move_right(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
 }
 
@@ -347,6 +377,7 @@ fn test_grid_empty_line() {
 
     // nothing should happen
     state.move_right(&grid);
-    assert!(state.row() == 0 && state.col() == 0);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
 }
