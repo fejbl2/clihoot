@@ -9,6 +9,7 @@ use ratatui::{
     Frame,
 };
 
+use crate::constants::MINIMAL_ASCII_HEIGHT;
 use crate::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 
 pub fn get_outer_block(name: &str) -> Block<'static> {
@@ -207,7 +208,7 @@ pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str) -> anyhow::Resul
 
     frame.render_widget(outer_block, frame.size());
 
-    if frame.size().height > 18 {
+    if frame.size().height > MINIMAL_ASCII_HEIGHT {
         let standard_font = FIGfont::standard().map_err(|_| anyhow!("Couldn't get font"))?;
 
         for i in 0..lines.len() {

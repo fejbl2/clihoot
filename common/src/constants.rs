@@ -4,3 +4,4 @@ pub const PLAYER_NOT_IN_WAITING_LIST_MSG: &str = "Player not in waiting list";
 pub const NICKNAME_ALREADY_TAKEN_MSG: &str = "Nickname already taken";
 pub const DEFAULT_PORT: u16 = 8080;
 pub const DEFAULT_GOODBYE_MESSAGE: &str = "Goodbye";
+pub const MINIMAL_ASCII_HEIGHT: u16 = 18;
