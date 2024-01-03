@@ -52,7 +52,7 @@ coverage:
     - python3 /usr/local/lib/python3.5/dist-packages/lcov_cobertura.py coverage.lcov
     - apt-get update && apt-get install -y lcov
     - lcov --summary coverage.lcov
-  coverage: '\s*lines\.*:\s*([\d\.]+%)'
+  coverage: '/\s*lines\.*:\s*([\d\.]+%)/'
   artifacts:
     paths:
       - "coverage"
