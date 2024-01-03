@@ -9,7 +9,7 @@ default:
     - shared-fi
   before_script:
     - apt update && apt install -y libasound2-dev
-    - apt install -y python3 python3-pip
+    - apt install -y python3-pip
 
 stages:
   #   - build
@@ -42,18 +42,13 @@ coverage:
     RUSTFLAGS: "-C instrument-coverage"
     LLVM_PROFILE_FILE: "coverage-%p-%m.profraw"
   script:
-    - pip3 install lcov_cobertura
-    - ls /usr/local/lib/python3.8/dist-packages/
-    - lcov_cobertura
     - rustup component add llvm-tools-preview
     - cargo test --features integration-test
     - cargo install grcov
     - grcov . --binary-path ./target/debug/ -s . -t html --branch --ignore-not-existing --ignore "*cargo*" -o ./coverage/
     - pip3 install lcov_cobertura
     - grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "*cargo*" -o coverage.lcov
-    # - ls /usr/local/lib/python*
-    # - ls /usr/local/lib/python3.8/dist-packages/
-    # - lcov_cobertura coverage.lcov
+    - lcov_cobertura coverage.lcov
     - apt-get update && apt-get install -y lcov
     - lcov --summary coverage.lcov
   coverage: '/\s*lines\.*:\s*([\d\.]+%)/'
