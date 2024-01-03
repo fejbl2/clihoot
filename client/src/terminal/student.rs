@@ -17,13 +17,13 @@ pub enum StudentTerminalState {
     StartGame,
     NameSelection {
         name: String,
+        name_already_used: bool,
     },
     ColorSelection {
         list_state: ListState,
     },
     WaitingForGame {
         list_state: ListState,
-        players: Vec<PlayerData>,
     },
     Question {
         question: NextQuestion,
@@ -48,6 +48,7 @@ pub struct StudentTerminal {
     pub name: String,
     pub color: Color,
     pub quiz_name: String,
+    pub players: Vec<PlayerData>,
     pub ws_actor_address: Addr<WebsocketActor>,
     pub state: StudentTerminalState,
     pub music_address: Addr<MusicActor>,
@@ -66,6 +67,7 @@ impl StudentTerminal {
             name: String::new(),
             color: Color::default(),
             quiz_name,
+            players: Vec::new(),
             ws_actor_address: ws_addr,
             state: StudentTerminalState::StartGame,
             music_address,
