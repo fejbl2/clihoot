@@ -47,7 +47,6 @@ coverage:
     - ls /usr/local/lib/python3.8/dist-packages/
     - lcov_cobertura
     - false
-
     - rustup component add llvm-tools-preview
     - cargo test --features integration-test
     # generate html report
