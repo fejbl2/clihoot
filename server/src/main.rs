@@ -44,13 +44,15 @@ fn main() -> anyhow::Result<()> {
     let (tx_server, rx_server) = mpsc::channel();
     let (tx_teacher, _rx_teacher) = mpsc::channel();
 
+    let quiz_name = questions.quiz_name.clone();
+
     let server_thread = thread::spawn(move || {
         run_server(tx_server, questions, addr).expect("Failed to run server");
     });
 
     let teacher_thread = thread::spawn(move || {
         let server = rx_server.recv().expect("Failed to receive server address");
-        run_teacher(server, tx_teacher).expect("Failed to run teacher");
+        run_teacher(server, tx_teacher, &quiz_name).expect("Failed to run teacher");
     });
 
     // wait for threads to finish

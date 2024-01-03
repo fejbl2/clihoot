@@ -14,10 +14,7 @@ use futures_util::SinkExt;
 use rstest::rstest;
 use server::{
     lobby::state::{Lobby, Phase},
-    messages::{
-        lobby::{self},
-        teacher::{self},
-    },
+    messages::lobby::{self},
     teacher::init::Teacher,
 };
 use tungstenite::{
@@ -73,7 +70,7 @@ async fn answer_cannot_be_selected_if_question_is_not_started(
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

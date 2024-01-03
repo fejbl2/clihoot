@@ -1,39 +1,16 @@
 use std::sync::mpsc::Sender;
 
-use actix::{
-    prelude::{Actor, Context},
-    Addr, AsyncContext,
-};
+use actix::{prelude::Actor, Addr};
 use actix_rt::System;
+use common::terminal::terminal_actor::TerminalActor;
 
 use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
 
-use log::{debug, warn};
+use log::warn;
 
-pub struct Teacher {
-    pub lobby: Addr<Lobby>,
-}
+use super::terminal::TeacherTerminal;
 
-impl Actor for Teacher {
-    type Context = Context<Self>;
-
-    fn started(&mut self, ctx: &mut Self::Context) {
-        debug!("Teacher started, sending RegisterTeacherMessage to lobby");
-
-        self.lobby.do_send(RegisterTeacher {
-            teacher: ctx.address(),
-        });
-    }
-
-    fn stopping(&mut self, _ctx: &mut Self::Context) -> actix::prelude::Running {
-        debug!("Teacher stopping");
-        actix::prelude::Running::Stop
-    }
-
-    fn stopped(&mut self, _ctx: &mut Self::Context) {
-        debug!("Teacher stopped");
-    }
-}
+pub type Teacher = TerminalActor<TeacherTerminal>;
 
 fn create_tokio_runtime() -> tokio::runtime::Runtime {
     tokio::runtime::Builder::new_current_thread()
@@ -42,10 +19,14 @@ fn create_tokio_runtime() -> tokio::runtime::Runtime {
         .expect("Could not create tokio runtime") // cannot seem to get rid of this
 }
 
-pub fn run_teacher(lobby: Addr<Lobby>, tx: Sender<Addr<Teacher>>) -> anyhow::Result<()> {
+pub fn run_teacher(
+    lobby: Addr<Lobby>,
+    tx: Sender<Addr<Teacher>>,
+    quiz_name: &str,
+) -> anyhow::Result<()> {
     let system = actix::System::with_tokio_rt(create_tokio_runtime);
 
-    system.block_on(init(lobby, tx))?;
+    system.block_on(init(lobby, tx, quiz_name))?;
 
     system.run()?;
 
@@ -53,12 +34,19 @@ pub fn run_teacher(lobby: Addr<Lobby>, tx: Sender<Addr<Teacher>>) -> anyhow::Res
 }
 
 #[allow(clippy::unused_async)]
-async fn init(lobby: Addr<Lobby>, tx: Sender<Addr<Teacher>>) -> anyhow::Result<()> {
-    // spawn an actor for managing the lobby
-    let teacher_actor = Teacher { lobby }.start();
+async fn init(
+    lobby: Addr<Lobby>,
+    tx: Sender<Addr<Teacher>>,
+    quiz_name: &str,
+) -> anyhow::Result<()> {
+    let teacher =
+        TerminalActor::new(TeacherTerminal::new(quiz_name.to_string(), lobby.clone())).start();
 
-    tx.send(teacher_actor.clone())
-        .expect("Failed to send teacher address");
+    lobby.do_send(RegisterTeacher {
+        teacher: teacher.clone(),
+    });
+
+    tx.send(teacher).expect("Failed to send teacher address");
 
     // handle CTRL+C gracefully
     tokio::spawn(async move {

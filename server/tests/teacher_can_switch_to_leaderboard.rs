@@ -13,10 +13,7 @@ use actix::Addr;
 use rstest::rstest;
 use server::{
     lobby::state::{Lobby, Phase},
-    messages::{
-        lobby::{self, StartQuestion, SwitchToLeaderboard},
-        teacher,
-    },
+    messages::lobby::{self, StartQuestion, SwitchToLeaderboard},
     teacher::init::Teacher,
 };
 
@@ -69,7 +66,7 @@ async fn teacher_can_switch_to_leaderboard(
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

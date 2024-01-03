@@ -7,11 +7,7 @@ use std::{thread::JoinHandle, time::Duration};
 use actix::Addr;
 
 use rstest::rstest;
-use server::{
-    lobby::state::Lobby,
-    messages::{lobby, teacher},
-    teacher::init::Teacher,
-};
+use server::{lobby::state::Lobby, messages::lobby, teacher::init::Teacher};
 
 use crate::{
     fixtures::create_server_and_teacher::create_server_and_teacher,
@@ -50,7 +46,7 @@ async fn player_disconnects_and_server_sends_notices(
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

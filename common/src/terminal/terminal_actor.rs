@@ -9,8 +9,11 @@ use std::io::stdout;
 use std::io::Stdout;
 use std::marker::Unpin;
 
-use crate::messages::status_messages::ClientWebsocketStatus;
 use crate::messages::ServerNetworkMessage;
+use crate::messages::{
+    network::{NextQuestion, QuestionEnded, QuestionUpdate, ShowLeaderboard},
+    status_messages::ClientWebsocketStatus,
+};
 use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
 
 pub trait TerminalDraw {
@@ -30,6 +33,26 @@ pub trait TerminalHandleServerNetworkMessage {
 
 pub trait TerminalHandleClientWebsocketStatus {
     fn handle_client_ws_status(&mut self, ws_status: ClientWebsocketStatus) -> anyhow::Result<()>;
+}
+
+pub trait TerminalHandleNextQuestion {
+    fn handle_next_question(&mut self, question: NextQuestion) -> anyhow::Result<()>;
+}
+
+pub trait TerminalHandleQuestionEnded {
+    fn handle_question_ended(&mut self, ended: QuestionEnded) -> anyhow::Result<()>;
+}
+
+pub trait TerminalHandleQuestionUpdate {
+    fn handle_question_update(&mut self, update: QuestionUpdate) -> anyhow::Result<()>;
+}
+
+pub trait TerminalHandleShowLeaderboard {
+    fn handle_show_leaderboard(&mut self, show: ShowLeaderboard) -> anyhow::Result<()>;
+}
+
+pub trait TerminalStop {
+    fn stop(&mut self) -> anyhow::Result<()>;
 }
 
 pub struct TerminalActor<T>
@@ -77,7 +100,7 @@ where
 
 impl<T> Handler<Stop> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     type Result = anyhow::Result<()>;
 
@@ -85,6 +108,7 @@ where
         disable_raw_mode()?;
         stdout().execute(LeaveAlternateScreen)?;
         ctx.stop();
+        self.inner.stop()?;
         Ok(())
     }
 }
@@ -132,6 +156,54 @@ where
 
     fn handle(&mut self, msg: ClientWebsocketStatus, _ctx: &mut Self::Context) -> Self::Result {
         self.inner.handle_client_ws_status(msg)?;
+        self.inner.redraw(&mut self.terminal)
+    }
+}
+
+impl<T> Handler<NextQuestion> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleNextQuestion,
+{
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, msg: NextQuestion, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_next_question(msg)?;
+        self.inner.redraw(&mut self.terminal)
+    }
+}
+
+impl<T> Handler<QuestionEnded> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleQuestionEnded,
+{
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, msg: QuestionEnded, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_question_ended(msg)?;
+        self.inner.redraw(&mut self.terminal)
+    }
+}
+
+impl<T> Handler<QuestionUpdate> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleQuestionUpdate,
+{
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, msg: QuestionUpdate, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_question_update(msg)?;
+        self.inner.redraw(&mut self.terminal)
+    }
+}
+
+impl<T> Handler<ShowLeaderboard> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleShowLeaderboard,
+{
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, msg: ShowLeaderboard, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_show_leaderboard(msg)?;
         self.inner.redraw(&mut self.terminal)
     }
 }

@@ -9,7 +9,7 @@ use common::questions::{Choice, Question, QuestionSet};
 
 use rstest::rstest;
 use server::messages::lobby::{self, StartQuestion};
-use server::messages::teacher;
+
 use uuid::Uuid;
 
 use crate::fixtures::create_server::create_server;
@@ -79,7 +79,7 @@ async fn question_ends_itself_after_timeout_test_implementation() -> anyhow::Res
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

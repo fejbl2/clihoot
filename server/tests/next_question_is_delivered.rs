@@ -11,7 +11,7 @@ use common::test_utils::compare_censored_questions;
 use common::{assert_censored_question_eq, questions::QuestionCensored};
 use rstest::rstest;
 use server::messages::lobby;
-use server::messages::teacher::{self};
+
 use server::{
     lobby::state::{Lobby, Phase},
     messages::lobby::StartQuestion,
@@ -59,7 +59,7 @@ async fn next_question_is_delivered(
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

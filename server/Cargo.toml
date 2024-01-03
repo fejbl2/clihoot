@@ -29,3 +29,5 @@ itertools = "0.12.0"
 log = "0.4.20"
 simplelog = { version = "0.12.1", features = ["paris", "test", "ansi_term"] }
 ratatui = "0.24.0"
+figlet-rs = "0.1.5"
+crossterm = { version = "0.27.0", features = ["event-stream"] }

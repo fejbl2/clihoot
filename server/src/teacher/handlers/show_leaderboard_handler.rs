@@ -1,13 +1,15 @@
-use actix::{Context, Handler};
-use common::messages::network::ShowLeaderboard;
+use common::{
+    messages::network::ShowLeaderboard, terminal::terminal_actor::TerminalHandleShowLeaderboard,
+};
 
-use crate::teacher::init::Teacher;
+use crate::teacher::terminal::TeacherTerminal;
+use log::debug;
 
-impl Handler<ShowLeaderboard> for Teacher {
-    type Result = anyhow::Result<()>;
+impl TerminalHandleShowLeaderboard for TeacherTerminal {
+    fn handle_show_leaderboard(&mut self, _show: ShowLeaderboard) -> anyhow::Result<()> {
+        debug!("Teacher: handling show leaderboard");
+        // TODO
 
-    fn handle(&mut self, _msg: ShowLeaderboard, _: &mut Context<Self>) -> Self::Result {
-        // TODO: show to the teacher
         Ok(())
     }
 }

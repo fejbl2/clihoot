@@ -1,12 +1,15 @@
-use actix::{Context, Handler};
-use common::messages::network::QuestionUpdate;
+use common::{
+    messages::network::QuestionUpdate, terminal::terminal_actor::TerminalHandleQuestionUpdate,
+};
+use log::debug;
 
-use crate::teacher::init::Teacher;
+use crate::teacher::terminal::TeacherTerminal;
 
-impl Handler<QuestionUpdate> for Teacher {
-    type Result = ();
+impl TerminalHandleQuestionUpdate for TeacherTerminal {
+    fn handle_question_update(&mut self, _update: QuestionUpdate) -> anyhow::Result<()> {
+        debug!("Teacher: handling question update");
+        // TODO
 
-    fn handle(&mut self, _msg: QuestionUpdate, _: &mut Context<Self>) {
-        // TODO: show to the teacher
+        Ok(())
     }
 }

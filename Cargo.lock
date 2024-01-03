@@ -2035,6 +2035,8 @@ dependencies = [
  "clap",
  "clap-num",
  "common",
+ "crossterm",
+ "figlet-rs",
  "futures",
  "futures-util",
  "itertools 0.12.0",

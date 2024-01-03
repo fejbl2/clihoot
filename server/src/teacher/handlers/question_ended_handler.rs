@@ -1,12 +1,15 @@
-use actix::{Context, Handler};
-use common::messages::network::QuestionEnded;
+use common::{
+    messages::network::QuestionEnded, terminal::terminal_actor::TerminalHandleQuestionEnded,
+};
+use log::debug;
 
-use crate::teacher::init::Teacher;
+use crate::teacher::terminal::TeacherTerminal;
 
-impl Handler<QuestionEnded> for Teacher {
-    type Result = ();
+impl TerminalHandleQuestionEnded for TeacherTerminal {
+    fn handle_question_ended(&mut self, _question_ended: QuestionEnded) -> anyhow::Result<()> {
+        debug!("Teacher: handling question ended");
+        // TODO
 
-    fn handle(&mut self, _msg: QuestionEnded, _: &mut Context<Self>) {
-        // TODO: show to the teacher
+        Ok(())
     }
 }

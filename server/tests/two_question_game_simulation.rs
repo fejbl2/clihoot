@@ -13,10 +13,7 @@ use common::{
 use rstest::rstest;
 use server::{
     lobby::state::{Lobby, Phase},
-    messages::{
-        lobby::{self, StartQuestion, SwitchToLeaderboard},
-        teacher,
-    },
+    messages::lobby::{self, StartQuestion, SwitchToLeaderboard},
 };
 use uuid::Uuid;
 
@@ -284,7 +281,9 @@ async fn two_question_game_simulation() -> anyhow::Result<()> {
     game.server.send(lobby::HardStop).await?;
     game.server_thread.join().expect("Server thread panicked");
 
-    game.teacher.send(teacher::HardStop).await?;
+    game.teacher
+        .send(common::terminal::messages::Stop)
+        .await??;
     game.teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())
