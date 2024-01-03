@@ -34,6 +34,7 @@ test:
     - cargo test --verbose --features integration-test
 
 coverage:
+  stage: coverage
   script:
     - cargo install cargo-tarpaulin
     - cargo tarpaulin --features integration-test
