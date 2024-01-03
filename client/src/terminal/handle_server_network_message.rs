@@ -1,4 +1,5 @@
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
+use common::constants::NICKNAME_ALREADY_TAKEN_MSG;
 use common::messages::network::CanJoin;
 use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
@@ -12,11 +13,15 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
         match network_message {
             ServerNetworkMessage::JoinResponse(join) => {
                 self.players = join.players;
-                if let CanJoin::No(_message) = join.can_join {
-                    self.state = StudentTerminalState::NameSelection {
-                        name: self.name.clone(),
-                        name_already_used: true,
-                    };
+                if let CanJoin::No(message) = join.can_join {
+                    if message == NICKNAME_ALREADY_TAKEN_MSG {
+                        self.state = StudentTerminalState::NameSelection {
+                            name: self.name.clone(),
+                            name_already_used: true,
+                        };
+                    } else {
+                        self.state = StudentTerminalState::Error { message }
+                    }
                     return Ok(());
                 }
                 self.state = StudentTerminalState::WaitingForGame {
