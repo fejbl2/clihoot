@@ -45,17 +45,10 @@ coverage:
     - rustup component add llvm-tools-preview
     - cargo test --features integration-test
     - cargo install grcov
-    - grcov . --binary-path ./target/debug/ -s . -t html --branch --ignore-not-existing --ignore "*cargo*" -o ./coverage/
-    - pip3 install lcov_cobertura
-    - grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "*cargo*" -o coverage.lcov
-    - lcov_cobertura coverage.lcov
-    - apt-get update && apt-get install -y lcov
-    - lcov --summary coverage.lcov
+    - grcov . --binary-path ./target/debug/ -s . -t cobertura --branch --ignore-not-existing --ignore "*cargo*" -o coverage.xml
   coverage: '/\s*lines\.*:\s*([\d\.]+%)/'
   artifacts:
-    paths:
-      - "coverage"
     reports:
       coverage_report:
         coverage_format: cobertura
-        path: cobertura.xml
+        path: coverage.xml
