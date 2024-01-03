@@ -13,6 +13,7 @@ default:
 stages:
   - build
   - test
+  - coverage
 
 build:
   stage: build
@@ -31,3 +32,9 @@ test:
   stage: test
   script:
     - cargo test --verbose --features integration-test
+
+coverage:
+  script:
+    - cargo install cargo-tarpaulin
+    - cargo tarpaulin --features integration-test
+  coverage: '/^\d+.\d+% coverage/'
