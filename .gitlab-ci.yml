@@ -12,38 +12,32 @@ default:
     - apt install -y libxml2-utils
 
 stages:
-  #   - build
-  #   - test
-  - coverage
+  - build
+  - test
 
-# build:
-#   stage: build
-#   script:
-#     - cargo build --verbose
+build:
+  stage: build
+  script:
+    - cargo build --verbose
 
-# lint:
-#   stage: test
-#   script:
-#     - rustup component add rustfmt
-#     - cargo fmt -- --check
-#     - rustup component add clippy
-#     - cargo clippy -- -D warnings
-
-# test:
-#   stage: test
-#   script:
-#     - cargo test --verbose --features integration-test
+lint:
+  stage: test
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+    - rustup component add clippy
+    - cargo clippy -- -D warnings
 
 # https://github.com/mozilla/grcov
-coverage:
+test:
   image: "rustdocker/rust:nightly"
-  stage: coverage
+  stage: test
   variables:
     RUSTFLAGS: "-C instrument-coverage"
     LLVM_PROFILE_FILE: "coverage-%p-%m.profraw"
   script:
     - rustup component add llvm-tools-preview
-    - cargo test --features integration-test
+    - cargo test --verbose --features integration-test
     - cargo install grcov
     - grcov . --binary-path ./target/debug/ -s . -t cobertura --branch --ignore-not-existing --ignore *cargo* -o cobertura.xml
     - xmllint --xpath '100 * string(//coverage/@line-rate)' cobertura.xml > coverage
