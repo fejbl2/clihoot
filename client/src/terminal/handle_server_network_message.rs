@@ -2,6 +2,7 @@ use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::messages::network::CanJoin;
 use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
+use ratatui::widgets::ListState;
 
 impl TerminalHandleServerNetworkMessage for StudentTerminal {
     fn handle_network_message(
@@ -17,6 +18,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     return Ok(());
                 }
                 self.state = StudentTerminalState::WaitingForGame {
+                    list_state: ListState::default().with_selected(Some(0)),
                     players: join.players,
                 };
             }
@@ -52,7 +54,11 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 };
             }
             ServerNetworkMessage::PlayersUpdate(update) => {
-                if let StudentTerminalState::WaitingForGame { players } = &mut self.state {
+                if let StudentTerminalState::WaitingForGame {
+                    players,
+                    list_state: _,
+                } = &mut self.state
+                {
                     *players = update.players;
                 }
             }

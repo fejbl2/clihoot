@@ -13,6 +13,7 @@ use common::terminal::terminal_actor::TerminalActor;
 
 #[derive(Debug)]
 pub enum StudentTerminalState {
+    StartGame,
     NameSelection {
         name: String,
     },
@@ -20,6 +21,7 @@ pub enum StudentTerminalState {
         list_state: ListState,
     },
     WaitingForGame {
+        list_state: ListState,
         players: Vec<PlayerData>,
     },
     Question {
@@ -64,9 +66,7 @@ impl StudentTerminal {
             color: Color::default(),
             quiz_name,
             ws_actor_address: ws_addr,
-            state: StudentTerminalState::NameSelection {
-                name: String::new(),
-            },
+            state: StudentTerminalState::StartGame,
             music_address,
         }
     }
