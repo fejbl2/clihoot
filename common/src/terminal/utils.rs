@@ -12,16 +12,20 @@ pub fn highlight_code_block(code_block: &CodeBlock) -> Text {
     let ss = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
-    // TODO use rust if error
-    let syntax = ss.find_syntax_by_extension(&code_block.language).unwrap();
-    // TODO maybe change with some option when launching
+    let Some(syntax) = ss.find_syntax_by_extension(&code_block.language) else {
+        return Text::from("Unable to highlight code block");
+    };
+
+    // TODO add option to change theme
     let mut highlighter = HighlightLines::new(syntax, &ts.themes["base16-eighties.dark"]);
 
     let mut lines: Vec<Line> = Vec::new();
 
-    //for line in LinesWithEndings::from(&code_block.code) {
     for line in LinesWithEndings::from(&code_block.code) {
-        let ranges = highlighter.highlight_line(line, &ss).unwrap();
+        let Ok(ranges) = highlighter.highlight_line(line, &ss) else {
+            return Text::from("Unable to highlight code block");
+        };
+
         let spans = ranges.into_iter().map(range_to_span).collect::<Vec<_>>();
         let line = Line::from(spans).to_owned();
         lines.push(line);
@@ -29,7 +33,7 @@ pub fn highlight_code_block(code_block: &CodeBlock) -> Text {
     Text::from(lines)
 }
 
-fn range_to_span((style, content): (Style, &'_ str)) -> Span<'_> {
+fn range_to_span((style, content): (Style, &str)) -> Span {
     Span::styled(
         content,
         ratatui::style::Style {
