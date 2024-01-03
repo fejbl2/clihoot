@@ -1,6 +1,6 @@
 use actix::Handler;
 use common::{
-    constants::LOBBY_LOCKED_MSG,
+    constants::{LOBBY_LOCKED_MSG, NICKNAME_ALREADY_TAKEN_MSG, PLAYER_NOT_IN_WAITING_LIST_MSG},
     messages::network::{CanJoin, JoinResponse},
 };
 
@@ -30,7 +30,7 @@ impl Handler<JoinRequest> for Lobby {
         let id = msg.player_data.uuid;
         if !self.waiting_players.contains(&id) {
             return JoinResponse {
-                can_join: CanJoin::No("Player not in waiting list".to_owned()),
+                can_join: CanJoin::No(PLAYER_NOT_IN_WAITING_LIST_MSG.to_owned()),
                 ..result
             };
         }
@@ -41,7 +41,7 @@ impl Handler<JoinRequest> for Lobby {
             .any(|x| x.nickname == msg.player_data.nickname)
         {
             return JoinResponse {
-                can_join: CanJoin::No("Nickname already taken".to_owned()),
+                can_join: CanJoin::No(NICKNAME_ALREADY_TAKEN_MSG.to_owned()),
                 ..result
             };
         }

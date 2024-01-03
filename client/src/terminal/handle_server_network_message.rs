@@ -1,4 +1,5 @@
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
+use common::constants::NICKNAME_ALREADY_TAKEN_MSG;
 use common::messages::network::CanJoin;
 use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
@@ -11,15 +12,20 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
     ) -> anyhow::Result<()> {
         match network_message {
             ServerNetworkMessage::JoinResponse(join) => {
+                self.players = join.players;
                 if let CanJoin::No(message) = join.can_join {
-                    // TODO maybe rather return to the name selections screen
-                    // and input the name and color again
-                    self.state = StudentTerminalState::Error { message };
+                    if message == NICKNAME_ALREADY_TAKEN_MSG {
+                        self.state = StudentTerminalState::NameSelection {
+                            name: self.name.clone(),
+                            name_already_used: true,
+                        };
+                    } else {
+                        self.state = StudentTerminalState::Error { message }
+                    }
                     return Ok(());
                 }
                 self.state = StudentTerminalState::WaitingForGame {
                     list_state: ListState::default().with_selected(Some(0)),
-                    players: join.players,
                 };
             }
             ServerNetworkMessage::NextQuestion(question) => {
@@ -54,13 +60,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 };
             }
             ServerNetworkMessage::PlayersUpdate(update) => {
-                if let StudentTerminalState::WaitingForGame {
-                    players,
-                    list_state: _,
-                } = &mut self.state
-                {
-                    *players = update.players;
-                }
+                self.players = update.players;
             }
             ServerNetworkMessage::TeacherDisconnected(_) => {
                 self.state = StudentTerminalState::Error {
