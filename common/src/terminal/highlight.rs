@@ -8,7 +8,7 @@ use syntect::util::LinesWithEndings;
 
 use crate::questions::CodeBlock;
 
-pub fn highlight_code_block(code_block: &CodeBlock) -> Text {
+pub fn highlight_code_block(code_block: &'_ CodeBlock) -> Text<'_> {
     let ss = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
@@ -27,13 +27,13 @@ pub fn highlight_code_block(code_block: &CodeBlock) -> Text {
         };
 
         let spans = ranges.into_iter().map(range_to_span).collect::<Vec<_>>();
-        let line = Line::from(spans).to_owned();
+        let line = Line::from(spans);
         lines.push(line);
     }
     Text::from(lines)
 }
 
-fn range_to_span((style, content): (Style, &str)) -> Span {
+fn range_to_span((style, content): (Style, &'_ str)) -> Span<'_> {
     Span::styled(
         content,
         ratatui::style::Style {
