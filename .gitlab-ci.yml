@@ -9,6 +9,7 @@ default:
     - shared-fi
   before_script:
     - apt update && apt install -y libasound2-dev
+    - apt install -y libxml2-utils
 
 stages:
   - build
@@ -27,7 +28,23 @@ lint:
     - rustup component add clippy
     - cargo clippy -- -D warnings
 
+# https://github.com/mozilla/grcov
 test:
+  image: "rustdocker/rust:nightly"
   stage: test
+  variables:
+    RUSTFLAGS: "-C instrument-coverage"
+    LLVM_PROFILE_FILE: "coverage-%p-%m.profraw"
   script:
+    - rustup component add llvm-tools-preview
     - cargo test --verbose --features integration-test
+    - cargo install grcov
+    - grcov . --binary-path ./target/debug/ -s . -t cobertura --branch --ignore-not-existing --ignore *cargo* -o cobertura.xml
+    - xmllint --xpath '100 * string(//coverage/@line-rate)' cobertura.xml > coverage
+    - 'echo "Coverage: $(cat coverage)%"'
+  coverage: '/Coverage: \d+(?:\.\d+)?/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: cobertura.xml
