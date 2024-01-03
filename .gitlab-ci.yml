@@ -9,7 +9,7 @@ default:
     - shared-fi
   before_script:
     - apt update && apt install -y libasound2-dev
-    - apt install -y python3-pip
+    - apt install -y libxml2-utils
 
 stages:
   #   - build
@@ -46,7 +46,8 @@ coverage:
     - cargo test --features integration-test
     - cargo install grcov
     - grcov . --binary-path ./target/debug/ -s . -t cobertura --branch --ignore-not-existing --ignore "*cargo*" -o coverage.xml
-  coverage: '/\s*lines\.*:\s*([\d\.]+%)/'
+    - xmllint --xpath "concat('Coverage: ', 100 * string(//coverage/@line-rate), '%')" cobertura.xml
+  coverage: '/Coverage: \d+(?:\.\d+)?/'
   artifacts:
     reports:
       coverage_report:
