@@ -22,10 +22,12 @@ pub enum TeacherTerminalState {
     Answers {
         answers: QuestionEnded,
         players: Vec<PlayerData>,
+        list_state: ListState,
     },
     Results {
         results: ShowLeaderboard,
         players: Vec<PlayerData>,
+        list_state: ListState,
     },
     EndGame,
     Error {
