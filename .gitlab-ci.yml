@@ -42,6 +42,12 @@ coverage:
     RUSTFLAGS: "-C instrument-coverage"
     LLVM_PROFILE_FILE: "coverage-%p-%m.profraw"
   script:
+    - pip3 install lcov_cobertura
+    - ls /usr/local/lib/python*
+    - ls /usr/local/lib/python3.8/dist-packages/
+    - lcov_cobertura
+    - false
+
     - rustup component add llvm-tools-preview
     - cargo test --features integration-test
     # generate html report
@@ -50,8 +56,9 @@ coverage:
     # generate cobertura report for gitlab integration
     - pip3 install lcov_cobertura
     - grcov . --binary-path ./target/debug/ -s . -t lcov --branch --ignore-not-existing --ignore "*cargo*" -o coverage.lcov
-    - ls /usr/local/lib/python*
-    - python3 /usr/local/lib/python3.8/dist-packages/lcov_cobertura.py coverage.lcov
+    # - ls /usr/local/lib/python*
+    # - ls /usr/local/lib/python3.8/dist-packages/
+    # - lcov_cobertura coverage.lcov
     - apt-get update && apt-get install -y lcov
     - lcov --summary coverage.lcov
   coverage: '/\s*lines\.*:\s*([\d\.]+%)/'
