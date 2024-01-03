@@ -9,10 +9,7 @@ use super::draw_states::{render_end_game, render_error, render_waiting, render_w
 // THIS WAS COPY-PASTED FROM CLIENT
 
 impl TerminalDraw for TeacherTerminal {
-    fn redraw(
-        &mut self,
-        term: &mut Terminal<CrosstermBackend<std::io::Stdout>>,
-    ) -> anyhow::Result<()> {
+    fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
         match &mut self.state {
             TeacherTerminalState::StartGame => {
                 term.draw(|frame| {

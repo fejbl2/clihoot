@@ -5,6 +5,7 @@ use std::{
 
 use ::server::lobby::state::Lobby;
 use actix::Addr;
+
 use common::constants::DEFAULT_QUIZ_NAME;
 use rstest::fixture;
 use server::teacher::init::{run_teacher, Teacher};

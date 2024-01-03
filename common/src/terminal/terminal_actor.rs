@@ -1,12 +1,9 @@
 use actix::prelude::*;
-use crossterm::{
-    event::KeyCode,
-    terminal::{disable_raw_mode, enable_raw_mode, EnterAlternateScreen, LeaveAlternateScreen},
-    ExecutableCommand,
-};
-use ratatui::{backend::CrosstermBackend, Terminal};
-use std::io::stdout;
-use std::io::Stdout;
+use crossterm::event::KeyCode;
+use ratatui::backend::Backend;
+
+use ratatui::Terminal;
+
 use std::marker::Unpin;
 
 use crate::messages::ServerNetworkMessage;
@@ -17,7 +14,7 @@ use crate::messages::{
 use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
 
 pub trait TerminalDraw {
-    fn redraw(&mut self, term: &mut Terminal<CrosstermBackend<Stdout>>) -> anyhow::Result<()>;
+    fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()>;
 }
 
 pub trait TerminalHandleInput {
@@ -61,7 +58,14 @@ where
 {
     // base terminal actor, instantiated with struct that represents
     // its inner state
-    pub terminal: Terminal<CrosstermBackend<std::io::Stdout>>,
+    #[cfg(not(feature = "integration-test"))]
+    pub terminal: Terminal<ratatui::prelude::CrosstermBackend<std::io::Stdout>>,
+
+    // When integration tests are run, we do not want to use the main
+    // terminal to draw into; instead, provide a fake backend.
+    #[cfg(feature = "integration-test")]
+    pub terminal: Terminal<ratatui::backend::TestBackend>,
+
     pub inner: T,
 }
 
@@ -69,8 +73,19 @@ impl<T> TerminalActor<T>
 where
     T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
 {
+    #[cfg(not(feature = "integration-test"))]
     pub fn new(inner: T) -> Self {
-        let term = Terminal::new(CrosstermBackend::new(stdout())).unwrap();
+        let term =
+            Terminal::new(ratatui::prelude::CrosstermBackend::new(std::io::stdout())).unwrap();
+        Self {
+            terminal: term,
+            inner,
+        }
+    }
+
+    #[cfg(feature = "integration-test")]
+    pub fn new(inner: T) -> Self {
+        let term = Terminal::new(ratatui::backend::TestBackend::new(64, 32)).unwrap();
         Self {
             terminal: term,
             inner,
@@ -91,9 +106,18 @@ where
 {
     type Result = anyhow::Result<()>;
 
+    #[cfg(not(test))]
     fn handle(&mut self, _msg: Initialize, _ctx: &mut Self::Context) -> Self::Result {
+        use crossterm::terminal::{enable_raw_mode, EnterAlternateScreen};
+        use crossterm::ExecutableCommand;
+
         enable_raw_mode()?;
-        stdout().execute(EnterAlternateScreen)?;
+        std::io::stdout().execute(EnterAlternateScreen)?;
+        self.inner.redraw(&mut self.terminal)
+    }
+
+    #[cfg(test)]
+    fn handle(&mut self, _msg: Initialize, _ctx: &mut Self::Context) -> Self::Result {
         self.inner.redraw(&mut self.terminal)
     }
 }
@@ -104,9 +128,20 @@ where
 {
     type Result = anyhow::Result<()>;
 
+    #[cfg(not(test))]
     fn handle(&mut self, _msg: Stop, ctx: &mut Self::Context) -> Self::Result {
+        use crossterm::terminal::{disable_raw_mode, LeaveAlternateScreen};
+        use crossterm::ExecutableCommand;
+
         disable_raw_mode()?;
-        stdout().execute(LeaveAlternateScreen)?;
+        std::io::stdout().execute(LeaveAlternateScreen)?;
+        ctx.stop();
+        self.inner.stop()?;
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn handle(&mut self, _msg: Stop, ctx: &mut Self::Context) -> Self::Result {
         ctx.stop();
         self.inner.stop()?;
         Ok(())
