@@ -1,12 +1,19 @@
-use actix::{Context, Handler};
-use common::messages::network::NextQuestion;
+use common::{
+    messages::network::NextQuestion, terminal::terminal_actor::TerminalHandleNextQuestion,
+};
 
-use crate::teacher::init::Teacher;
+use crate::teacher::terminal::TeacherTerminal;
+use log::debug;
 
-impl Handler<NextQuestion> for Teacher {
-    type Result = ();
+impl TerminalHandleNextQuestion for TeacherTerminal {
+    fn handle_next_question(&mut self, question: NextQuestion) -> anyhow::Result<()> {
+        debug!(
+            "Teacher: handling next question number {}",
+            question.question_index
+        );
 
-    fn handle(&mut self, _msg: NextQuestion, _: &mut Context<Self>) {
-        // todo!("Show UI to the teacher");
+        // TODO
+
+        Ok(())
     }
 }

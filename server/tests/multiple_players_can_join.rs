@@ -9,10 +9,7 @@ use actix::Addr;
 use rstest::rstest;
 use server::{
     lobby::state::Lobby,
-    messages::{
-        lobby::{self},
-        teacher,
-    },
+    messages::lobby::{self},
     teacher::init::Teacher,
 };
 
@@ -59,7 +56,7 @@ async fn multiple_players_can_join(
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

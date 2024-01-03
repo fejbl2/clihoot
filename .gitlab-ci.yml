@@ -1,34 +1,33 @@
 workflow:
-    rules:
-        - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
-        - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  rules:
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event'
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
 
 default:
-    image: rust:latest
-    tags:
+  image: rust:latest
+  tags:
     - shared-fi
-    before_script:
-        - apt update && apt install -y libasound2-dev
-
+  before_script:
+    - apt update && apt install -y libasound2-dev
 
 stages:
-    - build
-    - test
+  - build
+  - test
 
 build:
-    stage: build
-    script:
-        - cargo build --verbose
+  stage: build
+  script:
+    - cargo build --verbose
 
 lint:
-    stage: test
-    script:
-        - rustup component add rustfmt
-        - cargo fmt -- --check
-        - rustup component add clippy
-        - cargo clippy -- -D warnings
+  stage: test
+  script:
+    - rustup component add rustfmt
+    - cargo fmt -- --check
+    - rustup component add clippy
+    - cargo clippy -- -D warnings
 
 test:
-    stage: test
-    script:
-        - cargo test --verbose
+  stage: test
+  script:
+    - cargo test --verbose --features integration-test

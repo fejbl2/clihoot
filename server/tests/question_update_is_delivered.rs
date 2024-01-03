@@ -11,10 +11,7 @@ use common::messages::network::QuestionUpdate;
 use rstest::rstest;
 use server::{
     lobby::state::Lobby,
-    messages::{
-        lobby::{self, StartQuestion},
-        teacher,
-    },
+    messages::lobby::{self, StartQuestion},
     teacher::init::Teacher,
 };
 
@@ -72,7 +69,7 @@ async fn answer_can_be_selected(
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

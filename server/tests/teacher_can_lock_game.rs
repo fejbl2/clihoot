@@ -13,10 +13,7 @@ use common::{
 use rstest::rstest;
 use server::{
     lobby::state::Lobby,
-    messages::{
-        lobby::{self, SetLockMessage, StartQuestion},
-        teacher,
-    },
+    messages::lobby::{self, SetLockMessage, StartQuestion},
     teacher::init::Teacher,
 };
 
@@ -69,7 +66,7 @@ async fn teacher_can_lock_game(
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

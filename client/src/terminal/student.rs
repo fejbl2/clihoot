@@ -1,4 +1,5 @@
 use actix::prelude::*;
+use log::debug;
 use ratatui::style::Color;
 use ratatui::widgets::ListState;
 use tokio::task::JoinHandle;
@@ -9,7 +10,7 @@ use crate::websocket::WebsocketActor;
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 use common::terminal::handle_terminal_events::handle_events;
 use common::terminal::messages::Initialize;
-use common::terminal::terminal_actor::TerminalActor;
+use common::terminal::terminal_actor::{TerminalActor, TerminalStop};
 
 #[derive(Debug)]
 pub enum StudentTerminalState {
@@ -71,6 +72,13 @@ impl StudentTerminal {
             state: StudentTerminalState::StartGame,
             music_address,
         }
+    }
+}
+
+impl TerminalStop for StudentTerminal {
+    fn stop(&mut self) -> anyhow::Result<()> {
+        debug!("Stopping terminal actor for student");
+        Ok(())
     }
 }
 

@@ -82,7 +82,7 @@ pub struct PlayersUpdate {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Message, PartialEq)]
-#[rtype(result = "()")]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct NextQuestion {
     pub question_index: usize,
     pub questions_count: usize,
@@ -115,7 +115,7 @@ impl Deref for AnswerSelected {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Message, PartialEq)]
-#[rtype(result = "()")]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct QuestionUpdate {
     pub players_answered_count: usize,
     pub question_index: usize,
@@ -127,7 +127,7 @@ pub struct ChoiceStats {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Message)]
-#[rtype(result = "()")]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct QuestionEnded {
     pub question_index: usize,
     pub question: Question, // here we want also right choices unlike in NextQuestion, so no censoring

@@ -5,6 +5,8 @@ use std::{
 
 use ::server::lobby::state::Lobby;
 use actix::Addr;
+
+use common::constants::DEFAULT_QUIZ_NAME;
 use rstest::fixture;
 use server::teacher::init::{run_teacher, Teacher};
 
@@ -21,7 +23,7 @@ pub fn create_server_and_teacher(
 
     let server_address = server.clone();
     let teacher_thread = thread::spawn(move || {
-        run_teacher(server_address, tx).expect("Failed to run teacher");
+        run_teacher(server_address, tx, DEFAULT_QUIZ_NAME).expect("Failed to run teacher");
     });
 
     let teacher = rx.recv().expect("Failed to receive teacher address");

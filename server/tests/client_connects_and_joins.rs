@@ -12,10 +12,7 @@ use common::{
 use rstest::rstest;
 use server::{
     lobby::state::{Lobby, Phase},
-    messages::{
-        lobby::{self},
-        teacher::{self},
-    },
+    messages::lobby::{self},
     teacher::init::Teacher,
 };
 
@@ -77,7 +74,7 @@ async fn client_connects_and_joins(
     server.send(lobby::HardStop).await?;
     server_thread.join().expect("Server thread panicked");
 
-    teacher.send(teacher::HardStop).await?;
+    teacher.send(common::terminal::messages::Stop).await??;
     teacher_thread.join().expect("Teacher thread panicked");
 
     Ok(())

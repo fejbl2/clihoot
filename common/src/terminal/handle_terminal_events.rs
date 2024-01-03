@@ -6,10 +6,12 @@ use std::marker::Unpin;
 use crate::terminal::messages::{KeyPress, Redraw, Stop};
 use crate::terminal::terminal_actor::{TerminalActor, TerminalDraw, TerminalHandleInput};
 
+use super::terminal_actor::TerminalStop;
+
 // poll terminal events and send appropriate messages to the terminal actor
 pub async fn handle_events<T>(term: Addr<TerminalActor<T>>) -> anyhow::Result<()>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     let mut reader = EventStream::new();
 

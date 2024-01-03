@@ -4,12 +4,11 @@ use crate::terminal::draw_states::{
 };
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalDraw;
+use ratatui::backend::Backend;
+use ratatui::Terminal;
 
 impl TerminalDraw for StudentTerminal {
-    fn redraw(
-        &mut self,
-        term: &mut ratatui::prelude::Terminal<ratatui::prelude::CrosstermBackend<std::io::Stdout>>,
-    ) -> anyhow::Result<()> {
+    fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
         match &mut self.state {
             StudentTerminalState::StartGame => {
                 term.draw(|frame| {
