@@ -1,14 +1,14 @@
 use std::sync::mpsc::Sender;
 
 use actix::{prelude::Actor, Addr};
-use actix_rt::System;
+
 use common::terminal::{
     handle_terminal_events::handle_events, messages::Initialize, terminal_actor::TerminalActor,
 };
 
 use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
 
-use log::warn;
+
 
 use super::terminal::TeacherTerminal;
 
@@ -47,22 +47,24 @@ async fn init(
     tx.send(teacher.clone())
         .expect("Failed to send teacher address");
 
+    lobby.do_send(RegisterTeacher {
+        teacher: teacher.clone(),
+    });
+
     // TODO: move the next 2 lines into the TerminalActor start method
     teacher.send(Initialize).await??;
 
-    let _task = tokio::spawn(handle_events(teacher.clone()));
+    tokio::spawn(handle_events(teacher));
 
-    lobby.do_send(RegisterTeacher { teacher });
-
-    // handle CTRL+C gracefully
-    // TODO: Probably remove - since raw_mode does not send signals
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("Failed to register CTRL-C handler");
-        warn!("CTRL-C received, shutting down");
-        System::current().stop();
-    });
+    // // handle CTRL+C gracefully
+    // // TODO: Probably remove - since raw_mode does not send signals
+    // tokio::spawn(async move {
+    //     tokio::signal::ctrl_c()
+    //         .await
+    //         .expect("Failed to register CTRL-C handler");
+    //     warn!("CTRL-C received, shutting down");
+    //     System::current().stop();
+    // });
 
     Ok(())
 }
