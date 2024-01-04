@@ -44,18 +44,18 @@ async fn init(
     let teacher =
         TerminalActor::new(TeacherTerminal::new(quiz_name.to_string(), lobby.clone())).start();
 
+    tx.send(teacher.clone())
+        .expect("Failed to send teacher address");
+
     // TODO: move the next 2 lines into the TerminalActor start method
     teacher.send(Initialize).await??;
 
     let _task = tokio::spawn(handle_events(teacher.clone()));
 
-    lobby.do_send(RegisterTeacher {
-        teacher: teacher.clone(),
-    });
-
-    tx.send(teacher).expect("Failed to send teacher address");
+    lobby.do_send(RegisterTeacher { teacher });
 
     // handle CTRL+C gracefully
+    // TODO: Probably remove - since raw_mode does not send signals
     tokio::spawn(async move {
         tokio::signal::ctrl_c()
             .await
