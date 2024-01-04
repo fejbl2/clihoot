@@ -1,6 +1,7 @@
 use clap::ValueEnum;
 use ratatui::style::Modifier;
-use ratatui::text::{Line, Span, Text};
+use ratatui::text::{Line, Span};
+use ratatui::widgets::Paragraph;
 use serde::Serialize;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::ThemeSet;
@@ -39,28 +40,38 @@ impl From<Theme> for &str {
 
 // TODO store the tresult of this function
 // in the state so it doesnt get called with every redraw
-pub fn highlight_code_block(code_block: &CodeBlock, theme: Theme) -> Text {
+pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Paragraph {
     let ss = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
     let Some(syntax) = ss.find_syntax_by_extension(&code_block.language) else {
-        return Text::from("Unable to highlight code block");
+        return Paragraph::new("Unable to highlight code block");
     };
 
-    let mut highlighter = HighlightLines::new(syntax, &ts.themes[theme.into()]);
+    let theme = &ts.themes[syntax_theme.into()];
+    let mut highlighter = HighlightLines::new(syntax, theme);
 
     let mut lines: Vec<Line> = Vec::new();
 
     for line in LinesWithEndings::from(&code_block.code) {
         let Ok(ranges) = highlighter.highlight_line(line, &ss) else {
-            return Text::from("Unable to highlight code block");
+            return Paragraph::new("Unable to highlight code block");
         };
 
         let spans = ranges.into_iter().map(range_to_span).collect::<Vec<_>>();
         let line = Line::from(spans);
         lines.push(line);
     }
-    Text::from(lines)
+
+    let highlighted_paragraph = Paragraph::new(lines);
+    let Some(color) = theme.settings.background else {
+        return highlighted_paragraph;
+    };
+
+    let Some(translated_color) = translate_color(color) else {
+        return highlighted_paragraph;
+    };
+    highlighted_paragraph.style(ratatui::style::Style::default().bg(translated_color))
 }
 
 fn range_to_span((style, content): (Style, &str)) -> Span {
