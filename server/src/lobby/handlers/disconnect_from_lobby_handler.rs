@@ -11,7 +11,7 @@ impl Handler<DisconnectFromLobby> for Lobby {
         if self.joined_players.remove(&msg.player_id).is_some() {
             info!("{} disconnected", msg.player_id);
 
-            self.send_players_update(Some(&msg.player_id));
+            let _ = self.send_players_update(Some(&msg.player_id));
         }
     }
 }

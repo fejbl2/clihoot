@@ -3,6 +3,7 @@ use common::{
     constants::LOBBY_LOCKED_MSG,
     messages::network::{CanJoin, TryJoinRequest, TryJoinResponse},
 };
+use log::debug;
 
 use crate::lobby::state::Lobby;
 
@@ -10,6 +11,7 @@ impl Handler<TryJoinRequest> for Lobby {
     type Result = TryJoinResponse;
 
     fn handle(&mut self, msg: TryJoinRequest, _: &mut Context<Self>) -> Self::Result {
+        debug!("Received TryJoinRequest message in Lobby; trying to join");
         let response = TryJoinResponse {
             uuid: msg.uuid,
             can_join: CanJoin::No(String::new()),

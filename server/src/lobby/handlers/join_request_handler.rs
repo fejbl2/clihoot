@@ -3,6 +3,7 @@ use common::{
     constants::{LOBBY_LOCKED_MSG, NICKNAME_ALREADY_TAKEN_MSG, PLAYER_NOT_IN_WAITING_LIST_MSG},
     messages::network::{CanJoin, JoinResponse},
 };
+use log::debug;
 
 use crate::{
     lobby::state::{JoinedPlayer, Lobby},
@@ -13,6 +14,11 @@ impl Handler<JoinRequest> for Lobby {
     type Result = JoinResponse;
 
     fn handle(&mut self, msg: JoinRequest, _ctx: &mut Self::Context) -> Self::Result {
+        debug!(
+            "Received JoinRequest message: {:?} from {:?}",
+            msg, msg.addr
+        );
+
         let result = JoinResponse {
             uuid: msg.player_data.uuid,
             quiz_name: self.questions.quiz_name.clone(),
@@ -59,7 +65,7 @@ impl Handler<JoinRequest> for Lobby {
         );
 
         // do NOT send update to the player that just joined
-        self.send_players_update(Some(&id));
+        let _ = self.send_players_update(Some(&id));
 
         JoinResponse {
             can_join: CanJoin::Yes,

@@ -1,19 +1,17 @@
-use common::terminal::terminal_actor::TerminalDraw;
+use common::terminal::{render, terminal_actor::TerminalDraw};
 
 use ratatui::prelude::*;
 
 use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 
-use super::draw_states::{render_end_game, render_error, render_waiting, render_welcome};
-
-// THIS WAS COPY-PASTED FROM CLIENT
+use super::draw_states::{render_teacher_lobby, render_teacher_welcome};
 
 impl TerminalDraw for TeacherTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
         match &mut self.state {
             TeacherTerminalState::StartGame => {
                 term.draw(|frame| {
-                    let _ = render_welcome(frame);
+                    let _ = render_teacher_welcome(frame);
                 })?;
                 Ok(())
             }
@@ -22,25 +20,51 @@ impl TerminalDraw for TeacherTerminal {
                 players,
             } => {
                 term.draw(|frame| {
-                    let _ = render_waiting(frame, players, list_state);
+                    let _ = render_teacher_lobby(frame, players, list_state);
                 })?;
                 Ok(())
             }
-            TeacherTerminalState::EndGame => {
+            TeacherTerminalState::Question {
+                question: _,
+                players_answered_count: _,
+                players: _,
+            } => {
                 term.draw(|frame| {
-                    let _ = render_end_game(frame);
+                    let _ = render::question_waiting(frame);
+                })?;
+                Ok(())
+            }
+            TeacherTerminalState::Answers {
+                answers,
+                players: _,
+                list_state: _,
+            } => {
+                term.draw(|frame| {
+                    let _ = render::question_answers(frame, answers);
+                })?;
+                Ok(())
+            }
+            TeacherTerminalState::Results {
+                results,
+                list_state: _,
+            } => {
+                term.draw(|frame| {
+                    let _ = render::results(frame, results);
+                })?;
+                Ok(())
+            }
+            TeacherTerminalState::EndGame {
+                list_state: _,
+                results: _,
+            } => {
+                term.draw(|frame| {
+                    let _ = render::end_game(frame);
                 })?;
                 Ok(())
             }
             TeacherTerminalState::Error { message } => {
                 term.draw(|frame| {
-                    let _ = render_error(frame, message);
-                })?;
-                Ok(())
-            }
-            _ => {
-                term.draw(|frame| {
-                    let _ = render_error(frame, "The state is not implemented yet");
+                    let _ = render::error(frame, message);
                 })?;
                 Ok(())
             }

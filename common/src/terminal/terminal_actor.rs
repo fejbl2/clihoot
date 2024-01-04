@@ -6,6 +6,7 @@ use ratatui::Terminal;
 
 use std::marker::Unpin;
 
+use crate::messages::network::PlayersUpdate;
 use crate::messages::ServerNetworkMessage;
 use crate::messages::{
     network::{NextQuestion, QuestionEnded, QuestionUpdate, ShowLeaderboard},
@@ -48,6 +49,10 @@ pub trait TerminalHandleShowLeaderboard {
     fn handle_show_leaderboard(&mut self, show: ShowLeaderboard) -> anyhow::Result<()>;
 }
 
+pub trait TerminalHandlePlayersUpdate {
+    fn handle_players_update(&mut self, update: PlayersUpdate) -> anyhow::Result<()>;
+}
+
 pub trait TerminalStop {
     fn stop(&mut self) -> anyhow::Result<()>;
 }
@@ -75,6 +80,10 @@ where
 {
     #[cfg(not(feature = "integration-test"))]
     pub fn new(inner: T) -> Self {
+        use log::debug;
+
+        debug!("Initializing terminal actor with crossterm backend");
+
         let term =
             Terminal::new(ratatui::prelude::CrosstermBackend::new(std::io::stdout())).unwrap();
         Self {
@@ -85,6 +94,10 @@ where
 
     #[cfg(feature = "integration-test")]
     pub fn new(inner: T) -> Self {
+        use log::debug;
+
+        debug!("Initializing terminal actor with test backend");
+
         let term = Terminal::new(ratatui::backend::TestBackend::new(64, 32)).unwrap();
         Self {
             terminal: term,
@@ -239,6 +252,18 @@ where
 
     fn handle(&mut self, msg: ShowLeaderboard, _ctx: &mut Self::Context) -> Self::Result {
         self.inner.handle_show_leaderboard(msg)?;
+        self.inner.redraw(&mut self.terminal)
+    }
+}
+
+impl<T> Handler<PlayersUpdate> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandlePlayersUpdate,
+{
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, msg: PlayersUpdate, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_players_update(msg)?;
         self.inner.redraw(&mut self.terminal)
     }
 }

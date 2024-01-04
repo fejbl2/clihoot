@@ -277,7 +277,7 @@ impl Lobby {
     /// Sends the `PlayersUpdate` to all currently joined players. Should be invoked
     /// whenever the list of players changes.
     /// If `except` is not None, the message will not be sent to the player with this id.
-    pub fn send_players_update(&self, except: Option<&Uuid>) {
+    pub fn send_players_update(&self, except: Option<&Uuid>) -> anyhow::Result<()> {
         let message = PlayersUpdate {
             players: self.get_players(),
         };
@@ -285,10 +285,18 @@ impl Lobby {
         // (maybe) NICE TO HAVE: delay sending of the update by 100 ms, and
         //   if another `send_players_update` is called, discard the previous one and send the new one
         if let Some(uuid) = except {
-            self.send_to_others(&ServerNetworkMessage::PlayersUpdate(message), uuid);
+            self.send_to_others(&ServerNetworkMessage::PlayersUpdate(message.clone()), uuid);
         } else {
-            self.send_to_all(&ServerNetworkMessage::PlayersUpdate(message));
+            self.send_to_all(&ServerNetworkMessage::PlayersUpdate(message.clone()));
         }
+
+        // also send to teacher
+        let Some(ref teacher) = self.teacher else {
+            anyhow::bail!("Cannot send to teacher, Teacher is null");
+        };
+
+        teacher.do_send(message);
+        Ok(())
     }
 }
 

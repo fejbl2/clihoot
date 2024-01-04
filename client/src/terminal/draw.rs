@@ -1,8 +1,6 @@
-use crate::terminal::draw_states::{
-    render_color_selection, render_end_game, render_error, render_name_selection, render_waiting,
-    render_welcome,
-};
+use crate::terminal::draw_states::{render_color_selection, render_name_selection};
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
+use common::terminal::render::{self};
 use common::terminal::terminal_actor::TerminalDraw;
 use ratatui::backend::Backend;
 use ratatui::Terminal;
@@ -12,7 +10,7 @@ impl TerminalDraw for StudentTerminal {
         match &mut self.state {
             StudentTerminalState::StartGame => {
                 term.draw(|frame| {
-                    let _ = render_welcome(frame);
+                    let _ = render::welcome(frame);
                 })?;
                 Ok(())
             }
@@ -33,25 +31,46 @@ impl TerminalDraw for StudentTerminal {
             }
             StudentTerminalState::WaitingForGame { list_state } => {
                 term.draw(|frame| {
-                    let _ = render_waiting(frame, &mut self.players, list_state);
+                    let _ = render::waiting(frame, &mut self.players, list_state);
                 })?;
                 Ok(())
             }
-            StudentTerminalState::EndGame => {
+            StudentTerminalState::Question {
+                question,
+                players_answered_count,
+                answered,
+            } => {
                 term.draw(|frame| {
-                    let _ = render_end_game(frame);
+                    if *answered {
+                        let _ = render::question_waiting(frame);
+                    } else {
+                        let _ = render::question(frame, question, *players_answered_count);
+                    }
+                })?;
+                Ok(())
+            }
+            StudentTerminalState::Answers { answers } => {
+                term.draw(|frame| {
+                    let _ = render::question_answers(frame, answers);
+                })?;
+                Ok(())
+            }
+            StudentTerminalState::Results { results } => {
+                term.draw(|frame| {
+                    let _ = render::results(frame, results);
+                })?;
+                Ok(())
+            }
+
+            StudentTerminalState::EndGame {} => {
+                term.draw(|frame| {
+                    let _ = render::end_game(frame);
                 })?;
                 Ok(())
             }
             StudentTerminalState::Error { message } => {
                 term.draw(|frame| {
-                    let _ = render_error(frame, message);
-                })?;
-                Ok(())
-            }
-            _ => {
-                term.draw(|frame| {
-                    let _ = render_error(frame, "The state is not implemented yet");
+                    let _ = render::error(frame, message);
                 })?;
                 Ok(())
             }

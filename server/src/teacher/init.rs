@@ -2,7 +2,9 @@ use std::sync::mpsc::Sender;
 
 use actix::{prelude::Actor, Addr};
 use actix_rt::System;
-use common::terminal::terminal_actor::TerminalActor;
+use common::terminal::{
+    handle_terminal_events::handle_events, messages::Initialize, terminal_actor::TerminalActor,
+};
 
 use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
 
@@ -41,6 +43,11 @@ async fn init(
 ) -> anyhow::Result<()> {
     let teacher =
         TerminalActor::new(TeacherTerminal::new(quiz_name.to_string(), lobby.clone())).start();
+
+    // TODO: move the next 2 lines into the TerminalActor start method
+    teacher.send(Initialize).await??;
+
+    let _task = tokio::spawn(handle_events(teacher.clone()));
 
     lobby.do_send(RegisterTeacher {
         teacher: teacher.clone(),
