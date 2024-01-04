@@ -78,6 +78,7 @@ impl StudentTerminal {
 impl TerminalStop for StudentTerminal {
     fn stop(&mut self) -> anyhow::Result<()> {
         debug!("Stopping terminal actor for student");
+        System::current().stop(); // we don't have to save or clean anything on the client side
         Ok(())
     }
 }
