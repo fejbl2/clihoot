@@ -44,8 +44,9 @@ pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Para
     let ss = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
-    let Some(syntax) = ss.find_syntax_by_extension(&code_block.language) else {
-        return Paragraph::new("Unable to highlight code block");
+    let syntax = match ss.find_syntax_by_extension(&code_block.language) {
+        Some(syntax) => syntax,
+        None => ss.find_syntax_plain_text(),
     };
 
     let theme = &ts.themes[syntax_theme.into()];
