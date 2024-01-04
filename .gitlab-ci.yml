@@ -37,7 +37,7 @@ test:
     LLVM_PROFILE_FILE: "coverage-%p-%m.profraw"
   script:
     - rustup component add llvm-tools-preview
-    - cargo test --verbose --features integration-test
+    - cargo test --verbose --features test
     - cargo install grcov
     - grcov . --binary-path ./target/debug/ -s . -t cobertura --branch --ignore-not-existing --ignore *cargo* -o cobertura.xml
     - xmllint --xpath '100 * string(//coverage/@line-rate)' cobertura.xml > coverage

@@ -63,12 +63,12 @@ where
 {
     // base terminal actor, instantiated with struct that represents
     // its inner state
-    #[cfg(not(feature = "integration-test"))]
+    #[cfg(not(feature = "test"))]
     pub terminal: Terminal<ratatui::prelude::CrosstermBackend<std::io::Stdout>>,
 
     // When integration tests are run, we do not want to use the main
     // terminal to draw into; instead, provide a fake backend.
-    #[cfg(feature = "integration-test")]
+    #[cfg(feature = "test")]
     pub terminal: Terminal<ratatui::backend::TestBackend>,
 
     pub inner: T,
@@ -78,7 +78,7 @@ impl<T> TerminalActor<T>
 where
     T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
 {
-    #[cfg(not(feature = "integration-test"))]
+    #[cfg(not(feature = "test"))]
     pub fn new(inner: T) -> Self {
         use log::debug;
 
@@ -92,7 +92,7 @@ where
         }
     }
 
-    #[cfg(feature = "integration-test")]
+    #[cfg(feature = "test")]
     pub fn new(inner: T) -> Self {
         use log::debug;
 
@@ -119,7 +119,7 @@ where
 {
     type Result = anyhow::Result<()>;
 
-    #[cfg(not(test))]
+    #[cfg(not(feature = "test"))]
     fn handle(&mut self, _msg: Initialize, _ctx: &mut Self::Context) -> Self::Result {
         use crossterm::terminal::{enable_raw_mode, EnterAlternateScreen};
         use crossterm::ExecutableCommand;
@@ -129,7 +129,7 @@ where
         self.inner.redraw(&mut self.terminal)
     }
 
-    #[cfg(test)]
+    #[cfg(feature = "test")]
     fn handle(&mut self, _msg: Initialize, _ctx: &mut Self::Context) -> Self::Result {
         self.inner.redraw(&mut self.terminal)
     }

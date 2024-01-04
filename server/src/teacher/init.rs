@@ -8,8 +8,6 @@ use common::terminal::{
 
 use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
 
-
-
 use super::terminal::TeacherTerminal;
 
 pub type Teacher = TerminalActor<TeacherTerminal>;
