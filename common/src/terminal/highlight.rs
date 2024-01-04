@@ -1,11 +1,11 @@
 use clap::ValueEnum;
-use ratatui::style::Modifier;
+use ratatui::style::{Color as RatatuiColor, Modifier, Style as RatatuiStyle};
 use ratatui::text::{Line, Span};
 use ratatui::widgets::Paragraph;
 use serde::Serialize;
 use syntect::easy::HighlightLines;
 use syntect::highlighting::ThemeSet;
-use syntect::highlighting::{FontStyle, Style};
+use syntect::highlighting::{Color, FontStyle, Style};
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 
@@ -65,35 +65,28 @@ pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Para
     }
 
     let highlighted_paragraph = Paragraph::new(lines);
-    let Some(color) = theme.settings.background else {
+    let Some(translated_color) = translate_color(theme.settings.background) else {
         return highlighted_paragraph;
     };
-
-    let Some(translated_color) = translate_color(color) else {
-        return highlighted_paragraph;
-    };
-    highlighted_paragraph.style(ratatui::style::Style::default().bg(translated_color))
+    highlighted_paragraph.style(RatatuiStyle::default().bg(translated_color))
 }
 
 fn range_to_span((style, content): (Style, &str)) -> Span {
     Span::styled(
         content,
-        ratatui::style::Style {
-            fg: translate_color(style.foreground),
+        RatatuiStyle {
+            fg: translate_color(Some(style.foreground)),
             bg: None,
-            // bg: translate_color(style.background),
-            underline_color: translate_color(style.foreground),
+            underline_color: translate_color(Some(style.foreground)),
             add_modifier: translate_font_style(style.font_style),
             sub_modifier: Modifier::empty(),
         },
     )
 }
 
-fn translate_color(color: syntect::highlighting::Color) -> Option<ratatui::style::Color> {
+fn translate_color(color: Option<Color>) -> Option<RatatuiColor> {
     match color {
-        syntect::highlighting::Color { r, g, b, a } if a > 0 => {
-            Some(ratatui::style::Color::Rgb(r, g, b))
-        }
+        Some(Color { r, g, b, a }) if a > 0 => Some(RatatuiColor::Rgb(r, g, b)),
         _ => None,
     }
 }
