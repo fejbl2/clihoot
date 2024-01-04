@@ -19,7 +19,7 @@ pub enum Theme {
     MochaDark,
     OceanDark,
     OceanLight,
-    InspiredGithub,
+    InspiredGitHub,
     SolarizedDark,
     SolarizedLight,
 }
@@ -31,7 +31,7 @@ impl From<Theme> for &str {
             Theme::MochaDark => "base16-mocha.dark",
             Theme::OceanDark => "base16-ocean.dark",
             Theme::OceanLight => "base16-ocean.light",
-            Theme::InspiredGithub => "InspiredGithub",
+            Theme::InspiredGitHub => "InspiredGitHub",
             Theme::SolarizedDark => "Solarized (dark)",
             Theme::SolarizedLight => "Solarized (light)",
         }
