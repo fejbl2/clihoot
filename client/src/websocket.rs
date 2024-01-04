@@ -19,6 +19,7 @@ use common::messages::network::TryJoinRequest;
 use common::messages::status_messages::ClientWebsocketStatus;
 use common::messages::ServerNetworkMessage::TryJoinResponse;
 use common::messages::{network, ClientNetworkMessage, ServerNetworkMessage};
+use common::terminal::highlight::Theme;
 use url::Url;
 use uuid::Uuid;
 
@@ -42,6 +43,7 @@ pub struct WebsocketActor {
     subscribers_network_messages: Vec<Recipient<ServerNetworkMessage>>,
     subscribers_status: Vec<Recipient<ClientWebsocketStatus>>,
     music_actor_addr: Addr<MusicActor>,
+    syntax_theme: Theme,
 }
 
 impl WebsocketActor {
@@ -49,6 +51,7 @@ impl WebsocketActor {
         url: Url,
         uuid: Uuid,
         music_actor_addr: Addr<MusicActor>,
+        syntax_theme: Theme,
     ) -> anyhow::Result<Self> {
         let (ws_stream, _) = connect_async(url).await?;
 
@@ -67,6 +70,7 @@ impl WebsocketActor {
             subscribers_network_messages: vec![],
             subscribers_status: vec![],
             music_actor_addr,
+            syntax_theme,
         })
     }
 
@@ -91,10 +95,17 @@ impl WebsocketActor {
 
         let my_address = ctx.address();
         let music_address = self.music_actor_addr.clone();
+        let syntax_theme = self.syntax_theme;
 
         async move {
-            if let Ok((student_actor_addr, _result)) =
-                run_student(uuid, quiz_name, my_address.clone(), music_address).await
+            if let Ok((student_actor_addr, _result)) = run_student(
+                uuid,
+                quiz_name,
+                my_address.clone(),
+                music_address,
+                syntax_theme,
+            )
+            .await
             {
                 // register student actor for network messages
                 my_address.do_send(Subscribe(student_actor_addr.clone().recipient()));

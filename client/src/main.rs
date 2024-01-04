@@ -12,6 +12,7 @@ use simplelog::{
 };
 
 use client::music_actor::MusicActor;
+use common::terminal::highlight::Theme;
 
 fn url_parser(arg: &str) -> Result<Url, String> {
     let destination_addr = format!("ws://{arg}");
@@ -33,6 +34,10 @@ pub struct Args {
     /// Where to write log messages to
     #[clap(short, long)]
     log_file: Option<PathBuf>,
+
+    /// Theme for syntax highlighting of code in questions
+    #[clap(short('t'), long, default_value_t, value_enum)]
+    syntax_theme: Theme,
 }
 
 fn main() -> Result<()> {
@@ -66,7 +71,8 @@ fn main() -> Result<()> {
         let addr_music_actor = MusicActor::new(silent).start();
 
         // start websocket actor
-        let Ok(websocket_actor) = WebsocketActor::new(url.clone(), uuid, addr_music_actor).await
+        let Ok(websocket_actor) =
+            WebsocketActor::new(url.clone(), uuid, addr_music_actor, args.syntax_theme).await
         else {
             error!(
                 "I can't contact the specified clihoot server on address: '{url}' I am sorry 😿"
