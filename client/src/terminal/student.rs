@@ -9,6 +9,7 @@ use crate::music_actor::{MusicActor, MusicMessage};
 use crate::websocket::WebsocketActor;
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 use common::terminal::handle_terminal_events::handle_events;
+use common::terminal::highlight::Theme;
 use common::terminal::messages::Initialize;
 use common::terminal::terminal_actor::{TerminalActor, TerminalStop};
 
@@ -48,6 +49,7 @@ pub struct StudentTerminal {
     pub name: String,
     pub color: Color,
     pub quiz_name: String,
+    pub syntax_theme: Theme,
     pub players: Vec<PlayerData>,
     pub ws_actor_address: Addr<WebsocketActor>,
     pub state: StudentTerminalState,
@@ -61,6 +63,7 @@ impl StudentTerminal {
         quiz_name: String,
         ws_addr: Addr<WebsocketActor>,
         music_address: Addr<MusicActor>,
+        syntax_theme: Theme,
     ) -> Self {
         Self {
             uuid,
@@ -71,6 +74,7 @@ impl StudentTerminal {
             ws_actor_address: ws_addr,
             state: StudentTerminalState::StartGame,
             music_address,
+            syntax_theme,
         }
     }
 }
@@ -88,6 +92,7 @@ pub async fn run_student(
     quiz_name: String,
     ws_actor_addr: Addr<WebsocketActor>,
     music_actor_addr: Addr<MusicActor>,
+    syntax_theme: Theme,
 ) -> anyhow::Result<(
     Addr<TerminalActor<StudentTerminal>>,
     JoinHandle<anyhow::Result<()>>,
@@ -97,6 +102,7 @@ pub async fn run_student(
         quiz_name,
         ws_actor_addr,
         music_actor_addr.clone(),
+        syntax_theme,
     ))
     .start();
 
