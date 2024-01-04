@@ -16,7 +16,6 @@ pub enum TeacherTerminalState {
     Question {
         question: NextQuestion,
         players_answered_count: usize,
-        answered: bool,
         players: Vec<PlayerData>,
     },
     Answers {
@@ -26,10 +25,12 @@ pub enum TeacherTerminalState {
     },
     Results {
         results: ShowLeaderboard,
-        players: Vec<PlayerData>,
         list_state: ListState,
     },
-    EndGame,
+    EndGame {
+        results: ShowLeaderboard,
+        list_state: ListState,
+    },
     Error {
         message: String,
     },

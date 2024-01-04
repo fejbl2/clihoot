@@ -1,5 +1,6 @@
 use actix::{Context, Handler};
 use anyhow::bail;
+use log::debug;
 
 use crate::{
     lobby::state::{Lobby, Phase},
@@ -10,6 +11,7 @@ impl Handler<SwitchToLeaderboard> for Lobby {
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, _msg: SwitchToLeaderboard, _: &mut Context<Self>) -> Self::Result {
+        debug!("Received SwitchToLeaderboard message in Lobby; switching to leaderboard");
         // have to be in phase `AfterQuestion`
         let Phase::AfterQuestion(index) = self.phase else {
             bail!("Cannot switch to leaderboard, not in AfterQuestion phase");

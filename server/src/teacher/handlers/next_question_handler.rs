@@ -2,7 +2,7 @@ use common::{
     messages::network::NextQuestion, terminal::terminal_actor::TerminalHandleNextQuestion,
 };
 
-use crate::teacher::terminal::TeacherTerminal;
+use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 use log::debug;
 
 impl TerminalHandleNextQuestion for TeacherTerminal {
@@ -12,7 +12,11 @@ impl TerminalHandleNextQuestion for TeacherTerminal {
             question.question_index
         );
 
-        // TODO
+        self.state = TeacherTerminalState::Question {
+            question,
+            players_answered_count: 0,
+            players: vec![],
+        };
 
         Ok(())
     }

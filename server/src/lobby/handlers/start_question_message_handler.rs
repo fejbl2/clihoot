@@ -20,6 +20,8 @@ impl Handler<StartQuestion> for Lobby {
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, _msg: StartQuestion, ctx: &mut Context<Self>) -> Self::Result {
+        debug!("Received StartQuestion message in Lobby; starting question");
+
         // * find the next question
         // * set the phase to `ActiveQuestion`
         // * send the question to all clients as well as the teacher

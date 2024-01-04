@@ -648,6 +648,7 @@ dependencies = [
  "actix",
  "anyhow",
  "crossterm",
+ "figlet-rs",
  "futures",
  "log",
  "ratatui",

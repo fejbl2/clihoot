@@ -76,7 +76,8 @@ pub struct JoinRequest {
     pub player_data: PlayerData,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Message)]
+#[rtype(result = "anyhow::Result<()>")]
 pub struct PlayersUpdate {
     pub players: Vec<PlayerData>,
 }

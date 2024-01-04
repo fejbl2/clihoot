@@ -9,11 +9,17 @@ use actix::{prelude::Handler, AsyncContext};
 use anyhow::Ok;
 use chrono::Utc;
 use common::messages::network::AnswerSelected;
+use log::debug;
 
 impl Handler<AnswerSelected> for Lobby {
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, msg: AnswerSelected, ctx: &mut Self::Context) -> Self::Result {
+        debug!(
+            "Received AnswerSelected message: {:?} from {:?}",
+            msg, msg.player_uuid
+        );
+
         let id = msg.player_uuid;
 
         if !self.joined_players.contains_key(&id) {
