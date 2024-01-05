@@ -5,7 +5,7 @@ use common::terminal::widgets::choice::{ChoiceGrid, ChoiceItem, ChoiceSelectorSt
 fn one_row_fixture(uuids: &[Uuid]) -> ChoiceGrid {
     let row = uuids
         .iter()
-        .map(|id| ChoiceItem::new(id.to_string(), false, *id))
+        .map(|id| Some(ChoiceItem::new(id.to_string(), false, *id)))
         .collect();
 
     ChoiceGrid::new(vec![row])
@@ -17,7 +17,7 @@ fn multiple_row_fixture(uuids: &[Vec<Uuid>]) -> ChoiceGrid {
             .iter()
             .map(|row| {
                 row.iter()
-                    .map(|id| ChoiceItem::new(id.to_string(), false, *id))
+                    .map(|id| Some(ChoiceItem::new(id.to_string(), false, *id)))
                     .collect()
             })
             .collect(),
@@ -272,9 +272,9 @@ fn test_reconfigure_grid() {
 
     // single row with 3 choices
     let grid = ChoiceGrid::new(vec![vec![
-        ChoiceItem::new(uuids[0].to_string(), false, uuids[0]),
-        ChoiceItem::new(uuids[1].to_string(), false, uuids[1]),
-        ChoiceItem::new(uuids[2].to_string(), false, uuids[2]),
+        Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0])),
+        Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1])),
+        Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2])),
     ]]);
 
     let mut state = ChoiceSelectorState::default();
@@ -290,9 +290,9 @@ fn test_reconfigure_grid() {
 
     // rearange the grid to be one single column with three rows
     let grid = ChoiceGrid::new(vec![
-        vec![ChoiceItem::new(uuids[0].to_string(), false, uuids[0])],
-        vec![ChoiceItem::new(uuids[1].to_string(), false, uuids[1])],
-        vec![ChoiceItem::new(uuids[2].to_string(), false, uuids[2])],
+        vec![Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0]))],
+        vec![Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1]))],
+        vec![Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2]))],
     ]);
 
     state.move_to_last_known_choice(&grid);
@@ -302,9 +302,9 @@ fn test_reconfigure_grid() {
 
     // rearange back to the original config
     let grid = ChoiceGrid::new(vec![vec![
-        ChoiceItem::new(uuids[0].to_string(), false, uuids[0]),
-        ChoiceItem::new(uuids[1].to_string(), false, uuids[1]),
-        ChoiceItem::new(uuids[2].to_string(), false, uuids[2]),
+        Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0])),
+        Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1])),
+        Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2])),
     ]]);
 
     // try to select item under the cursor, without calling the move_to_last_known_choice function
@@ -323,8 +323,8 @@ fn test_grid_changed_completely() {
 
     // single row with 1 choice
     let grid = ChoiceGrid::new(vec![vec![
-        ChoiceItem::new("foo".to_string(), false, uuid_old_1),
-        ChoiceItem::new("bar".to_string(), false, uuid_old_2),
+        Some(ChoiceItem::new("foo".to_string(), false, uuid_old_1)),
+        Some(ChoiceItem::new("bar".to_string(), false, uuid_old_2)),
     ]]);
 
     let mut state = ChoiceSelectorState::default();
@@ -344,8 +344,8 @@ fn test_grid_changed_completely() {
     let uuid_new_2 = Uuid::new_v4();
 
     let grid = ChoiceGrid::new(vec![vec![
-        ChoiceItem::new("foo".to_string(), false, uuid_new_1),
-        ChoiceItem::new("bar".to_string(), false, uuid_new_2),
+        Some(ChoiceItem::new("foo".to_string(), false, uuid_new_1)),
+        Some(ChoiceItem::new("bar".to_string(), false, uuid_new_2)),
     ]]);
 
     // we should be back at [0, 0] so we can somehow move around again
