@@ -19,7 +19,7 @@ pub fn calculate_points(
         .ok_or(anyhow!("Question not found"))?;
 
     // find the correct answers
-    let mut correct_answers = question.choices.iter().filter(|choice| choice.is_right);
+    let mut correct_answers = question.choices.iter().filter(|choice| choice.is_correct);
 
     let num_correct = answers
         .iter()

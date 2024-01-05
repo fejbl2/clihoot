@@ -25,7 +25,7 @@ fn test_choice_item_from_uncensored() {
     let text = "Test string".to_string();
     let choice = Choice {
         id,
-        is_right: true,
+        is_correct: true,
         text: text.clone(),
     };
 
@@ -170,12 +170,12 @@ fn test_choice_grid_from_uncensored_2_choices() {
             Choice {
                 id: id_1,
                 text: text.clone(),
-                is_right: true,
+                is_correct: true,
             },
             Choice {
                 id: id_2,
                 text: text.clone(),
-                is_right: false,
+                is_correct: false,
             },
         ],
     };
@@ -205,17 +205,17 @@ fn test_choice_grid_from_uncensored_3_choices() {
             Choice {
                 id: id_1,
                 text: text.clone(),
-                is_right: false,
+                is_correct: false,
             },
             Choice {
                 id: id_2,
                 text: text.clone(),
-                is_right: false,
+                is_correct: false,
             },
             Choice {
                 id: id_3,
                 text: text.clone(),
-                is_right: true,
+                is_correct: true,
             },
         ],
     };
@@ -249,22 +249,22 @@ fn test_choice_grid_from_uncensored_4_choices() {
             Choice {
                 id: id_1,
                 text: text.clone(),
-                is_right: false,
+                is_correct: false,
             },
             Choice {
                 id: id_2,
                 text: text.clone(),
-                is_right: true,
+                is_correct: true,
             },
             Choice {
                 id: id_3,
                 text: text.clone(),
-                is_right: true,
+                is_correct: true,
             },
             Choice {
                 id: id_4,
                 text: text.clone(),
-                is_right: false,
+                is_correct: false,
             },
         ],
     };

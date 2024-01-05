@@ -26,7 +26,7 @@ async fn question_ends_itself_after_timeout_test_implementation() -> anyhow::Res
         questions: vec![Question {
             choices: vec![Choice {
                 id: Uuid::new_v4(),
-                is_right: true,
+                is_correct: true,
                 text: "right".to_string(),
             }],
             code_block: None,

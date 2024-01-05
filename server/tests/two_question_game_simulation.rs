@@ -39,25 +39,25 @@ fn get_questions() -> QuestionSet {
     let q1_choice1 = Choice {
         text: "10".to_string(),
         id: Uuid::new_v4(),
-        is_right: false,
+        is_correct: false,
     };
 
     let q1_choice2 = Choice {
         text: "20".to_string(),
         id: Uuid::new_v4(),
-        is_right: true,
+        is_correct: true,
     };
 
     let q1_choice3 = Choice {
         text: "30".to_string(),
         id: Uuid::new_v4(),
-        is_right: false,
+        is_correct: false,
     };
 
     let q1_choice4 = Choice {
         text: "40".to_string(),
         id: Uuid::new_v4(),
-        is_right: false,
+        is_correct: false,
     };
 
     let q1 = Question {
@@ -69,13 +69,13 @@ fn get_questions() -> QuestionSet {
 
     let q2_choice1 = Choice {
         id: Uuid::new_v4(),
-        is_right: true,
+        is_correct: true,
         text: "Print \"Hello, world!\"".to_string(),
     };
 
     let q2_choice2 = Choice {
         id: Uuid::new_v4(),
-        is_right: true,
+        is_correct: true,
         text: "Print \"Hello, world!\" and exit".to_string(),
     };
 

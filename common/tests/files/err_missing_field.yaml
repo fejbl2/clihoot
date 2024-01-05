@@ -1,8 +1,8 @@
 questions:
-- time_seconds: 42
-  choices:
-  - text: sleep
-  - text: '42'
-    is_right: true
-  - text: food
-  - text: '69'
+  - time_seconds: 42
+    choices:
+      - text: sleep
+      - text: "42"
+        is_correct: true
+      - text: food
+      - text: "69"

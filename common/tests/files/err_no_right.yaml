@@ -1,16 +1,16 @@
 questions:
-- text: Why?
-  time_seconds: 42
-  choices:
-  - text: yes
-    is_right: true
-  - text: no
-  - text: maybe
-  - text: certainly
-- text: Who?
-  time_seconds: 42
-  choices:
-  - text: them
-  - text: we
-  - text: no one
-  - text: someone
+  - text: Why?
+    time_seconds: 42
+    choices:
+      - text: yes
+        is_correct: true
+      - text: no
+      - text: maybe
+      - text: certainly
+  - text: Who?
+    time_seconds: 42
+    choices:
+      - text: them
+      - text: we
+      - text: no one
+      - text: someone
