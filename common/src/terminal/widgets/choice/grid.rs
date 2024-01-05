@@ -5,13 +5,15 @@ use crate::terminal::widgets::choice::ChoiceItem;
 
 #[derive(Default, Debug, PartialEq)]
 pub struct ChoiceGrid {
-    pub(super) items: Vec<Vec<ChoiceItem>>,
+    pub(super) items: Vec<Vec<Option<ChoiceItem>>>,
     is_empty: bool,
 }
 
 impl ChoiceGrid {
-    pub fn new(items: Vec<Vec<ChoiceItem>>) -> Self {
-        let is_empty = items.is_empty() || items.iter().any(|row| row.is_empty());
+    pub fn new(items: Vec<Vec<Option<ChoiceItem>>>) -> Self {
+        let is_empty = items.is_empty()
+            || items.iter().any(|row| row.is_empty())
+            || !items.iter().flatten().any(Option::is_some);
 
         Self { items, is_empty }
     }
@@ -22,12 +24,17 @@ impl ChoiceGrid {
 
     // consume self and return the items inside
     // usefull when wanting to change the grid or items inside
-    pub fn items(self) -> Vec<Vec<ChoiceItem>> {
+    pub fn items(self) -> Vec<Vec<Option<ChoiceItem>>> {
         self.items
     }
 }
 
-fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<ChoiceItem>> {
+fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<Option<ChoiceItem>>> {
+    let mut items: Vec<_> = items.into_iter().map(Some).collect();
+    if items.len() % 2 != 0 {
+        items.push(None);
+    }
+
     items.chunks(2).map(|chunk| chunk.to_vec()).collect()
 }
 

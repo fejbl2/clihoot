@@ -31,11 +31,12 @@ impl ChoiceSelectorState {
             return;
         };
 
-        if self.row < grid.items.len()
-            && self.col < grid.items[self.row].len()
-            && grid.items[self.row][self.col].uuid == last_under_cursor
-        {
-            return;
+        if self.row < grid.items.len() && self.col < grid.items[self.row].len() {
+            if let Some(item) = &grid.items[self.row][self.col] {
+                if item.uuid == last_under_cursor {
+                    return;
+                }
+            }
         }
 
         self.row = 0;
@@ -43,6 +44,10 @@ impl ChoiceSelectorState {
 
         for (i, row) in grid.items.iter().enumerate() {
             for (j, item) in row.iter().enumerate() {
+                let Some(item) = item else {
+                    continue;
+                };
+
                 if item.uuid == last_under_cursor {
                     self.row = i;
                     self.col = j;
@@ -61,20 +66,62 @@ impl ChoiceSelectorState {
         }
     }
 
+    fn find_next_some_right(&mut self, grid: &ChoiceGrid) -> bool {
+        let row_len = grid.items[self.row].len();
+        for _ in 0..row_len {
+            self.col = (self.col + 1) % row_len;
+
+            if let Some(item) = &grid.items[self.row][self.col] {
+                self.last_under_cursor = Some(item.uuid);
+                return true;
+            }
+        }
+        false
+    }
+
+    fn find_next_some_left(&mut self, grid: &ChoiceGrid) -> bool {
+        let row_len = grid.items[self.row].len();
+        for _ in 0..row_len {
+            if self.col == 0 {
+                self.col = row_len - 1;
+            } else {
+                self.col -= 1;
+            }
+
+            if let Some(item) = &grid.items[self.row][self.col] {
+                self.last_under_cursor = Some(item.uuid);
+                return true;
+            }
+        }
+        false
+    }
+
+    // move up a row in the grid. If the item above is None, find closest Some to the left
+    // of the original or continue moving up, until any Some is found
+    // if on the first line and move_up is used, move to the last line.
     pub fn move_up(&mut self, grid: &ChoiceGrid) {
         if grid.is_empty() {
             return;
         }
 
         self.move_to_last_known_choice(grid);
-        if self.row == 0 {
-            self.row = grid.items.len() - 1;
-        } else {
-            self.row -= 1;
-        }
+        for _ in 0..grid.items.len() {
+            if self.row == 0 {
+                self.row = grid.items.len() - 1;
+            } else {
+                self.row -= 1;
+            }
 
-        self.normalize_cursor(grid);
-        self.last_under_cursor = Some(grid.items[self.row][self.col].uuid);
+            self.normalize_cursor(grid);
+            if let Some(item) = &grid.items[self.row][self.col] {
+                self.last_under_cursor = Some(item.uuid);
+                return;
+            }
+
+            if self.find_next_some_left(grid) {
+                return;
+            }
+        }
     }
 
     pub fn move_down(&mut self, grid: &ChoiceGrid) {
@@ -83,25 +130,33 @@ impl ChoiceSelectorState {
         }
 
         self.move_to_last_known_choice(grid);
-        self.row = (self.row + 1) % grid.items.len();
+        for _ in 0..grid.items.len() {
+            self.row = (self.row + 1) % grid.items.len();
 
-        self.normalize_cursor(grid);
-        self.last_under_cursor = Some(grid.items[self.row][self.col].uuid);
+            self.normalize_cursor(grid);
+            if let Some(item) = &grid.items[self.row][self.col] {
+                self.last_under_cursor = Some(item.uuid);
+                return;
+            }
+            if self.find_next_some_right(grid) {
+                return;
+            }
+        }
     }
 
+    // move left. If the next item is None, find the closest Some to the left.
+    // If at the start at the line and move_left is used, move to the end of the line.
     pub fn move_left(&mut self, grid: &ChoiceGrid) {
         if grid.is_empty() {
             return;
         }
 
         self.move_to_last_known_choice(grid);
-        let row_len = grid.items[self.row].len();
-        if self.col == 0 {
-            self.col = row_len - 1;
-        } else {
-            self.col -= 1;
+        if grid.items[self.row][self.col].is_none() {
+            return;
         }
-        self.last_under_cursor = Some(grid.items[self.row][self.col].uuid);
+
+        self.find_next_some_left(grid);
     }
 
     pub fn move_right(&mut self, grid: &ChoiceGrid) {
@@ -110,9 +165,11 @@ impl ChoiceSelectorState {
         }
 
         self.move_to_last_known_choice(grid);
-        let row_len = grid.items[self.row].len();
-        self.col = (self.col + 1) % row_len;
-        self.last_under_cursor = Some(grid.items[self.row][self.col].uuid);
+        if grid.items[self.row][self.col].is_none() {
+            return;
+        }
+
+        self.find_next_some_right(grid);
     }
 
     // get selected answers as vector
@@ -127,12 +184,15 @@ impl ChoiceSelectorState {
 
         self.move_to_last_known_choice(grid);
 
-        let item = grid.items[self.row][self.col].uuid;
+        let Some(item) = &grid.items[self.row][self.col] else {
+            return;
+        };
 
-        if self.selected.contains(&item) {
-            self.selected.remove(&item);
+        let id = item.uuid;
+        if self.selected.contains(&id) {
+            self.selected.remove(&id);
         } else {
-            self.selected.insert(item);
+            self.selected.insert(id);
         }
     }
 }

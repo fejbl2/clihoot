@@ -149,6 +149,14 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                     item_height,
                 );
 
+                if total_hgap_size > 0 {
+                    row_x += self.horizontal_gap;
+                }
+
+                let Some(item) = item else {
+                    continue;
+                };
+
                 let mut style = item.style;
                 if state.row() == i && state.col() == j {
                     style = style.patch(self.current_item_style);
@@ -171,10 +179,6 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                     .wrap(Wrap { trim: true })
                     .alignment(Alignment::Center)
                     .render(area, buf);
-
-                if total_hgap_size > 0 {
-                    row_x += self.horizontal_gap;
-                }
             }
 
             if total_vgap_size > 0 {
