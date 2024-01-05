@@ -12,6 +12,7 @@ use common::terminal::handle_terminal_events::handle_events;
 use common::terminal::highlight::Theme;
 use common::terminal::messages::Initialize;
 use common::terminal::terminal_actor::{TerminalActor, TerminalStop};
+use common::terminal::widgets::choice::{ChoiceGrid, ChoiceSelectorState};
 
 #[derive(Debug)]
 pub enum StudentTerminalState {
@@ -30,7 +31,8 @@ pub enum StudentTerminalState {
         question: NextQuestion,
         players_answered_count: usize,
         answered: bool,
-        /*answer_checker_state: Todo*/
+        choice_grid: ChoiceGrid,
+        choice_selector_state: ChoiceSelectorState,
     },
     Answers {
         answers: QuestionEnded,

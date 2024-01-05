@@ -39,6 +39,8 @@ impl TerminalDraw for StudentTerminal {
                 question,
                 players_answered_count,
                 answered,
+                choice_grid: _,
+                choice_selector_state: _,
             } => {
                 term.draw(|frame| {
                     if *answered {
