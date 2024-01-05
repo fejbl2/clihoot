@@ -152,11 +152,11 @@ impl ChoiceSelectorState {
         }
 
         self.move_to_last_known_choice(grid);
-        if grid.items[self.row][self.col].is_none() {
-            return;
-        }
 
-        self.find_next_some_left(grid);
+        if !self.find_next_some_left(grid) {
+            // if only None values are on the line, move up
+            self.move_up(grid);
+        }
     }
 
     pub fn move_right(&mut self, grid: &ChoiceGrid) {
@@ -165,11 +165,11 @@ impl ChoiceSelectorState {
         }
 
         self.move_to_last_known_choice(grid);
-        if grid.items[self.row][self.col].is_none() {
-            return;
-        }
 
-        self.find_next_some_right(grid);
+        if !self.find_next_some_right(grid) {
+            // if only None values are on the line, move down
+            self.move_down(grid);
+        }
     }
 
     // get selected answers as vector
