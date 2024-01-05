@@ -15,6 +15,7 @@ pub struct ChoiceSelector<'a> {
     right_item_style: Style,
     horizontal_gap: u16,
     vertical_gap: u16,
+    max_width_percentage: u8,
 }
 
 impl<'a> ChoiceSelector<'a> {
@@ -27,6 +28,7 @@ impl<'a> ChoiceSelector<'a> {
             right_item_style: Style::default(),
             horizontal_gap: 0,
             vertical_gap: 0,
+            max_width_percentage: 100,
         }
     }
 
@@ -65,6 +67,22 @@ impl<'a> ChoiceSelector<'a> {
         self.vertical_gap = gap;
         self
     }
+
+    // maximum percentage of the row width, that one choice item can take
+    pub fn max_width_percentage(mut self, max_width_percentage: u8) -> Self {
+        self.max_width_percentage = max_width_percentage;
+        self
+    }
+}
+
+fn calculate_size(available_size: u16, item_count: u16, total_gap_size: u16, max_size: u16) -> u16 {
+    let size = (available_size - total_gap_size) / item_count;
+
+    if size > max_size {
+        max_size
+    } else {
+        size
+    }
 }
 
 impl<'a> StatefulWidget for ChoiceSelector<'a> {
@@ -87,32 +105,42 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
             return;
         }
 
+        let max_width = (choice_selector_area.width as f32
+            * (self.max_width_percentage as f32 / 100.0))
+            .round() as u16;
+
         let items = &mut self.grid.items;
 
-        let mut ignore_vgaps = false;
-        let total_vgap_size = self.vertical_gap * (items.len() as u16 - 1);
-        let item_height = if total_vgap_size >= choice_selector_area.height {
-            // ignore the gaps if they are too big
-            ignore_vgaps = true;
-            choice_selector_area.height / items.len() as u16
-        } else {
-            (choice_selector_area.height - total_vgap_size) / items.len() as u16
-        };
+        let mut total_vgap_size = self.vertical_gap * (items.len() as u16 - 1);
+        if total_vgap_size >= choice_selector_area.height {
+            total_vgap_size = 0;
+        }
+        let item_height = calculate_size(
+            choice_selector_area.height,
+            items.len() as u16,
+            total_vgap_size,
+            choice_selector_area.height,
+        );
 
         let (x, mut y) = (choice_selector_area.x, choice_selector_area.y);
 
         for (i, row) in items.iter_mut().enumerate() {
-            let mut ignore_hgaps = false;
-            let total_hgap_size = self.horizontal_gap * (row.len() as u16 - 1);
-            let item_width = if total_hgap_size >= choice_selector_area.width {
-                // ignore the gaps if they are too big
-                ignore_hgaps = true;
-                choice_selector_area.width / row.len() as u16
-            } else {
-                (choice_selector_area.width - total_hgap_size) / row.len() as u16
-            };
+            let mut total_hgap_size = self.horizontal_gap * (row.len() as u16 - 1);
+            if total_hgap_size > choice_selector_area.width {
+                total_hgap_size = 0;
+            }
 
-            let mut row_x = x;
+            let item_width = calculate_size(
+                choice_selector_area.width,
+                row.len() as u16,
+                total_hgap_size,
+                max_width,
+            );
+
+            let leftover_space =
+                choice_selector_area.width - (item_width * row.len() as u16) - total_hgap_size;
+
+            let mut row_x = x + leftover_space / 2;
             for (j, item) in row.iter_mut().enumerate() {
                 let area = Rect::new(
                     row_x + j as u16 * item_width,
@@ -144,12 +172,12 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                     .alignment(Alignment::Center)
                     .render(area, buf);
 
-                if !ignore_hgaps {
+                if total_hgap_size > 0 {
                     row_x += self.horizontal_gap;
                 }
             }
 
-            if !ignore_vgaps {
+            if total_vgap_size > 0 {
                 y += self.vertical_gap;
             }
         }
