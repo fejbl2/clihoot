@@ -28,10 +28,6 @@ impl ChoiceGrid {
 }
 
 fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<ChoiceItem>> {
-    if items.len() <= 3 {
-        return vec![items];
-    }
-
     items.chunks(2).map(|chunk| chunk.to_vec()).collect()
 }
 

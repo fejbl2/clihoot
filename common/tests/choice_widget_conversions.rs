@@ -97,11 +97,13 @@ fn test_choice_grid_from_censored_3_choices() {
 
     let choice_grid: ChoiceGrid = question.into();
 
-    let wanted = ChoiceGrid::new(vec![vec![
-        ChoiceItem::new(text.clone(), false, id_1),
-        ChoiceItem::new(text.clone(), false, id_2),
-        ChoiceItem::new(text.clone(), false, id_3),
-    ]]);
+    let wanted = ChoiceGrid::new(vec![
+        vec![
+            ChoiceItem::new(text.clone(), false, id_1),
+            ChoiceItem::new(text.clone(), false, id_2),
+        ],
+        vec![ChoiceItem::new(text.clone(), false, id_3)],
+    ]);
 
     assert_eq!(choice_grid, wanted);
 }
@@ -220,11 +222,13 @@ fn test_choice_grid_from_uncensored_3_choices() {
 
     let choice_grid: ChoiceGrid = question.into();
 
-    let wanted = ChoiceGrid::new(vec![vec![
-        ChoiceItem::new(text.clone(), false, id_1),
-        ChoiceItem::new(text.clone(), false, id_2),
-        ChoiceItem::new(text.clone(), true, id_3),
-    ]]);
+    let wanted = ChoiceGrid::new(vec![
+        vec![
+            ChoiceItem::new(text.clone(), false, id_1),
+            ChoiceItem::new(text.clone(), false, id_2),
+        ],
+        vec![ChoiceItem::new(text.clone(), true, id_3)],
+    ]);
 
     assert_eq!(choice_grid, wanted);
 }
