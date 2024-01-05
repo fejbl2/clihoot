@@ -116,7 +116,7 @@ pub struct Choice {
     // by design, no syntax highlighting for the choices
     pub text: String,
     #[serde(default)]
-    pub is_right: bool,
+    pub is_correct: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
@@ -138,7 +138,7 @@ where
         ));
     }
 
-    let right_answers = choices.iter().filter(|choice| choice.is_right).count();
+    let right_answers = choices.iter().filter(|choice| choice.is_correct).count();
 
     if right_answers == 0 {
         return Err(de::Error::custom("At least one choice must be right"));

@@ -31,23 +31,23 @@ fn test_ok_code() {
             questions::Choice {
                 id: Uuid::nil(),
                 text: "Nothing useful".to_string(),
-                is_right: false,
+                is_correct: false,
             },
             questions::Choice {
                 id: Uuid::nil(),
                 text: "It prints 42".to_string(),
-                is_right: true,
+                is_correct: true,
             },
             questions::Choice {
                 id: Uuid::nil(),
                 text: "It fails to compile and the compiler will scream at us".to_string(),
-                is_right: false,
+                is_correct: false,
             },
             questions::Choice {
                 id: Uuid::nil(),
                 text: "It answers to the ultimate question of life, the Universe, and Everything"
                     .to_string(),
-                is_right: true,
+                is_correct: true,
             },
         ],
     }]);

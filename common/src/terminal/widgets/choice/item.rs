@@ -44,7 +44,7 @@ impl From<ChoiceCensored> for ChoiceItem {
 
 impl From<Choice> for ChoiceItem {
     fn from(value: Choice) -> Self {
-        Self::new(value.text, value.is_right, value.id)
+        Self::new(value.text, value.is_correct, value.id)
     }
 }
 

@@ -63,7 +63,7 @@ fn compare_questions(left: &questions::Question, right: &questions::Question) ->
             return false;
         }
 
-        if left_choice.is_right != right_choice.is_right {
+        if left_choice.is_correct != right_choice.is_correct {
             return false;
         }
     }
@@ -82,22 +82,22 @@ pub fn no_code_question_fixture() -> questions::Question {
             questions::Choice {
                 id: uuid::Uuid::nil(),
                 text: "sleep".to_string(),
-                is_right: false,
+                is_correct: false,
             },
             questions::Choice {
                 id: uuid::Uuid::nil(),
                 text: "42".to_string(),
-                is_right: true,
+                is_correct: true,
             },
             questions::Choice {
                 id: uuid::Uuid::nil(),
                 text: "food".to_string(),
-                is_right: false,
+                is_correct: false,
             },
             questions::Choice {
                 id: uuid::Uuid::nil(),
                 text: "69".to_string(),
-                is_right: false,
+                is_correct: false,
             },
         ],
     }
