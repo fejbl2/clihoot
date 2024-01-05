@@ -10,16 +10,16 @@ use crate::questions::{Choice, ChoiceCensored, Question, QuestionCensored};
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct ChoiceItem {
     content: String,
-    is_right: bool,
+    is_correct: bool,
     uuid: Uuid,
     style: Style,
 }
 
 impl ChoiceItem {
-    pub fn new(content: String, is_right: bool, uuid: Uuid) -> Self {
+    pub fn new(content: String, is_correct: bool, uuid: Uuid) -> Self {
         Self {
             content,
-            is_right,
+            is_correct,
             uuid,
             style: Style::default(),
         }
@@ -354,20 +354,18 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                 if state.selected.contains(&item.uuid) {
                     style = style.patch(self.selected_item_style);
                 }
-                if item.is_right {
+                if item.is_correct {
                     style = style.patch(self.right_item_style);
                 }
 
                 let text = Text::from(item.content.clone());
                 let text_height = text.height() as u16 + 2;
                 // centering the text vertically
-                let leftover_space = area.height.saturating_sub(text_height);
+                let leftover_vertical_space = area.height.saturating_sub(text_height);
                 Paragraph::new(text)
-                    .block(
-                        Block::default()
-                            .borders(Borders::ALL)
-                            .padding(ratatui::widgets::Padding::new(0, 0, leftover_space / 2, 0)),
-                    )
+                    .block(Block::default().borders(Borders::ALL).padding(
+                        ratatui::widgets::Padding::new(0, 0, leftover_vertical_space / 2, 0),
+                    ))
                     .style(style)
                     .wrap(Wrap { trim: true })
                     .alignment(Alignment::Center)
