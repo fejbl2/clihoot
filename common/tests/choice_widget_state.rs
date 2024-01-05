@@ -656,3 +656,59 @@ fn test_start_on_none_row_move_left() {
     assert_eq!(state.col(), 0);
     assert_eq!(state.last_under_cursor(), Some(uuid_1));
 }
+
+#[test]
+fn test_reconfigure_with_none() {
+    let uuids = [Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()];
+
+    // single row with 3 choices
+    let grid = ChoiceGrid::new(vec![vec![
+        Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0])),
+        None,
+        Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1])),
+        None,
+        Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2])),
+    ]]);
+
+    let mut state = ChoiceSelectorState::default();
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert!(state.last_under_cursor().is_none());
+
+    // move to the middle item
+    state.move_right(&grid);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 2);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1]));
+
+    // rearange the grid to be one single column with three rows
+    let grid = ChoiceGrid::new(vec![
+        vec![Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0]))],
+        vec![None],
+        vec![Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1]))],
+        vec![None],
+        vec![Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2]))],
+    ]);
+
+    state.move_to_last_known_choice(&grid);
+    assert_eq!(state.row(), 2);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1]));
+
+    // rearange back to the original config
+    let grid = ChoiceGrid::new(vec![vec![
+        Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0])),
+        None,
+        Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1])),
+        None,
+        Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2])),
+    ]]);
+
+    // try to select item under the cursor, without calling the move_to_last_known_choice function
+    state.toggle_selection(&grid);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 2);
+    assert_eq!(state.last_under_cursor(), Some(uuids[1]));
+    let selected = state.selected();
+    assert!(selected.len() == 1 && selected.contains(&uuids[1]));
+}
