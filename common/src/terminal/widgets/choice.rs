@@ -1,3 +1,4 @@
+use ratatui::layout::Alignment;
 use ratatui::prelude::*;
 use ratatui::widgets::{Block, Borders, Paragraph, StatefulWidget, Widget, Wrap};
 use std::cmp::PartialEq;
@@ -45,6 +46,13 @@ impl Styled for ChoiceItem {
     }
 
     fn set_style(mut self, style: Style) -> Self::Item {
+        self.style = style;
+        self
+    }
+}
+
+impl ChoiceItem {
+    pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
     }
@@ -350,10 +358,19 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                     style = style.patch(self.right_item_style);
                 }
 
-                Paragraph::new(item.content.clone())
-                    .block(Block::default().borders(Borders::ALL))
+                let text = Text::from(item.content.clone());
+                let text_height = text.height() as u16 + 2;
+                // centering the text vertically
+                let leftover_space = area.height.saturating_sub(text_height);
+                Paragraph::new(text)
+                    .block(
+                        Block::default()
+                            .borders(Borders::ALL)
+                            .padding(ratatui::widgets::Padding::new(0, 0, leftover_space / 2, 0)),
+                    )
                     .style(style)
                     .wrap(Wrap { trim: true })
+                    .alignment(Alignment::Center)
                     .render(area, buf);
 
                 if !ignore_hgaps {
