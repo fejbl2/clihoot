@@ -74,6 +74,12 @@ impl ChoiceGrid {
     pub fn is_empty(&self) -> bool {
         self.is_empty
     }
+
+    // consume self and return the items inside
+    // usefull when wanting to change the grid or items inside
+    pub fn items(self) -> Vec<Vec<ChoiceItem>> {
+        self.items
+    }
 }
 
 fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<ChoiceItem>> {
