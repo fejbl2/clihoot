@@ -1,6 +1,6 @@
 use ratatui::layout::Alignment;
 use ratatui::prelude::*;
-use ratatui::widgets::{Block, Borders, Paragraph, StatefulWidget, Widget, Wrap};
+use ratatui::widgets::{Block, Borders, Padding, Paragraph, StatefulWidget, Widget, Wrap};
 use std::cmp::PartialEq;
 use std::collections::HashSet;
 use uuid::Uuid;
@@ -13,6 +13,7 @@ pub struct ChoiceItem {
     is_correct: bool,
     uuid: Uuid,
     style: Style,
+    block: Block<'static>,
 }
 
 impl ChoiceItem {
@@ -22,6 +23,7 @@ impl ChoiceItem {
             is_correct,
             uuid,
             style: Style::default(),
+            block: Block::default().borders(Borders::ALL),
         }
     }
 }
@@ -54,6 +56,11 @@ impl Styled for ChoiceItem {
 impl ChoiceItem {
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
+        self
+    }
+
+    pub fn block(mut self, block: Block<'static>) -> Self {
+        self.block = block;
         self
     }
 }
@@ -367,11 +374,9 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                 let text = Text::from(item.content.clone());
                 let text_height = text.height() as u16 + 2;
                 // centering the text vertically
-                let leftover_vertical_space = area.height.saturating_sub(text_height);
+                let padding = Padding::new(0, 0, area.height.saturating_sub(text_height) / 2, 0);
                 Paragraph::new(text)
-                    .block(Block::default().borders(Borders::ALL).padding(
-                        ratatui::widgets::Padding::new(0, 0, leftover_vertical_space / 2, 0),
-                    ))
+                    .block(item.block.clone().padding(padding))
                     .style(style)
                     .wrap(Wrap { trim: true })
                     .alignment(Alignment::Center)
