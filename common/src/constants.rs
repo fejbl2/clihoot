@@ -5,3 +5,7 @@ pub const NICKNAME_ALREADY_TAKEN_MSG: &str = "Nickname already taken";
 pub const DEFAULT_PORT: u16 = 8080;
 pub const DEFAULT_GOODBYE_MESSAGE: &str = "Goodbye";
 pub const MINIMAL_ASCII_HEIGHT: u16 = 18;
+pub const MAXIMAL_CHOICE_LENGTH: usize = 200;
+pub const MAXIMAL_QUESTION_LENGTH: usize = 200;
+pub const MAXIMAL_CODE_LENGTH: usize = 400;
+pub const MAXIMAL_NAME_LENGTH: usize = 20;

@@ -3,11 +3,14 @@ use crossterm::event::KeyCode;
 use ratatui::widgets::ListState;
 
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
-use common::messages::{
-    network::{AnswerSelected, JoinRequest, PlayerData},
-    ClientNetworkMessage,
-};
 use common::terminal::terminal_actor::TerminalHandleInput;
+use common::{
+    constants::MAXIMAL_NAME_LENGTH,
+    messages::{
+        network::{AnswerSelected, JoinRequest, PlayerData},
+        ClientNetworkMessage,
+    },
+};
 
 fn name_in_players(name: &str, players: &[PlayerData]) -> bool {
     players.iter().any(|player| player.nickname == name)
@@ -33,8 +36,10 @@ impl TerminalHandleInput for StudentTerminal {
                     *name_already_used = name_in_players(name, &self.players);
                 }
                 KeyCode::Char(char) => {
-                    name.push(char);
-                    *name_already_used = name_in_players(name, &self.players);
+                    if name.chars().count() < MAXIMAL_NAME_LENGTH {
+                        name.push(char);
+                        *name_already_used = name_in_players(name, &self.players);
+                    }
                 }
                 KeyCode::Enter if !name.is_empty() => {
                     *name_already_used = name_in_players(name, &self.players);

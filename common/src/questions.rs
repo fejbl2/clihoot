@@ -5,7 +5,9 @@ use std::ops::{Deref, DerefMut};
 use std::path::Path;
 use uuid::Uuid;
 
-use crate::constants::DEFAULT_QUIZ_NAME;
+use crate::constants::{
+    DEFAULT_QUIZ_NAME, MAXIMAL_CHOICE_LENGTH, MAXIMAL_CODE_LENGTH, MAXIMAL_QUESTION_LENGTH,
+};
 
 fn falsy() -> bool {
     false
@@ -50,6 +52,7 @@ fn new_uuid() -> Uuid {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct Question {
+    #[serde(deserialize_with = "deserialize_question_text")]
     pub text: String,
     pub code_block: Option<CodeBlock>,
     pub time_seconds: usize,
@@ -59,6 +62,7 @@ pub struct Question {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct QuestionCensored {
+    #[serde(deserialize_with = "deserialize_question_text")]
     pub text: String,
     pub code_block: Option<CodeBlock>,
     pub time_seconds: usize,
@@ -105,6 +109,8 @@ impl Question {
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct CodeBlock {
     pub language: String,
+
+    #[serde(deserialize_with = "deserialize_code_text")]
     pub code: String,
 }
 
@@ -125,6 +131,36 @@ pub struct ChoiceCensored {
     pub text: String,
 }
 
+fn deserialize_code_text<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let text: String = Deserialize::deserialize(deserializer)?;
+
+    if text.chars().count() > MAXIMAL_CODE_LENGTH {
+        return Err(de::Error::custom(format!(
+            "Code text must be at most {MAXIMAL_CODE_LENGTH} chars"
+        )));
+    }
+
+    Ok(text)
+}
+
+fn deserialize_question_text<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let text: String = Deserialize::deserialize(deserializer)?;
+
+    if text.chars().count() > MAXIMAL_QUESTION_LENGTH {
+        return Err(de::Error::custom(format!(
+            "Question text must be at most {MAXIMAL_QUESTION_LENGTH} chars"
+        )));
+    }
+
+    Ok(text)
+}
+
 fn deserialize_choices<'de, D>(deserializer: D) -> Result<Vec<Choice>, D::Error>
 where
     D: Deserializer<'de>,
@@ -142,6 +178,16 @@ where
 
     if right_answers == 0 {
         return Err(de::Error::custom("At least one choice must be right"));
+    }
+
+    // max length of text of a choice is 50 chars
+    if choices
+        .iter()
+        .any(|choice| choice.text.chars().count() > MAXIMAL_CHOICE_LENGTH)
+    {
+        return Err(de::Error::custom(format!(
+            "Choice text must be at most {MAXIMAL_CHOICE_LENGTH} chars"
+        )));
     }
 
     Ok(choices)

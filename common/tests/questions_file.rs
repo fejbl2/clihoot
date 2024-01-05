@@ -78,6 +78,30 @@ fn test_missing_field() {
 }
 
 #[test]
+fn test_too_long_question() {
+    let result =
+        questions::QuestionSet::from_file(Path::new("./tests/files/err_too_long_question.yaml"));
+
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_too_long_code() {
+    let result =
+        questions::QuestionSet::from_file(Path::new("./tests/files/err_code_too_long.yaml"));
+
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_too_long_choice() {
+    let result =
+        questions::QuestionSet::from_file(Path::new("./tests/files/err_choice_too_long.yaml"));
+
+    assert!(result.is_err());
+}
+
+#[test]
 fn test_no_right_choice() {
     let result = questions::QuestionSet::from_file(Path::new("./tests/files/err_no_right.yaml"));
 
