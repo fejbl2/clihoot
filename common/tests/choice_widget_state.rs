@@ -523,3 +523,136 @@ fn test_4_with_none() {
     assert_eq!(state.col(), 0);
     assert_eq!(state.last_under_cursor(), Some(uuid_1));
 }
+
+#[test]
+fn test_4_with_none_mirrored() {
+    let uuid_1 = Uuid::new_v4();
+    let uuid_2 = Uuid::new_v4();
+    let grid = ChoiceGrid::new(vec![
+        vec![
+            None,
+            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
+        ],
+        vec![
+            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
+            None,
+        ],
+    ]);
+
+    let mut state = ChoiceSelectorState::default();
+    state.move_right(&grid);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuid_1));
+
+    state.move_left(&grid);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuid_1));
+
+    state.move_down(&grid);
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuid_2));
+
+    state.move_right(&grid);
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuid_2));
+
+    state.move_left(&grid);
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuid_2));
+
+    state.move_up(&grid);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuid_1));
+}
+
+#[test]
+fn test_only_none_line_in_middle() {
+    let uuid_1 = Uuid::new_v4();
+    let uuid_2 = Uuid::new_v4();
+    let grid = ChoiceGrid::new(vec![
+        vec![
+            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
+            None,
+        ],
+        vec![None, None],
+        vec![
+            None,
+            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
+        ],
+    ]);
+
+    let mut state = ChoiceSelectorState::default();
+    state.move_right(&grid);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuid_1));
+
+    state.move_left(&grid);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuid_1));
+
+    state.move_down(&grid);
+    assert_eq!(state.row(), 2);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuid_2));
+
+    state.move_right(&grid);
+    assert_eq!(state.row(), 2);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuid_2));
+
+    state.move_left(&grid);
+    assert_eq!(state.row(), 2);
+    assert_eq!(state.col(), 1);
+    assert_eq!(state.last_under_cursor(), Some(uuid_2));
+
+    state.move_up(&grid);
+    assert_eq!(state.row(), 0);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuid_1));
+}
+
+#[test]
+fn test_start_on_none_row_move_right() {
+    let uuid_1 = Uuid::new_v4();
+    let uuid_2 = Uuid::new_v4();
+    let grid = ChoiceGrid::new(vec![
+        vec![None, None],
+        vec![
+            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
+            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
+        ],
+    ]);
+
+    let mut state = ChoiceSelectorState::default();
+    state.move_right(&grid);
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuid_1));
+}
+
+#[test]
+fn test_start_on_none_row_move_left() {
+    let uuid_1 = Uuid::new_v4();
+    let uuid_2 = Uuid::new_v4();
+    let grid = ChoiceGrid::new(vec![
+        vec![None, None],
+        vec![
+            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
+            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
+        ],
+    ]);
+
+    let mut state = ChoiceSelectorState::default();
+    state.move_right(&grid);
+    assert_eq!(state.row(), 1);
+    assert_eq!(state.col(), 0);
+    assert_eq!(state.last_under_cursor(), Some(uuid_1));
+}
