@@ -2,6 +2,7 @@ use crate::terminal::draw_states::{render_color_selection, render_name_selection
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::render::{self};
 use common::terminal::terminal_actor::TerminalDraw;
+
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
@@ -39,14 +40,20 @@ impl TerminalDraw for StudentTerminal {
                 question,
                 players_answered_count,
                 answered,
-                choice_grid: _,
-                choice_selector_state: _,
+                choice_grid,
+                choice_selector_state,
             } => {
                 term.draw(|frame| {
                     if *answered {
-                        let _ = render::question_waiting(frame);
+                        let _ = render::question_waiting(frame, question, *players_answered_count);
                     } else {
-                        let _ = render::question(frame, question, *players_answered_count);
+                        let _ = render::question(
+                            frame,
+                            question,
+                            *players_answered_count,
+                            choice_grid,
+                            choice_selector_state,
+                        );
                     }
                 })?;
                 Ok(())

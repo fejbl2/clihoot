@@ -4,7 +4,7 @@ use crate::questions::{Question, QuestionCensored};
 
 use crate::terminal::widgets::choice::ChoiceItem;
 
-#[derive(Default, Debug, PartialEq)]
+#[derive(Default, Debug, PartialEq, Clone)]
 pub struct ChoiceGrid {
     pub(super) items: Vec<Vec<Option<ChoiceItem>>>,
     is_empty: bool,

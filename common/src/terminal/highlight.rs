@@ -79,7 +79,7 @@ pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Para
     let Some(translated_color) = translate_color(theme.settings.background) else {
         return highlighted_paragraph;
     };
-    highlighted_paragraph.style(RatatuiStyle::default().bg(translated_color))
+    highlighted_paragraph.style(RatatuiStyle::default().fg(translated_color))
 }
 
 fn range_to_span((style, content): (Style, &str), use_bg_color: bool) -> Span {

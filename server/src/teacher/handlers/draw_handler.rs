@@ -25,12 +25,12 @@ impl TerminalDraw for TeacherTerminal {
                 Ok(())
             }
             TeacherTerminalState::Question {
-                question: _,
-                players_answered_count: _,
+                question,
+                players_answered_count,
                 players: _,
             } => {
                 term.draw(|frame| {
-                    let _ = render::question_waiting(frame);
+                    let _ = render::question_waiting(frame, question, *players_answered_count);
                 })?;
                 Ok(())
             }

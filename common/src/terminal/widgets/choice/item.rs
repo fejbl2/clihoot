@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::questions::{Choice, ChoiceCensored};
 
-#[derive(Debug, Clone, Default, PartialEq)]
+#[derive(Debug, Clone, Default, PartialEq, Copy)]
 pub struct ChoiceItem {
     pub(super) content: String,
     pub(super) is_correct: bool,

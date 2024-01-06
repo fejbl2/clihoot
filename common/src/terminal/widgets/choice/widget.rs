@@ -6,7 +6,7 @@ use ratatui::widgets::{Block, Padding, Paragraph, StatefulWidget, Widget, Wrap};
 
 use crate::terminal::widgets::choice::{ChoiceGrid, ChoiceSelectorState};
 
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct ChoiceSelector<'a> {
     grid: ChoiceGrid,
     block: Option<Block<'a>>,
