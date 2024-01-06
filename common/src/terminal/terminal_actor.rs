@@ -113,11 +113,11 @@ where
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        ctx.notify(Initialize);
-
         let addr = ctx.address();
+
         let fut = async move {
-            let _ = handle_events(addr).await;
+            let _ = addr.send(Initialize).await;
+            let _task = tokio::spawn(handle_events(addr));
         };
 
         let fut = wrap_future(fut);
