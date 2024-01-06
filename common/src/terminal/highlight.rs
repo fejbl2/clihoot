@@ -9,7 +9,7 @@ use syntect::highlighting::{Color, FontStyle, Style};
 use syntect::parsing::SyntaxSet;
 use syntect::util::LinesWithEndings;
 
-use crate::questions::CodeBlock;
+use crate::questions::{find_syntax, CodeBlock};
 
 #[derive(Clone, Copy, ValueEnum, Serialize, Default)]
 #[serde(rename_all = "kebab-case")]
@@ -44,13 +44,13 @@ pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Para
     let ss = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
-    let syntax = match ss.find_syntax_by_extension(&code_block.language) {
-        Some(syntax) => syntax,
-        None => ss.find_syntax_plain_text(),
+    let syntax = match find_syntax(&code_block.language, Some(&code_block.code)) {
+        Ok(syntax) => syntax,                          // should always happen
+        Err(_) => ss.find_syntax_plain_text().clone(), // fallback if something does terribly wrong
     };
 
     let theme = &ts.themes[syntax_theme.into()];
-    let mut highlighter = HighlightLines::new(syntax, theme);
+    let mut highlighter = HighlightLines::new(&syntax, theme);
 
     let mut lines: Vec<Line> = Vec::new();
 

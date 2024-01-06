@@ -1,7 +1,7 @@
 questions:
   - text: What does this code do?
     code_block:
-      language: rs
+      language: xyzabc
       code: >
         fn main() {
             println!("42");
