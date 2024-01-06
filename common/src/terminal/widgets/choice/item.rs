@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::questions::{Choice, ChoiceCensored};
 
-#[derive(Debug, Clone, Default, PartialEq, Copy)]
+#[derive(Debug, Clone, Default, PartialEq)]
 pub struct ChoiceItem {
     pub(super) content: String,
     pub(super) is_correct: bool,
@@ -36,6 +36,10 @@ impl ChoiceItem {
     pub fn block(mut self, block: Block<'static>) -> Self {
         self.block = block;
         self
+    }
+
+    pub fn set_style_ref(&mut self, style: Style) {
+        self.style = style;
     }
 }
 

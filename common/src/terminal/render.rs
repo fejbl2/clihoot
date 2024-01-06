@@ -232,32 +232,36 @@ pub fn question(
 
     if question.code_block.is_some() {
         let code_paragraph =
-            highlight_code_block(question.code_block.as_ref().unwrap(), Theme::OceanLight)
+            highlight_code_block(question.code_block.as_ref().unwrap(), Theme::OceanDark)
                 .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
         frame.render_widget(code_paragraph, layout[2]);
     }
 
-    choice_grid.clone().items()[0][0]
-        .clone()
+    let mut items = choice_grid.clone().items();
+
+    match &mut items[0][0] {
+        Some(item) => {
+            item.set_style_ref(style::Style::default().bg(Color::Red));
+        }
+        None => {}
+    };
+
+    /*
+    items[0][0]
         .unwrap()
-        .bg(Color::Red);
-    choice_grid.clone().items()[0][1]
-        .clone()
-        .unwrap()
-        .bg(Color::Green);
-    choice_grid.clone().items()[1][0]
-        .clone()
-        .unwrap()
-        .bg(Color::Blue);
-    choice_grid.clone().items()[1][1]
-        .clone()
+        .set_style_mut(style::Style::default().bg(Color::Red));
+    items[0][1].unwrap().bg(Color::Green);
+    items[1][0].unwrap().bg(Color::Blue);
+    items[1][1]
         .unwrap()
         .bg(Color::Yellow)
         .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+    */
+
+    *choice_grid = ChoiceGrid::new(items);
 
     let choice_selector = ChoiceSelector::new(choice_grid.clone());
     let choice_selector = choice_selector
-        .clone()
         .vertical_gap(1)
         .horizontal_gap(3)
         .block(get_bordered_block());
