@@ -1,5 +1,7 @@
+use actix::fut::wrap_future;
 use actix::prelude::*;
 use crossterm::event::KeyCode;
+use log::debug;
 use ratatui::backend::Backend;
 
 use ratatui::Terminal;
@@ -13,6 +15,8 @@ use crate::messages::{
     status_messages::ClientWebsocketStatus,
 };
 use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
+
+use super::handle_terminal_events::handle_events;
 
 pub trait TerminalDraw {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()>;
@@ -59,7 +63,7 @@ pub trait TerminalStop {
 
 pub struct TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalStop,
 {
     // base terminal actor, instantiated with struct that represents
     // its inner state
@@ -76,12 +80,10 @@ where
 
 impl<T> TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalStop,
 {
     #[cfg(not(feature = "test"))]
     pub fn new(inner: T) -> Self {
-        use log::debug;
-
         debug!("Initializing terminal actor with crossterm backend");
 
         let term =
@@ -94,8 +96,6 @@ where
 
     #[cfg(feature = "test")]
     pub fn new(inner: T) -> Self {
-        use log::debug;
-
         debug!("Initializing terminal actor with test backend");
 
         let term = Terminal::new(ratatui::backend::TestBackend::new(64, 32)).unwrap();
@@ -108,14 +108,27 @@ where
 
 impl<T> Actor for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     type Context = Context<Self>;
+
+    fn started(&mut self, ctx: &mut Self::Context) {
+        ctx.notify(Initialize);
+
+        let addr = ctx.address();
+        let fut = async move {
+            let _ = handle_events(addr).await;
+        };
+
+        let fut = wrap_future(fut);
+
+        ctx.spawn(fut);
+    }
 }
 
 impl<T> Handler<Initialize> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     type Result = anyhow::Result<()>;
 
@@ -163,7 +176,7 @@ where
 
 impl<T> Handler<Redraw> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     type Result = anyhow::Result<()>;
 
@@ -174,7 +187,7 @@ where
 
 impl<T> Handler<KeyPress> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     type Result = anyhow::Result<()>;
 
@@ -186,7 +199,12 @@ where
 
 impl<T> Handler<ServerNetworkMessage> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleServerNetworkMessage,
+    T: 'static
+        + Unpin
+        + TerminalDraw
+        + TerminalHandleInput
+        + TerminalStop
+        + TerminalHandleServerNetworkMessage,
 {
     type Result = anyhow::Result<()>;
 
@@ -198,7 +216,12 @@ where
 
 impl<T> Handler<ClientWebsocketStatus> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleClientWebsocketStatus,
+    T: 'static
+        + Unpin
+        + TerminalDraw
+        + TerminalHandleInput
+        + TerminalStop
+        + TerminalHandleClientWebsocketStatus,
 {
     type Result = anyhow::Result<()>;
 
@@ -210,7 +233,12 @@ where
 
 impl<T> Handler<NextQuestion> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleNextQuestion,
+    T: 'static
+        + Unpin
+        + TerminalDraw
+        + TerminalHandleInput
+        + TerminalStop
+        + TerminalHandleNextQuestion,
 {
     type Result = anyhow::Result<()>;
 
@@ -222,7 +250,12 @@ where
 
 impl<T> Handler<QuestionEnded> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleQuestionEnded,
+    T: 'static
+        + Unpin
+        + TerminalDraw
+        + TerminalHandleInput
+        + TerminalStop
+        + TerminalHandleQuestionEnded,
 {
     type Result = anyhow::Result<()>;
 
@@ -234,7 +267,12 @@ where
 
 impl<T> Handler<QuestionUpdate> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleQuestionUpdate,
+    T: 'static
+        + Unpin
+        + TerminalDraw
+        + TerminalHandleInput
+        + TerminalStop
+        + TerminalHandleQuestionUpdate,
 {
     type Result = anyhow::Result<()>;
 
@@ -246,7 +284,12 @@ where
 
 impl<T> Handler<ShowLeaderboard> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandleShowLeaderboard,
+    T: 'static
+        + Unpin
+        + TerminalDraw
+        + TerminalHandleInput
+        + TerminalStop
+        + TerminalHandleShowLeaderboard,
 {
     type Result = anyhow::Result<()>;
 
@@ -258,7 +301,12 @@ where
 
 impl<T> Handler<PlayersUpdate> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalHandlePlayersUpdate,
+    T: 'static
+        + Unpin
+        + TerminalDraw
+        + TerminalHandleInput
+        + TerminalStop
+        + TerminalHandlePlayersUpdate,
 {
     type Result = anyhow::Result<()>;
 

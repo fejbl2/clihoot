@@ -29,7 +29,7 @@ impl TerminalHandleQuestionUpdate for TeacherTerminal {
 
         self.state = TeacherTerminalState::Question {
             players_answered_count: update.players_answered_count,
-            players: players.to_vec(),
+            players: players.clone(),
             question: question.clone(),
         };
 

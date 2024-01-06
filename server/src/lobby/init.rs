@@ -1,22 +1,13 @@
 use actix::{Actor, Addr};
 
-use actix_rt::System;
-
 use common::questions::QuestionSet;
-use log::{info, warn};
+use log::info;
 use tokio::net::TcpListener;
 
 use std::{net::SocketAddr, sync::mpsc::Sender};
 
 use super::state::Lobby;
 use crate::websocket::Websocket;
-
-fn create_tokio_runtime() -> tokio::runtime::Runtime {
-    tokio::runtime::Builder::new_current_thread()
-        .enable_all()
-        .build()
-        .expect("Could not create tokio runtime") // cannot seem to get rid of this
-}
 
 /// Starts the server and send the address of the lobby through the given channel.
 /// # Errors
@@ -27,7 +18,7 @@ pub fn run_server(
     questions: QuestionSet,
     addr: SocketAddr,
 ) -> anyhow::Result<()> {
-    let system = actix::System::with_tokio_rt(create_tokio_runtime);
+    let system = actix::System::new();
 
     system.block_on(init(tx, questions, addr))?;
 
@@ -46,21 +37,11 @@ async fn init(
     let lobby_actor = Lobby::new(questions).start();
 
     // spawn task for accepting connections
-    // LOCAL SPAWN is very important here (actors can only be spawned on the same thread)
     let _connection_acceptor =
         tokio::task::spawn_local(accept_connections(addr, lobby_actor.clone()));
 
     // send the address of the lobby to the main thread
     let _ = tx.send(lobby_actor.clone());
-
-    // handle CTRL+C gracefully
-    tokio::spawn(async move {
-        tokio::signal::ctrl_c()
-            .await
-            .expect("Failed to register CTRL-C handler");
-        warn!("CTRL-C received, shutting down");
-        System::current().stop();
-    });
 
     Ok(())
 }
