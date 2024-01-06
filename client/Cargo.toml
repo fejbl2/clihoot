@@ -2,28 +2,22 @@
 name = "client"
 version = "0.1.0"
 edition = "2021"
-
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-common = { path = "../common" }
-uuid = { version = "1.6.1", features = ["v4"] }
-url = { version = "2.5.0", features = [] }
-time = "0.3.30"
-serde = "1.0"
-serde_json = "1.0"
-term = { version = "0.7.0", features = [] }
-clap = { version = "4.4.11", features = ["derive"] }
-tungstenite = { version = "0.21.0", features = [] }
-tokio-tungstenite = { version = "0.21.0", features = [] }
 actix = "0.13.1"
-actix-rt = "2.9.0"
-rodio = "0.17.3"
 anyhow = "1.0.75"
+clap = { version = "4.4.11", features = ["derive"] }
+common = { path = "../common" }
 crossterm = { version = "0.27.0", features = ["event-stream"] }
 futures = "0.3.29"
-ratatui = "0.24.0"
-tokio = { version = "1.35.0", features = ["full"] }
-figlet-rs = "0.1.5"
 log = "0.4.20"
+ratatui = "0.25.0"
+rodio = "0.17.3"
+serde_json = "1.0"
 simplelog = { version = "0.12.1", features = ["paris", "test", "ansi_term"] }
+tokio = { version = "1.35.1", features = ["full"] }
+tokio-tungstenite = { version = "0.21.0", features = [] }
+tungstenite = { version = "0.21.0", features = [] }
+url = { version = "2.5.0", features = [] }
+uuid = { version = "1.6.1", features = ["v4"] }
