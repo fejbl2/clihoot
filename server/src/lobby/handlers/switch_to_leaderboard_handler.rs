@@ -3,7 +3,7 @@ use anyhow::bail;
 use log::debug;
 
 use crate::{
-    lobby::state::{Lobby, Phase},
+    lobby::{Lobby, Phase},
     messages::lobby::SwitchToLeaderboard,
 };
 

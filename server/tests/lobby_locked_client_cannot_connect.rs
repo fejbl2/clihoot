@@ -11,8 +11,8 @@ use common::{
 };
 use rstest::rstest;
 use server::{
-    lobby::state::Lobby,
     messages::lobby::{self},
+    Lobby,
 };
 
 use crate::fixtures::create_server::create_server;

@@ -1,3 +1,7 @@
-pub mod handlers;
-pub mod init;
-pub mod terminal;
+mod handlers;
+mod init;
+mod terminal;
+
+pub use handlers::*;
+pub use init::*;
+pub use terminal::*;

@@ -1,6 +1,7 @@
 use std::cmp::PartialEq;
 
 use crate::questions::{Question, QuestionCensored};
+
 use crate::terminal::widgets::choice::ChoiceItem;
 
 #[derive(Default, Debug, PartialEq)]
@@ -12,18 +13,20 @@ pub struct ChoiceGrid {
 impl ChoiceGrid {
     pub fn new(items: Vec<Vec<Option<ChoiceItem>>>) -> Self {
         let is_empty = items.is_empty()
-            || items.iter().any(|row| row.is_empty())
+            || items.iter().any(std::vec::Vec::is_empty)
             || !items.iter().flatten().any(Option::is_some);
 
         Self { items, is_empty }
     }
 
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.is_empty
     }
 
     // consume self and return the items inside
     // usefull when wanting to change the grid or items inside
+    #[must_use]
     pub fn items(self) -> Vec<Vec<Option<ChoiceItem>>> {
         self.items
     }
@@ -35,7 +38,10 @@ fn create_grid(items: Vec<ChoiceItem>) -> Vec<Vec<Option<ChoiceItem>>> {
         items.push(None);
     }
 
-    items.chunks(2).map(|chunk| chunk.to_vec()).collect()
+    items
+        .chunks(2)
+        .map(<[Option<ChoiceItem>]>::to_vec)
+        .collect()
 }
 
 impl From<QuestionCensored> for ChoiceGrid {

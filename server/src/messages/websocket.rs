@@ -3,13 +3,13 @@ use uuid::Uuid;
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct WebsocketGracefulStop {
+pub struct GracefulStop {
     pub reason: Option<String>,
 }
 
 #[derive(Message)]
 #[rtype(result = "()")]
-pub struct WebsocketHardStop;
+pub struct HardStop;
 
 //WsConn sends this to a lobby to say "take me out please"
 #[derive(Message, Debug)]

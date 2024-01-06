@@ -13,14 +13,14 @@ use rstest::rstest;
 use server::messages::lobby;
 
 use server::{
-    lobby::state::{Lobby, Phase},
+    lobby::{Lobby, Phase},
     messages::lobby::StartQuestion,
-    teacher::init::Teacher,
+    Teacher,
 };
 
 use crate::{
-    fixtures::create_server_and_teacher::create_server_and_teacher,
-    mocks::get_server_state_handler::GetServerState, utils::sample_questions,
+    fixtures::create_server_and_teacher::create_server_and_teacher, mocks::GetServerState,
+    utils::sample_questions,
 };
 
 #[rstest]

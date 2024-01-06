@@ -10,9 +10,8 @@ use common::messages::network::PlayersUpdate;
 
 use rstest::rstest;
 use server::{
-    lobby::state::Lobby,
     messages::lobby::{self, KickPlayer},
-    teacher::init::Teacher,
+    Lobby, Teacher,
 };
 use tungstenite::protocol::{frame::coding::CloseCode, CloseFrame};
 

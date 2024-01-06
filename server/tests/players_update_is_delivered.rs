@@ -9,11 +9,10 @@ use actix::Addr;
 use common::messages::network::PlayersUpdate;
 
 use rstest::rstest;
-use server::{lobby::state::Lobby, messages::lobby, teacher::init::Teacher};
+use server::{messages::lobby, Lobby, Teacher};
 
 use crate::{
-    fixtures::create_server_and_teacher::create_server_and_teacher,
-    mocks::get_server_state_handler::GetServerState,
+    fixtures::create_server_and_teacher::create_server_and_teacher, mocks::GetServerState,
 };
 
 #[rstest]

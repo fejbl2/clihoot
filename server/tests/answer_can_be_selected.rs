@@ -15,14 +15,13 @@ use common::{messages::network::ChoiceStats, questions::QuestionCensored};
 
 use rstest::rstest;
 use server::{
-    lobby::state::{Lobby, Phase},
+    lobby::{Lobby, Phase},
     messages::lobby::{self, StartQuestion},
-    teacher::init::Teacher,
+    Teacher,
 };
 
 use crate::{
-    fixtures::create_server_and_teacher::create_server_and_teacher,
-    mocks::get_server_state_handler::GetServerState,
+    fixtures::create_server_and_teacher::create_server_and_teacher, mocks::GetServerState,
 };
 
 #[rstest]
@@ -48,7 +47,7 @@ async fn answer_can_be_selected(
     utils::send_question_answer(&mut sender, &player, &question.question, 0, vec![0]).await?;
 
     // wait for the server to process the answer
-    thread::sleep(Duration::from_millis(100));
+    thread::sleep(Duration::from_millis(500));
 
     // The server should record the answer and automatically end the round (we are the only player)
     let state = server.send(GetServerState).await?;

@@ -15,6 +15,7 @@ pub struct ChoiceItem {
 }
 
 impl ChoiceItem {
+    #[must_use]
     pub fn new(content: String, is_correct: bool, uuid: Uuid) -> Self {
         Self {
             content,
@@ -25,11 +26,13 @@ impl ChoiceItem {
         }
     }
 
+    #[must_use]
     pub fn style(mut self, style: Style) -> Self {
         self.style = style;
         self
     }
 
+    #[must_use]
     pub fn block(mut self, block: Block<'static>) -> Self {
         self.block = block;
         self

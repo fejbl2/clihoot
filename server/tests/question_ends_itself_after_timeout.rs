@@ -12,8 +12,8 @@ use server::messages::lobby::{self, StartQuestion};
 
 use uuid::Uuid;
 
-use crate::fixtures::create_server::create_server;
-use crate::fixtures::create_server_and_teacher::create_server_and_teacher;
+use crate::fixtures::create_server;
+use crate::fixtures::create_server_and_teacher;
 
 #[rstest]
 #[tokio::test]

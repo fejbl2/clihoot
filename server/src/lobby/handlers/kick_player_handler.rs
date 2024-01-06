@@ -1,8 +1,8 @@
 use actix::{Context, Handler};
 
 use crate::{
-    lobby::state::Lobby,
-    messages::{lobby::KickPlayer, websocket::WebsocketGracefulStop},
+    messages::{lobby::KickPlayer, websocket::GracefulStop},
+    Lobby,
 };
 
 use log::{debug, info, warn};
@@ -25,7 +25,7 @@ impl Handler<KickPlayer> for Lobby {
             return Ok(());
         }
 
-        socket.do_send(WebsocketGracefulStop { reason: msg.reason });
+        socket.do_send(GracefulStop { reason: msg.reason });
 
         info!("{} was kicked by teacher", msg.player_uuid);
 

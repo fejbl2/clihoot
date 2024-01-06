@@ -2,15 +2,15 @@ use actix::prelude::*;
 use log::debug;
 use ratatui::style::Color;
 use ratatui::widgets::ListState;
-use tokio::task::JoinHandle;
+
 use uuid::Uuid;
 
 use crate::music_actor::{MusicActor, MusicMessage};
 use crate::websocket::WebsocketActor;
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
-use common::terminal::handle_terminal_events::handle_events;
+
 use common::terminal::highlight::Theme;
-use common::terminal::messages::Initialize;
+
 use common::terminal::terminal_actor::{TerminalActor, TerminalStop};
 use common::terminal::widgets::choice::{ChoiceGrid, ChoiceSelectorState};
 
@@ -95,10 +95,7 @@ pub async fn run_student(
     ws_actor_addr: Addr<WebsocketActor>,
     music_actor_addr: Addr<MusicActor>,
     syntax_theme: Theme,
-) -> anyhow::Result<(
-    Addr<TerminalActor<StudentTerminal>>,
-    JoinHandle<anyhow::Result<()>>,
-)> {
+) -> anyhow::Result<Addr<TerminalActor<StudentTerminal>>> {
     let term = TerminalActor::new(StudentTerminal::new(
         uuid,
         quiz_name,
@@ -108,10 +105,7 @@ pub async fn run_student(
     ))
     .start();
 
-    term.send(Initialize).await??;
-
     music_actor_addr.do_send(MusicMessage::Lobby);
 
-    let task = tokio::spawn(handle_events(term.clone()));
-    Ok((term, task))
+    Ok(term)
 }

@@ -1,5 +1,5 @@
-use crate::teacher::init::Teacher;
 use crate::websocket::Websocket;
+use crate::Teacher;
 use actix::Actor;
 use actix::Addr;
 

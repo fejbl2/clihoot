@@ -12,14 +12,17 @@ pub struct ChoiceSelectorState {
 }
 
 impl ChoiceSelectorState {
+    #[must_use]
     pub fn row(&self) -> usize {
         self.row
     }
 
+    #[must_use]
     pub fn col(&self) -> usize {
         self.col
     }
 
+    #[must_use]
     pub fn last_under_cursor(&self) -> Option<Uuid> {
         self.last_under_cursor
     }
@@ -62,7 +65,7 @@ impl ChoiceSelectorState {
     fn normalize_cursor(&mut self, grid: &ChoiceGrid) {
         let row_len = grid.items[self.row].len();
         if self.col >= row_len {
-            self.col = row_len - 1
+            self.col = row_len - 1;
         }
     }
 
@@ -173,6 +176,7 @@ impl ChoiceSelectorState {
     }
 
     // get selected answers as vector
+    #[must_use]
     pub fn selected(&self) -> Vec<Uuid> {
         self.selected.clone().into_iter().collect()
     }

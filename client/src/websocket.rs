@@ -98,7 +98,7 @@ impl WebsocketActor {
         let syntax_theme = self.syntax_theme;
 
         async move {
-            if let Ok((student_actor_addr, _result)) = run_student(
+            if let Ok(student_actor_addr) = run_student(
                 uuid,
                 quiz_name,
                 my_address.clone(),

@@ -6,13 +6,11 @@ use std::thread::JoinHandle;
 use std::time::Duration;
 
 use crate::utils::sample_questions;
-use crate::{
-    fixtures::create_server::create_server, mocks::get_server_state_handler::GetServerState,
-};
+use crate::{fixtures::create_server::create_server, mocks::GetServerState};
 use actix::Addr;
 use common::{assert_questionset_eq, test_utils::compare_question_sets};
 use rstest::rstest;
-use server::lobby::state::{Lobby, Phase};
+use server::lobby::{Lobby, Phase};
 use server::messages::lobby;
 
 #[rstest]

@@ -30,7 +30,7 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
 
         self.state = TeacherTerminalState::Answers {
             answers: question_ended,
-            players: players.to_vec(),
+            players: players.clone(),
             list_state: ListState::default(),
         };
 
