@@ -3,6 +3,7 @@ use serde::{de, Deserialize, Deserializer, Serialize};
 use std::fs;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
+use syntect::parsing::SyntaxSet;
 use uuid::Uuid;
 
 use crate::constants::{
@@ -108,6 +109,7 @@ impl Question {
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone)]
 pub struct CodeBlock {
+    #[serde(deserialize_with = "deserialize_language")]
     pub language: String,
 
     #[serde(deserialize_with = "deserialize_code_text")]
@@ -129,6 +131,23 @@ pub struct Choice {
 pub struct ChoiceCensored {
     pub id: Uuid,
     pub text: String,
+}
+
+fn deserialize_language<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    let language: String = Deserialize::deserialize(deserializer)?;
+
+    let ss = SyntaxSet::load_defaults_newlines();
+
+    match ss.find_syntax_by_extension(&language) {
+        Some(_syntax) => Ok(language),
+        None => Err(de::Error::custom(format!(
+            "Unknown language \"{}\"",
+            language
+        ))),
+    }
 }
 
 fn deserialize_code_text<'de, D>(deserializer: D) -> Result<String, D::Error>

@@ -23,7 +23,7 @@ fn test_ok_code() {
     let wanted = questions::QuestionSet::new(vec![questions::Question {
         text: "What does this code do?".to_string(),
         code_block: Some(questions::CodeBlock {
-            language: "rust".to_string(),
+            language: "rs".to_string(),
             code: "fn main() {\n    println!(\"42\");\n}\n".to_string(),
         }),
         time_seconds: 42,
@@ -97,6 +97,14 @@ fn test_too_long_code() {
 fn test_too_long_choice() {
     let result =
         questions::QuestionSet::from_file(Path::new("./tests/files/err_choice_too_long.yaml"));
+
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_unknown_language() {
+    let result =
+        questions::QuestionSet::from_file(Path::new("./tests/files/err_unknown_language.yaml"));
 
     assert!(result.is_err());
 }
