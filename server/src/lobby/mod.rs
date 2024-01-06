@@ -6,6 +6,5 @@ mod state;
 
 pub use handlers::*;
 pub use init::*;
-pub use lobby_impl::*;
 pub use point_calculator::*;
 pub use state::*;
