@@ -131,20 +131,20 @@ impl TerminalHandleInput for StudentTerminal {
                             player_uuid: self.uuid,
                             question_index: question.question_index,
                             answers: choice_selector_state.selected(),
-                        }))
+                        }));
                 }
                 KeyCode::Char(' ') => choice_selector_state.toggle_selection(choice_grid), // spacebar
                 KeyCode::Down | KeyCode::Char('j' | 's') => {
-                    choice_selector_state.move_down(choice_grid)
+                    choice_selector_state.move_down(choice_grid);
                 }
                 KeyCode::Up | KeyCode::Char('k' | 'w') => {
-                    choice_selector_state.move_up(choice_grid)
+                    choice_selector_state.move_up(choice_grid);
                 }
                 KeyCode::Right | KeyCode::Char('d' | 'l') => {
-                    choice_selector_state.move_right(choice_grid)
+                    choice_selector_state.move_right(choice_grid);
                 }
                 KeyCode::Left | KeyCode::Char('a' | 'h') => {
-                    choice_selector_state.move_left(choice_grid)
+                    choice_selector_state.move_left(choice_grid);
                 }
                 _ => {}
             },

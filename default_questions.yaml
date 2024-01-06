@@ -1,3 +1,4 @@
+quiz_name: "Rust Quiz"
 questions:
   - text: What does this code do?
     code_block:
@@ -6,7 +7,7 @@ questions:
         fn main() {
             println!("42");
         }
-    time_seconds: 42
+    time_seconds: 4
     choices:
       - text: Nothing useful
       - text: It prints 42

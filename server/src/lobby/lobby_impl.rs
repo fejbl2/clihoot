@@ -102,10 +102,11 @@ impl Lobby {
         }
 
         // calculate how many players (usize) chose the given option (uuid)
-        let results = self
-            .results
-            .get(&index)
-            .ok_or_else(|| anyhow::anyhow!("No results for this question"))?;
+
+        let Some(results) = self.results.get(&index) else {
+            // no results for this question -- means no one answered
+            return Ok(stats);
+        };
 
         for result in results {
             for answer in &result.1.selected_answers {
@@ -132,6 +133,7 @@ impl Lobby {
         let stats = self.get_question_stats(index)?;
 
         for (player_id, socket_recipient) in &self.joined_players {
+            debug!("Sending QuestionEnded to player {player_id}");
             socket_recipient.do_send(ServerNetworkMessage::QuestionEnded(QuestionEnded {
                 stats: stats.clone(),
                 player_answer: self.get_player_answer(index, player_id),

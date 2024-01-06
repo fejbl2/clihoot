@@ -5,6 +5,7 @@ use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
 use common::terminal::widgets::choice::ChoiceSelectorState;
 
+use log::debug;
 use ratatui::widgets::ListState;
 
 impl TerminalHandleServerNetworkMessage for StudentTerminal {
@@ -14,6 +15,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
     ) -> anyhow::Result<()> {
         match network_message {
             ServerNetworkMessage::JoinResponse(join) => {
+                debug!("Student: handling join response");
                 self.players = join.players;
                 if let CanJoin::No(message) = join.can_join {
                     if message == NICKNAME_ALREADY_TAKEN_MSG {
@@ -31,6 +33,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 };
             }
             ServerNetworkMessage::NextQuestion(question) => {
+                debug!("Student: handling next question");
                 self.state = StudentTerminalState::Question {
                     question: question.clone(),
                     players_answered_count: 0,
@@ -40,6 +43,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 };
             }
             ServerNetworkMessage::QuestionUpdate(update) => {
+                debug!("Student: handling question update");
                 let StudentTerminalState::Question {
                     question,
                     players_answered_count,
@@ -58,17 +62,21 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 *players_answered_count = update.players_answered_count;
             }
             ServerNetworkMessage::QuestionEnded(question) => {
+                debug!("Student: handling question ended");
                 self.state = StudentTerminalState::Answers { answers: question };
             }
             ServerNetworkMessage::ShowLeaderboard(leaderboard) => {
+                debug!("Student: handling show leaderboard");
                 self.state = StudentTerminalState::Results {
                     results: leaderboard,
                 };
             }
             ServerNetworkMessage::PlayersUpdate(update) => {
+                debug!("Student: handling players update");
                 self.players = update.players;
             }
             ServerNetworkMessage::TeacherDisconnected(_) => {
+                debug!("Student: handling teacher disconnected");
                 self.state = StudentTerminalState::Error {
                     message: "Teacher disconnected from the game".to_string(),
                 };

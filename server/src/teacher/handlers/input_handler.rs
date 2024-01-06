@@ -26,7 +26,7 @@ impl TerminalHandleInput for TeacherTerminal {
                 players: _,
             } => {
                 if key_code == KeyCode::Enter {
-                    self.lobby.do_send(StartQuestion)
+                    self.lobby.do_send(StartQuestion);
                 }
             }
             TeacherTerminalState::Question {
@@ -37,7 +37,7 @@ impl TerminalHandleInput for TeacherTerminal {
                 if key_code == KeyCode::Enter {
                     self.lobby.do_send(EndQuestion {
                         index: q.question_index,
-                    })
+                    });
                 }
             }
             TeacherTerminalState::Answers {
@@ -46,7 +46,7 @@ impl TerminalHandleInput for TeacherTerminal {
                 list_state: _,
             } => {
                 if key_code == KeyCode::Enter {
-                    self.lobby.do_send(SwitchToLeaderboard)
+                    self.lobby.do_send(SwitchToLeaderboard);
                 }
             }
             TeacherTerminalState::Results {
@@ -54,7 +54,7 @@ impl TerminalHandleInput for TeacherTerminal {
                 list_state: _,
             } => {
                 if key_code == KeyCode::Enter {
-                    self.lobby.do_send(StartQuestion)
+                    self.lobby.do_send(StartQuestion);
                 }
             }
             TeacherTerminalState::EndGame {

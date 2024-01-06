@@ -47,7 +47,7 @@ fn main() -> Result<()> {
 
     CombinedLogger::init(vec![
         WriteLogger::new(
-            LevelFilter::Info,
+            LevelFilter::Debug,
             Config::default(),
             File::create(
                 args.log_file
