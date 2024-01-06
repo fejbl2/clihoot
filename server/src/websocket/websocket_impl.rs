@@ -1,13 +1,11 @@
 use actix::AsyncContext;
 use actix::{Actor, Addr, Running};
 
-use crate::lobby::state::Lobby;
-use crate::messages::websocket::WebsocketGracefulStop;
+use crate::messages::websocket::GracefulStop;
+use crate::Lobby;
 use common::messages::ClientNetworkMessage;
-use futures_util::stream::{SplitSink, SplitStream};
+use futures_util::stream::SplitStream;
 use futures_util::StreamExt;
-use std::result::Result::Ok;
-
 use tokio::sync::Mutex;
 
 use std::net::SocketAddr;
@@ -16,16 +14,19 @@ use std::sync::Arc;
 use tokio::net::TcpStream;
 use tokio::task::JoinHandle;
 
-use crate::messages::websocket::{DisconnectFromLobby, WebsocketHardStop};
+use crate::messages::websocket::{DisconnectFromLobby, HardStop};
 use log::{debug, error, info};
 use tungstenite::Message;
 use uuid::Uuid;
 
+use super::Sender;
+type Receiver = SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>;
+
 pub struct Websocket {
     pub lobby_addr: Addr<Lobby>,
     pub player_id: Option<Uuid>,
-    pub receiver: Option<SplitStream<tokio_tungstenite::WebSocketStream<TcpStream>>>,
-    pub sender: Arc<Mutex<SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, Message>>>,
+    pub receiver: Option<Receiver>,
+    pub sender: Sender,
     pub reader_task: Option<JoinHandle<()>>,
     pub who: SocketAddr,
 }
@@ -92,7 +93,7 @@ async fn read_messages_from_socket<'a>(
     while let Some(msg) = receiver.next().await {
         let Ok(msg) = msg else {
             info!("Hanging up on '{}' because reading from socket failed", who);
-            addr.do_send(WebsocketHardStop);
+            addr.do_send(HardStop);
             return;
         };
 
@@ -105,14 +106,14 @@ async fn read_messages_from_socket<'a>(
                     }
                     Err(e) => {
                         error!("Hanging up on the client bcs parsing message failed: {}", e);
-                        addr.do_send(WebsocketGracefulStop { reason: None });
+                        addr.do_send(GracefulStop { reason: None });
                     }
                 }
             }
             Message::Close(_) => {
                 // cannot call `ctx.stop();` because we are in another Task:
                 // instead, we send a message to ourselves to stop
-                addr.do_send(WebsocketHardStop);
+                addr.do_send(HardStop);
 
                 // also quit the loop
                 return;

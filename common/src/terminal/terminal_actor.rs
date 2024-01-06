@@ -63,7 +63,7 @@ pub trait TerminalStop {
 
 pub struct TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalStop,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     // base terminal actor, instantiated with struct that represents
     // its inner state
@@ -80,7 +80,7 @@ where
 
 impl<T> TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalStop,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     #[cfg(not(feature = "test"))]
     pub fn new(inner: T) -> Self {

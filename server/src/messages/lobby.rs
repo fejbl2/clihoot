@@ -1,7 +1,7 @@
 use actix::{prelude::Message, Addr};
 use uuid::Uuid;
 
-use crate::teacher::init::Teacher;
+use crate::Teacher;
 
 /// The teacher sends this to the lobby to set the locked state
 #[derive(Message, Debug)]

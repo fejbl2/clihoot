@@ -5,7 +5,7 @@ use common::{
 };
 use log::debug;
 
-use crate::lobby::state::Lobby;
+use crate::Lobby;
 
 impl Handler<TryJoinRequest> for Lobby {
     type Result = TryJoinResponse;

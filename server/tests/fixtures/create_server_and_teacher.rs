@@ -3,12 +3,12 @@ use std::{
     thread::{self, JoinHandle},
 };
 
-use ::server::lobby::state::Lobby;
+use ::server::Lobby;
 use actix::Addr;
 
 use common::constants::DEFAULT_QUIZ_NAME;
 use rstest::fixture;
-use server::teacher::init::{run_teacher, Teacher};
+use server::teacher::{run_teacher, Teacher};
 
 use crate::fixtures::create_server::create_server;
 

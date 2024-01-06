@@ -1,7 +1,7 @@
 use actix::{dev::ContextFutureSpawner, Handler};
 use common::messages::ServerNetworkMessage;
 
-use crate::websocket::{ws_utils::prepare_message, Websocket};
+use crate::websocket::{prepare_message, Websocket};
 
 impl Handler<ServerNetworkMessage> for Websocket {
     type Result = anyhow::Result<()>;

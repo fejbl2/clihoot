@@ -12,14 +12,13 @@ use actix::Addr;
 
 use rstest::rstest;
 use server::{
-    lobby::state::{Lobby, Phase},
+    lobby::{Lobby, Phase},
     messages::lobby::{self, StartQuestion, SwitchToLeaderboard},
-    teacher::init::Teacher,
+    Teacher,
 };
 
 use crate::{
-    fixtures::create_server_and_teacher::create_server_and_teacher,
-    mocks::get_server_state_handler::GetServerState,
+    fixtures::create_server_and_teacher::create_server_and_teacher, mocks::GetServerState,
 };
 
 #[rstest]

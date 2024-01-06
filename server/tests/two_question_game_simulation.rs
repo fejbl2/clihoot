@@ -12,16 +12,14 @@ use common::{
 };
 use rstest::rstest;
 use server::{
-    lobby::state::{Lobby, Phase},
+    lobby::{Lobby, Phase},
     messages::lobby::{self, StartQuestion, SwitchToLeaderboard},
 };
 use uuid::Uuid;
 
 use crate::{
-    fixtures::{
-        create_server::create_server, create_server_and_teacher::create_server_and_teacher,
-    },
-    mocks::get_server_state_handler::GetServerState,
+    fixtures::{create_server, create_server_and_teacher},
+    mocks::GetServerState,
 };
 
 const QUIZ_NAME: &str = "The most epic quiz ever";
@@ -107,7 +105,7 @@ struct Game {
     snd_player: PlayerData,
     server: Addr<Lobby>,
     server_thread: std::thread::JoinHandle<()>,
-    teacher: Addr<server::teacher::init::Teacher>,
+    teacher: Addr<server::Teacher>,
     teacher_thread: std::thread::JoinHandle<()>,
 }
 

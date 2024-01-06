@@ -6,7 +6,7 @@ use std::{
 use anyhow::anyhow;
 use clap::Parser;
 use common::questions::QuestionSet;
-use server::{args::Args, lobby::init::run_server, teacher::init::run_teacher};
+use server::{lobby::run_server, teacher::run_teacher, Args};
 
 use simplelog::{
     ColorChoice, CombinedLogger, Config, LevelFilter, TermLogger, TerminalMode, WriteLogger,

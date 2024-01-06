@@ -1,6 +1,6 @@
 use actix::{Context, Handler};
 
-use crate::{lobby::state::Lobby, messages::lobby::SetLockMessage};
+use crate::{messages::lobby::SetLockMessage, Lobby};
 
 use log::debug;
 

@@ -1,6 +1,6 @@
 use actix::{Context, Handler};
 
-use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
+use crate::{messages::lobby::RegisterTeacher, Lobby};
 
 use log::debug;
 

@@ -3,7 +3,7 @@ use std::time::Duration;
 use actix::{Addr, AsyncContext, Context, Handler};
 
 use crate::{
-    lobby::state::{Lobby, Phase},
+    lobby::{Lobby, Phase},
     messages::lobby::{EndQuestion, StartQuestion},
 };
 

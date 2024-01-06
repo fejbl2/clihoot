@@ -10,17 +10,19 @@ use tokio::{net::TcpStream, sync::Mutex};
 use tungstenite::Message;
 
 use crate::{
-    lobby::state::Lobby,
-    messages::{client, websocket::WebsocketGracefulStop},
-    websocket::{ws_utils::send_message, Websocket},
+    messages::{client, websocket::GracefulStop},
+    websocket::{send_message, Websocket},
+    Lobby,
 };
 
 use log::error;
 
+pub type Sender = Arc<Mutex<SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, Message>>>;
+
 async fn handle_try_join_request(
     lobby: Addr<Lobby>,
     msg: TryJoinRequest,
-    sender: Arc<Mutex<SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, Message>>>,
+    sender: Sender,
 ) -> anyhow::Result<()> {
     let res = lobby.send(msg).await?;
 
@@ -41,7 +43,7 @@ async fn handle_answer_selected(
     if let Err(e) = res {
         // an error means that the client tries to cheat and therefore, we will disconnect
         error!("Player tried to cheat: {e}");
-        addr.do_send(WebsocketGracefulStop { reason: None });
+        addr.do_send(GracefulStop { reason: None });
         return Err(e);
     }
 
@@ -51,7 +53,7 @@ async fn handle_answer_selected(
 async fn handle_join_request(
     lobby: Addr<Lobby>,
     msg: JoinRequest,
-    sender: Arc<Mutex<SplitSink<tokio_tungstenite::WebSocketStream<TcpStream>, Message>>>,
+    sender: Sender,
     addr: Addr<Websocket>,
 ) -> anyhow::Result<()> {
     let res = lobby
@@ -78,7 +80,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
             ClientNetworkMessage::TryJoinRequest(msg) => {
                 if self.player_id.is_some() {
                     error!("Player tried to cheat by sending another TryJoinRequest",);
-                    ctx.notify(WebsocketGracefulStop { reason: None });
+                    ctx.notify(GracefulStop { reason: None });
                     return;
                 }
 
@@ -94,7 +96,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
                 // If player is cheating by sending a different uuid, just hang up
                 if self.player_id != Some(msg.player_data.uuid) {
                     error!("Player tried to cheat by sending a different uuid",);
-                    ctx.notify(WebsocketGracefulStop { reason: None });
+                    ctx.notify(GracefulStop { reason: None });
                     return;
                 }
 
@@ -109,7 +111,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
                 // If player is cheating by sending a different uuid, just hang up
                 if self.player_id != Some(msg.player_uuid) {
                     error!("Player tried to cheat by sending a different uuid");
-                    ctx.notify(WebsocketGracefulStop { reason: None });
+                    ctx.notify(GracefulStop { reason: None });
                     return;
                 }
 
@@ -120,7 +122,7 @@ impl Handler<ClientNetworkMessage> for Websocket {
                 ));
             }
             ClientNetworkMessage::ClientDisconnected(_msg) => {
-                ctx.notify(WebsocketGracefulStop { reason: None });
+                ctx.notify(GracefulStop { reason: None });
             }
         }
     }

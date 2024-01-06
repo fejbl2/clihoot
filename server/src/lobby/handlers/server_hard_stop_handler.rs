@@ -2,7 +2,7 @@ use actix::{Context, Handler};
 use actix_rt::System;
 use log::debug;
 
-use crate::{lobby::state::Lobby, messages::lobby::HardStop};
+use crate::{messages::lobby::HardStop, Lobby};
 
 impl Handler<HardStop> for Lobby {
     type Result = ();

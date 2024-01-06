@@ -4,7 +4,7 @@ use actix::{prelude::Actor, Addr};
 
 use common::terminal::terminal_actor::TerminalActor;
 
-use crate::{lobby::state::Lobby, messages::lobby::RegisterTeacher};
+use crate::{messages::lobby::RegisterTeacher, Lobby};
 
 use super::terminal::TeacherTerminal;
 

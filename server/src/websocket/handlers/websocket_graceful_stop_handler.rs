@@ -8,14 +8,14 @@ use tungstenite::{
 };
 
 use crate::{
-    messages::websocket::{WebsocketGracefulStop, WebsocketHardStop},
-    websocket::{ws_utils::prepare_explicit_message, Websocket},
+    messages::websocket::{GracefulStop, HardStop},
+    websocket::{prepare_explicit_message, Websocket},
 };
 
-impl Handler<WebsocketGracefulStop> for Websocket {
+impl Handler<GracefulStop> for Websocket {
     type Result = ();
 
-    fn handle(&mut self, msg: WebsocketGracefulStop, ctx: &mut Self::Context) -> Self::Result {
+    fn handle(&mut self, msg: GracefulStop, ctx: &mut Self::Context) -> Self::Result {
         let reason = msg
             .reason
             .unwrap_or_else(|| DEFAULT_GOODBYE_MESSAGE.to_owned());
@@ -29,6 +29,6 @@ impl Handler<WebsocketGracefulStop> for Websocket {
         // send a goodbye message
         prepare_explicit_message::<Self>(self.sender.clone(), msg).wait(ctx);
 
-        ctx.notify(WebsocketHardStop {});
+        ctx.notify(HardStop {});
     }
 }

@@ -6,7 +6,7 @@ use tokio::net::TcpListener;
 
 use std::{net::SocketAddr, sync::mpsc::Sender};
 
-use super::state::Lobby;
+use super::Lobby;
 use crate::websocket::Websocket;
 
 /// Starts the server and send the address of the lobby through the given channel.

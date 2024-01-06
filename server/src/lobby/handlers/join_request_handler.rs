@@ -6,7 +6,7 @@ use common::{
 use log::debug;
 
 use crate::{
-    lobby::state::{JoinedPlayer, Lobby},
+    lobby::{JoinedPlayer, Lobby},
     messages::client::JoinRequest,
 };
 

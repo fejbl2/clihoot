@@ -8,14 +8,12 @@ use actix::Addr;
 
 use rstest::rstest;
 use server::{
-    lobby::state::Lobby,
     messages::lobby::{self},
-    teacher::init::Teacher,
+    Lobby, Teacher,
 };
 
 use crate::{
-    fixtures::create_server_and_teacher::create_server_and_teacher,
-    mocks::get_server_state_handler::GetServerState,
+    fixtures::create_server_and_teacher::create_server_and_teacher, mocks::GetServerState,
 };
 
 #[rstest]

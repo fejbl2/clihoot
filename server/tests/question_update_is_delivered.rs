@@ -10,9 +10,8 @@ use common::messages::network::QuestionUpdate;
 
 use rstest::rstest;
 use server::{
-    lobby::state::Lobby,
     messages::lobby::{self, StartQuestion},
-    teacher::init::Teacher,
+    Lobby, Teacher,
 };
 
 use crate::fixtures::create_server_and_teacher::create_server_and_teacher;

@@ -4,7 +4,7 @@ use ratatui::widgets::ListState;
 
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 
-use crate::lobby::state::Lobby;
+use crate::Lobby;
 
 #[derive(Debug)]
 pub enum TeacherTerminalState {
