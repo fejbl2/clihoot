@@ -12,6 +12,7 @@ use ratatui::{
 use crate::constants::MINIMAL_ASCII_HEIGHT;
 use crate::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 
+#[must_use]
 pub fn get_outer_block(name: &str) -> Block<'static> {
     let title = Title::from("Clihoot: ".to_owned() + name);
     let block = Block::default()
@@ -22,6 +23,7 @@ pub fn get_outer_block(name: &str) -> Block<'static> {
     block
 }
 
+#[must_use]
 pub fn get_inner_block(title: String) -> Block<'static> {
     let block = Block::new()
         .borders(Borders::TOP)
@@ -32,11 +34,13 @@ pub fn get_inner_block(title: String) -> Block<'static> {
     block
 }
 
+#[must_use]
 pub fn get_empty_block() -> Block<'static> {
     let block = Block::default().borders(Borders::NONE);
     block
 }
 
+#[must_use]
 pub fn get_bordered_block() -> Block<'static> {
     let block = Block::default().borders(Borders::ALL);
     block

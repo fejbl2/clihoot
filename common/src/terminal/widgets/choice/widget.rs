@@ -19,6 +19,7 @@ pub struct ChoiceSelector<'a> {
 }
 
 impl<'a> ChoiceSelector<'a> {
+    #[must_use]
     pub fn new(grid: ChoiceGrid) -> Self {
         Self {
             grid,
@@ -32,36 +33,43 @@ impl<'a> ChoiceSelector<'a> {
         }
     }
 
+    #[must_use]
     pub fn block(mut self, block: Block<'a>) -> Self {
         self.block = Some(block);
         self
     }
 
+    #[must_use]
     pub fn current_item_style(mut self, style: Style) -> Self {
         self.current_item_style = style;
         self
     }
 
+    #[must_use]
     pub fn selected_item_style(mut self, style: Style) -> Self {
         self.selected_item_style = style;
         self
     }
 
+    #[must_use]
     pub fn right_item_style(mut self, style: Style) -> Self {
         self.right_item_style = style;
         self
     }
 
+    #[must_use]
     pub fn horizontal_gap(mut self, gap: u16) -> Self {
         self.horizontal_gap = gap;
         self
     }
 
+    #[must_use]
     pub fn vertical_gap(mut self, gap: u16) -> Self {
         self.vertical_gap = gap;
         self
     }
 
+    #[must_use]
     pub fn gap(mut self, gap: u16) -> Self {
         self.horizontal_gap = gap;
         self.vertical_gap = gap;
@@ -69,6 +77,7 @@ impl<'a> ChoiceSelector<'a> {
     }
 
     // maximum percentage of the row width, that one choice item can take
+    #[must_use]
     pub fn max_width_percentage(mut self, max_width_percentage: u8) -> Self {
         self.max_width_percentage = max_width_percentage;
         self
@@ -105,8 +114,8 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
             return;
         }
 
-        let max_width = (choice_selector_area.width as f32
-            * (self.max_width_percentage as f32 / 100.0))
+        let max_width = (f32::from(choice_selector_area.width)
+            * (f32::from(self.max_width_percentage) / 100.0))
             .round() as u16;
 
         let items = &mut self.grid.items;
