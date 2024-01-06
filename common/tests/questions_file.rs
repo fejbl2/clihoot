@@ -16,6 +16,23 @@ fn test_ok_minimal() {
 }
 
 #[test]
+fn test_ok_language_name() {
+    let result =
+        questions::QuestionSet::from_file(Path::new("./tests/files/ok_language_name.yaml"));
+
+    assert!(result.is_ok());
+}
+
+#[test]
+fn test_ok_language_name_uppercase() {
+    let result = questions::QuestionSet::from_file(Path::new(
+        "./tests/files/ok_language_name_uppercase.yaml",
+    ));
+
+    assert!(result.is_ok());
+}
+
+#[test]
 fn test_ok_code() {
     let result =
         questions::QuestionSet::from_file(Path::new("./tests/files/ok_code.yaml")).unwrap();

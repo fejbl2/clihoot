@@ -1,9 +1,9 @@
-use anyhow::Context;
+use anyhow::{bail, Context};
 use serde::{de, Deserialize, Deserializer, Serialize};
 use std::fs;
 use std::ops::{Deref, DerefMut};
 use std::path::Path;
-use syntect::parsing::SyntaxSet;
+use syntect::parsing::{SyntaxReference, SyntaxSet};
 use uuid::Uuid;
 
 use crate::constants::{
@@ -133,21 +133,31 @@ pub struct ChoiceCensored {
     pub text: String,
 }
 
+pub fn find_syntax(language: &str, code: Option<&str>) -> anyhow::Result<SyntaxReference> {
+    let ss = SyntaxSet::load_defaults_newlines();
+
+    if let Some(syntax) = ss.find_syntax_by_token(language) {
+        return Ok(syntax.clone());
+    }
+
+    if let Some(code) = code {
+        if let Some(syntax) = ss.find_syntax_by_first_line(code) {
+            return Ok(syntax.clone());
+        }
+    }
+
+    bail!("Unknown syntax \"{}\"", language)
+}
+
 fn deserialize_language<'de, D>(deserializer: D) -> Result<String, D::Error>
 where
     D: Deserializer<'de>,
 {
     let language: String = Deserialize::deserialize(deserializer)?;
 
-    let ss = SyntaxSet::load_defaults_newlines();
-
-    match ss.find_syntax_by_extension(&language) {
-        Some(_syntax) => Ok(language),
-        None => Err(de::Error::custom(format!(
-            "Unknown language \"{}\"",
-            language
-        ))),
-    }
+    find_syntax(&language, None)
+        .map(|_| language)
+        .map_err(|err| de::Error::custom(err.to_string()))
 }
 
 fn deserialize_code_text<'de, D>(deserializer: D) -> Result<String, D::Error>
