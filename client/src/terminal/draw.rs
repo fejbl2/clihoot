@@ -3,6 +3,7 @@ use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::render::{self};
 use common::terminal::terminal_actor::TerminalDraw;
 
+
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
@@ -58,15 +59,21 @@ impl TerminalDraw for StudentTerminal {
                 })?;
                 Ok(())
             }
-            StudentTerminalState::Answers { answers } => {
+            StudentTerminalState::Answers {
+                answers,
+                choice_grid,
+            } => {
                 term.draw(|frame| {
-                    let _ = render::question_answers(frame, answers);
+                    let _ = render::question_answers(frame, answers, choice_grid);
                 })?;
                 Ok(())
             }
-            StudentTerminalState::Results { results } => {
+            StudentTerminalState::Results {
+                results,
+                list_state,
+            } => {
                 term.draw(|frame| {
-                    let _ = render::results(frame, results);
+                    let _ = render::results(frame, results, list_state);
                 })?;
                 Ok(())
             }

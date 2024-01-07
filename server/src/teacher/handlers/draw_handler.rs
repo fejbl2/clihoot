@@ -38,18 +38,19 @@ impl TerminalDraw for TeacherTerminal {
                 answers,
                 players: _,
                 list_state: _,
+                choice_grid,
             } => {
                 term.draw(|frame| {
-                    let _ = render::question_answers(frame, answers);
+                    let _ = render::question_answers(frame, answers, choice_grid);
                 })?;
                 Ok(())
             }
             TeacherTerminalState::Results {
                 results,
-                list_state: _,
+                list_state,
             } => {
                 term.draw(|frame| {
-                    let _ = render::results(frame, results);
+                    let _ = render::results(frame, results, list_state);
                 })?;
                 Ok(())
             }

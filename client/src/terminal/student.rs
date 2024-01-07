@@ -36,9 +36,11 @@ pub enum StudentTerminalState {
     },
     Answers {
         answers: QuestionEnded,
+        choice_grid: ChoiceGrid,
     },
     Results {
         results: ShowLeaderboard,
+        list_state: ListState,
     },
     EndGame, // show some screen saying that the game ended and the student should just pres ctrl + c to close the app
     Error {

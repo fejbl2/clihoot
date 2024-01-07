@@ -27,6 +27,7 @@ impl TerminalHandlePlayersUpdate for TeacherTerminal {
                 answers: _,
                 players,
                 list_state: _,
+                choice_grid: _,
             } => {
                 *players = update.players;
             }

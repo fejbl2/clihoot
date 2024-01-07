@@ -1,11 +1,16 @@
 use std::{rc::Rc, str::FromStr};
 
 use anyhow::anyhow;
+use core::iter;
 use figlet_rs::FIGfont;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
+    prelude::Text,
     style::{self, Color, Stylize},
-    widgets::{block::Title, Block, Borders, List, ListItem, ListState, Padding, Paragraph},
+    text::{Line, Span},
+    widgets::{
+        block::Title, Block, BorderType, Borders, List, ListItem, ListState, Padding, Paragraph,
+    },
     Frame,
 };
 
@@ -21,6 +26,7 @@ pub fn get_outer_block(name: &str) -> Block<'static> {
         .title(title)
         .title_style(style::Style::default().bold())
         .borders(Borders::ALL)
+        .border_type(BorderType::Thick)
         .padding(Padding::new(2, 2, 1, 1));
     block
 }
@@ -246,17 +252,26 @@ pub fn question(
         None => {}
     };
 
-    /*
-    items[0][0]
-        .unwrap()
-        .set_style_mut(style::Style::default().bg(Color::Red));
-    items[0][1].unwrap().bg(Color::Green);
-    items[1][0].unwrap().bg(Color::Blue);
-    items[1][1]
-        .unwrap()
-        .bg(Color::Yellow)
-        .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
-    */
+    match &mut items[0][1] {
+        Some(item) => {
+            item.set_style_ref(style::Style::default().bg(Color::Green));
+        }
+        None => {}
+    };
+
+    match &mut items[1][0] {
+        Some(item) => {
+            item.set_style_ref(style::Style::default().bg(Color::Blue));
+        }
+        None => {}
+    };
+
+    match &mut items[1][1] {
+        Some(item) => {
+            item.set_style_ref(style::Style::default().bg(Color::Yellow));
+        }
+        None => {}
+    };
 
     *choice_grid = ChoiceGrid::new(items);
 
@@ -264,7 +279,7 @@ pub fn question(
     let choice_selector = choice_selector
         .vertical_gap(1)
         .horizontal_gap(3)
-        .block(get_bordered_block());
+        .block(get_empty_block());
 
     frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
 
@@ -326,7 +341,11 @@ pub fn question_waiting(
     Ok(())
 }
 
-pub fn question_answers(frame: &mut Frame, question: &QuestionEnded) -> anyhow::Result<()> {
+pub fn question_answers(
+    frame: &mut Frame,
+    question: &QuestionEnded,
+    choice_grid: &mut ChoiceGrid,
+) -> anyhow::Result<()> {
     let outer_block = get_outer_block("Quiz name");
     let inner_block = get_inner_block(
         "Question ".to_string() + (question.question_index + 1).to_string().as_str(),
@@ -364,22 +383,52 @@ pub fn question_answers(frame: &mut Frame, question: &QuestionEnded) -> anyhow::
         frame.render_widget(code_paragraph, layout[2]);
     }
 
+    let choice_selector = ChoiceSelector::new(choice_grid.clone());
+    let choice_selector = choice_selector
+        .vertical_gap(1)
+        .horizontal_gap(3)
+        .block(get_empty_block());
+
+    frame.render_widget(choice_selector, layout[3]);
+
     Ok(())
 }
 
-pub fn results(frame: &mut Frame, results: &ShowLeaderboard) -> anyhow::Result<()> {
-    let paragraph = Paragraph::new(format!(
-        "{}\n\n{}",
-        "Results are:",
-        results
-            .players
-            .iter()
-            .map(|(player, points)| format!("{}: {} points", player.nickname, points))
-            .collect::<Vec<_>>()
-            .join("\n")
-    ))
-    .block(Block::default().title("Results").borders(Borders::ALL));
-    frame.render_widget(paragraph, frame.size());
+pub fn results(
+    frame: &mut Frame,
+    results: &ShowLeaderboard,
+    list_state: &mut ListState,
+) -> anyhow::Result<()> {
+    let layout = welcome_layout(
+        frame,
+        vec![Constraint::Length(1), Constraint::Percentage(90)],
+        "Leaderboard:".to_string(),
+    );
+
+    let items: Vec<_> = results
+        .players
+        .iter()
+        .map(|(player, score)| {
+            let line = Line::from(vec![
+                Span::styled(player.nickname.to_string(), style::Style::default().bold()),
+                Span::raw(format!(": {}", score)),
+            ])
+            .alignment(Alignment::Left);
+
+            let text = Text::from(line);
+
+            ListItem::new(text).style(
+                style::Style::default()
+                    .fg(Color::from_str(player.color.as_str()).unwrap_or(Color::White)),
+            )
+        })
+        .collect();
+
+    let list = List::new(items)
+        .block(get_bordered_block())
+        .highlight_symbol(">> ");
+
+    frame.render_stateful_widget(list, layout[1], list_state);
 
     Ok(())
 }

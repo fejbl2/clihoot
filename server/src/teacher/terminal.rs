@@ -3,6 +3,7 @@ use actix::prelude::*;
 use ratatui::widgets::ListState;
 
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
+use common::terminal::widgets::choice::ChoiceGrid;
 
 use crate::Lobby;
 
@@ -22,6 +23,7 @@ pub enum TeacherTerminalState {
         answers: QuestionEnded,
         players: Vec<PlayerData>,
         list_state: ListState,
+        choice_grid: ChoiceGrid,
     },
     Results {
         results: ShowLeaderboard,

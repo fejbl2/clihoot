@@ -3,6 +3,7 @@ use common::constants::NICKNAME_ALREADY_TAKEN_MSG;
 use common::messages::network::CanJoin;
 use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
+use common::terminal::widgets::choice::ChoiceGrid;
 use common::terminal::widgets::choice::ChoiceSelectorState;
 
 use log::debug;
@@ -63,12 +64,16 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
             }
             ServerNetworkMessage::QuestionEnded(question) => {
                 debug!("Student: handling question ended");
-                self.state = StudentTerminalState::Answers { answers: question };
+                self.state = StudentTerminalState::Answers {
+                    answers: question,
+                    choice_grid: ChoiceGrid::default(),
+                };
             }
             ServerNetworkMessage::ShowLeaderboard(leaderboard) => {
                 debug!("Student: handling show leaderboard");
                 self.state = StudentTerminalState::Results {
                     results: leaderboard,
+                    list_state: ListState::default().with_selected(Some(0)),
                 };
             }
             ServerNetworkMessage::PlayersUpdate(update) => {

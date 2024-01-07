@@ -44,6 +44,7 @@ impl TerminalHandleInput for TeacherTerminal {
                 answers: _,
                 players: _,
                 list_state: _,
+                choice_grid: _,
             } => {
                 if key_code == KeyCode::Enter {
                     self.lobby.do_send(SwitchToLeaderboard);
