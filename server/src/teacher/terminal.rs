@@ -12,16 +12,13 @@ pub enum TeacherTerminalState {
     StartGame,
     WaitingForGame {
         list_state: ListState,
-        players: Vec<PlayerData>,
     },
     Question {
         question: NextQuestion,
         players_answered_count: usize,
-        players: Vec<PlayerData>,
     },
     Answers {
         answers: QuestionEnded,
-        players: Vec<PlayerData>,
         list_state: ListState,
         choice_grid: ChoiceGrid,
     },
@@ -41,6 +38,7 @@ pub enum TeacherTerminalState {
 pub struct TeacherTerminal {
     pub quiz_name: String,
     pub lobby: Addr<Lobby>,
+    pub players: Vec<PlayerData>,
     pub state: TeacherTerminalState,
 }
 
@@ -50,6 +48,7 @@ impl TeacherTerminal {
         Self {
             quiz_name,
             lobby,
+            players: Vec::new(),
             state: TeacherTerminalState::StartGame,
         }
     }

@@ -10,12 +10,11 @@ impl TerminalHandleQuestionUpdate for TeacherTerminal {
     fn handle_question_update(&mut self, update: QuestionUpdate) -> anyhow::Result<()> {
         debug!("Teacher: handling question update");
 
-        let (question, players) = match &self.state {
+        let question = match &self.state {
             TeacherTerminalState::Question {
                 question,
-                players,
                 players_answered_count: _,
-            } => (question, players),
+            } => question,
             _ => bail!(
                 "Teacher: received question update, but the terminal is not in the Question state"
             ),
@@ -29,7 +28,6 @@ impl TerminalHandleQuestionUpdate for TeacherTerminal {
 
         self.state = TeacherTerminalState::Question {
             players_answered_count: update.players_answered_count,
-            players: players.clone(),
             question: question.clone(),
         };
 

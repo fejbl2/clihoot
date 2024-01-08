@@ -15,19 +15,15 @@ impl TerminalDraw for TeacherTerminal {
                 })?;
                 Ok(())
             }
-            TeacherTerminalState::WaitingForGame {
-                list_state,
-                players,
-            } => {
+            TeacherTerminalState::WaitingForGame { list_state } => {
                 term.draw(|frame| {
-                    let _ = render_teacher_lobby(frame, players, list_state);
+                    let _ = render_teacher_lobby(frame, &mut self.players, list_state);
                 })?;
                 Ok(())
             }
             TeacherTerminalState::Question {
                 question,
                 players_answered_count,
-                players: _,
             } => {
                 term.draw(|frame| {
                     let _ = render::question_waiting(frame, question, *players_answered_count);
@@ -36,7 +32,6 @@ impl TerminalDraw for TeacherTerminal {
             }
             TeacherTerminalState::Answers {
                 answers,
-                players: _,
                 list_state: _,
                 choice_grid,
             } => {

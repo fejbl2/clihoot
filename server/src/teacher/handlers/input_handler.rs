@@ -17,14 +17,10 @@ impl TerminalHandleInput for TeacherTerminal {
                 if key_code == KeyCode::Enter {
                     self.state = TeacherTerminalState::WaitingForGame {
                         list_state: ListState::default(),
-                        players: vec![],
                     };
                 }
             }
-            TeacherTerminalState::WaitingForGame {
-                list_state: _,
-                players: _,
-            } => {
+            TeacherTerminalState::WaitingForGame { list_state: _ } => {
                 if key_code == KeyCode::Enter {
                     self.lobby.do_send(StartQuestion);
                 }
@@ -32,7 +28,6 @@ impl TerminalHandleInput for TeacherTerminal {
             TeacherTerminalState::Question {
                 question: q,
                 players_answered_count: _,
-                players: _,
             } => {
                 if key_code == KeyCode::Enter {
                     self.lobby.do_send(EndQuestion {
@@ -42,7 +37,6 @@ impl TerminalHandleInput for TeacherTerminal {
             }
             TeacherTerminalState::Answers {
                 answers: _,
-                players: _,
                 list_state: _,
                 choice_grid: _,
             } => {

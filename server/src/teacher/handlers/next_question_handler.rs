@@ -15,7 +15,6 @@ impl TerminalHandleNextQuestion for TeacherTerminal {
         self.state = TeacherTerminalState::Question {
             question,
             players_answered_count: 0,
-            players: vec![],
         };
 
         Ok(())

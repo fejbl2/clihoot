@@ -12,12 +12,11 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
     fn handle_question_ended(&mut self, question_ended: QuestionEnded) -> anyhow::Result<()> {
         debug!("Teacher: handling question ended");
 
-        let (question, players) = match &self.state {
+        let question = match &self.state {
             TeacherTerminalState::Question {
                 question,
-                players,
                 players_answered_count: _,
-            } => (question, players),
+            } => question,
             _ => bail!(
                 "Teacher: received question ended, but the terminal is not in the Question state"
             ),
@@ -31,7 +30,6 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
 
         self.state = TeacherTerminalState::Answers {
             answers: question_ended,
-            players: players.clone(),
             list_state: ListState::default(),
             choice_grid: ChoiceGrid::default(),
         };
