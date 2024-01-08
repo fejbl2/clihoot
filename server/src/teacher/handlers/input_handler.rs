@@ -1,5 +1,6 @@
 use crossterm::event::KeyCode;
 
+use common::constants::PLAYER_KICKED_MESSAGE;
 use common::terminal::terminal_actor::TerminalHandleInput;
 use log::debug;
 use ratatui::widgets::ListState;
@@ -45,8 +46,9 @@ impl TerminalHandleInput for TeacherTerminal {
 
                         self.lobby.do_send(KickPlayer {
                             player_uuid: self.players[selected].uuid,
-                            reason: None,
+                            reason: Some(PLAYER_KICKED_MESSAGE.to_string()),
                         });
+                        list_state.select(Some(selected.saturating_sub(1)));
                     }
                     _ => {}
                 };
@@ -97,10 +99,18 @@ impl TerminalHandleInput for TeacherTerminal {
                     KeyCode::Char('x') => {
                         let selected = list_state.selected().unwrap_or(0);
 
+                        let player_uuid = results.players[selected].0.uuid;
                         self.lobby.do_send(KickPlayer {
-                            player_uuid: results.players[selected].0.uuid,
-                            reason: None,
+                            player_uuid,
+                            reason: Some(PLAYER_KICKED_MESSAGE.to_string()),
                         });
+                        list_state.select(Some(selected.saturating_sub(1)));
+                        results.players = results
+                            .clone()
+                            .players
+                            .into_iter()
+                            .filter(|p| p.0.uuid != player_uuid)
+                            .collect();
                     }
                     _ => {}
                 };
