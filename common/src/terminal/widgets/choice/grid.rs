@@ -4,10 +4,19 @@ use crate::questions::{Question, QuestionCensored};
 
 use crate::terminal::widgets::choice::ChoiceItem;
 
-#[derive(Default, Debug, PartialEq, Clone)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct ChoiceGrid {
     pub(super) items: Vec<Vec<Option<ChoiceItem>>>,
     is_empty: bool,
+}
+
+impl Default for ChoiceGrid {
+    fn default() -> Self {
+        Self {
+            items: Vec::new(),
+            is_empty: true,
+        }
+    }
 }
 
 impl ChoiceGrid {

@@ -1,7 +1,6 @@
 use std::{rc::Rc, str::FromStr};
 
 use anyhow::anyhow;
-use core::iter;
 use figlet_rs::FIGfont;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -218,7 +217,7 @@ pub fn question(
 
     let counts_paragraph_2 = Paragraph::new(format!(
         "Time left: {}",
-        question.time_seconds.saturating_sub(time_from_start)
+        (question.show_choices_after + question.time_seconds).saturating_sub(time_from_start)
     ))
     .alignment(Alignment::Left)
     .block(get_empty_block());
@@ -285,7 +284,9 @@ pub fn question(
         .horizontal_gap(3)
         .block(get_empty_block());
 
-    frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
+    if time_from_start >= question.show_choices_after {
+        frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
+    }
 
     Ok(())
 }
