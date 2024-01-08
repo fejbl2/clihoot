@@ -431,6 +431,7 @@ version = "0.1.0"
 dependencies = [
  "actix",
  "anyhow",
+ "chrono",
  "clap",
  "common",
  "crossterm",

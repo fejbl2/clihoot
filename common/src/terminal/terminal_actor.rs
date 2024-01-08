@@ -14,7 +14,7 @@ use crate::messages::{
     network::{NextQuestion, QuestionEnded, QuestionUpdate, ShowLeaderboard},
     status_messages::ClientWebsocketStatus,
 };
-use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop};
+use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop, Tick};
 
 use super::handle_terminal_events::handle_events;
 
@@ -55,6 +55,10 @@ pub trait TerminalHandleShowLeaderboard {
 
 pub trait TerminalHandlePlayersUpdate {
     fn handle_players_update(&mut self, update: PlayersUpdate) -> anyhow::Result<()>;
+}
+
+pub trait TerminalHandleTick {
+    fn handle_tick(&mut self) -> anyhow::Result<()>;
 }
 
 pub trait TerminalStop {
@@ -108,13 +112,16 @@ where
 
 impl<T> Actor for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalHandleTick,
 {
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        let addr = ctx.address();
+        ctx.run_interval(std::time::Duration::from_secs(1), |_, ctx| {
+            ctx.address().do_send(Tick)
+        });
 
+        let addr = ctx.address();
         let fut = async move {
             let _ = addr.send(Initialize).await;
             let _task = tokio::spawn(handle_events(addr));
@@ -128,7 +135,7 @@ where
 
 impl<T> Handler<Initialize> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalHandleTick,
 {
     type Result = anyhow::Result<()>;
 
@@ -150,7 +157,7 @@ where
 
 impl<T> Handler<Stop> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalHandleTick,
 {
     type Result = anyhow::Result<()>;
 
@@ -176,7 +183,7 @@ where
 
 impl<T> Handler<Redraw> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalHandleTick,
 {
     type Result = anyhow::Result<()>;
 
@@ -187,12 +194,24 @@ where
 
 impl<T> Handler<KeyPress> for TerminalActor<T>
 where
-    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalHandleTick,
 {
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, msg: KeyPress, _ctx: &mut Self::Context) -> Self::Result {
         self.inner.handle_input(msg.key_code)?;
+        self.inner.redraw(&mut self.terminal)
+    }
+}
+
+impl<T> Handler<Tick> for TerminalActor<T>
+where
+    T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop + TerminalHandleTick,
+{
+    type Result = anyhow::Result<()>;
+
+    fn handle(&mut self, _msg: Tick, _ctx: &mut Self::Context) -> Self::Result {
+        self.inner.handle_tick()?;
         self.inner.redraw(&mut self.terminal)
     }
 }
@@ -204,6 +223,7 @@ where
         + TerminalDraw
         + TerminalHandleInput
         + TerminalStop
+        + TerminalHandleTick
         + TerminalHandleServerNetworkMessage,
 {
     type Result = anyhow::Result<()>;
@@ -221,6 +241,7 @@ where
         + TerminalDraw
         + TerminalHandleInput
         + TerminalStop
+        + TerminalHandleTick
         + TerminalHandleClientWebsocketStatus,
 {
     type Result = anyhow::Result<()>;
@@ -238,6 +259,7 @@ where
         + TerminalDraw
         + TerminalHandleInput
         + TerminalStop
+        + TerminalHandleTick
         + TerminalHandleNextQuestion,
 {
     type Result = anyhow::Result<()>;
@@ -255,6 +277,7 @@ where
         + TerminalDraw
         + TerminalHandleInput
         + TerminalStop
+        + TerminalHandleTick
         + TerminalHandleQuestionEnded,
 {
     type Result = anyhow::Result<()>;
@@ -272,6 +295,7 @@ where
         + TerminalDraw
         + TerminalHandleInput
         + TerminalStop
+        + TerminalHandleTick
         + TerminalHandleQuestionUpdate,
 {
     type Result = anyhow::Result<()>;
@@ -289,6 +313,7 @@ where
         + TerminalDraw
         + TerminalHandleInput
         + TerminalStop
+        + TerminalHandleTick
         + TerminalHandleShowLeaderboard,
 {
     type Result = anyhow::Result<()>;
@@ -306,6 +331,7 @@ where
         + TerminalDraw
         + TerminalHandleInput
         + TerminalStop
+        + TerminalHandleTick
         + TerminalHandlePlayersUpdate,
 {
     type Result = anyhow::Result<()>;

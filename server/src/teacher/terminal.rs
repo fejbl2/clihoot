@@ -54,3 +54,9 @@ impl TeacherTerminal {
         }
     }
 }
+
+impl common::terminal::terminal_actor::TerminalHandleTick for TeacherTerminal {
+    fn handle_tick(&mut self) -> anyhow::Result<()> {
+        Ok(())
+    }
+}

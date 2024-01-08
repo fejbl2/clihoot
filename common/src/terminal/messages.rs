@@ -18,3 +18,7 @@ pub struct Redraw;
 pub struct KeyPress {
     pub key_code: KeyCode,
 }
+
+#[derive(Message)]
+#[rtype(result = "anyhow::Result<()>")]
+pub struct Tick;

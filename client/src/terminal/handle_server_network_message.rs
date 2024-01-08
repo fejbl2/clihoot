@@ -39,6 +39,8 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     question: question.clone(),
                     players_answered_count: 0,
                     answered: false,
+                    start_time: chrono::Utc::now(),
+                    duration_from_start: chrono::Duration::zero(),
                     choice_grid: question.question.into(),
                     choice_selector_state: ChoiceSelectorState::default(),
                 };
@@ -49,6 +51,8 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     question,
                     players_answered_count,
                     answered: _,
+                    start_time: _,
+                    duration_from_start: _,
                     choice_grid: _,
                     choice_selector_state: _,
                 } = &mut self.state

@@ -31,6 +31,8 @@ pub enum StudentTerminalState {
         question: NextQuestion,
         players_answered_count: usize,
         answered: bool,
+        start_time: chrono::DateTime<chrono::Utc>,
+        duration_from_start: chrono::Duration,
         choice_grid: ChoiceGrid,
         choice_selector_state: ChoiceSelectorState,
     },

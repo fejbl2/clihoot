@@ -187,6 +187,7 @@ pub fn question(
     players_answered_count: usize,
     choice_grid: &mut ChoiceGrid,
     choice_selector_state: &mut ChoiceSelectorState,
+    time_from_start: usize,
 ) -> anyhow::Result<()> {
     let outer_block = get_outer_block("Quiz name");
     let inner_block = get_inner_block(
@@ -215,9 +216,12 @@ pub fn question(
         .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(counts_block.inner(layout[0]));
 
-    let counts_paragraph_2 = Paragraph::new(format!("Time left: {}", question.time_seconds))
-        .alignment(Alignment::Left)
-        .block(get_empty_block());
+    let counts_paragraph_2 = Paragraph::new(format!(
+        "Time left: {}",
+        question.time_seconds.saturating_sub(time_from_start)
+    ))
+    .alignment(Alignment::Left)
+    .block(get_empty_block());
     let counts_paragraph_1 = Paragraph::new(format!("Players answered: {players_answered_count}"))
         .alignment(Alignment::Right)
         .block(get_empty_block());

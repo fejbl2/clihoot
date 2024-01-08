@@ -3,7 +3,6 @@ use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::render::{self};
 use common::terminal::terminal_actor::TerminalDraw;
 
-
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
@@ -41,6 +40,8 @@ impl TerminalDraw for StudentTerminal {
                 question,
                 players_answered_count,
                 answered,
+                start_time: _,
+                duration_from_start,
                 choice_grid,
                 choice_selector_state,
             } => {
@@ -54,6 +55,7 @@ impl TerminalDraw for StudentTerminal {
                             *players_answered_count,
                             choice_grid,
                             choice_selector_state,
+                            duration_from_start.num_seconds() as usize,
                         );
                     }
                 })?;

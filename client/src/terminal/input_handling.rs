@@ -120,34 +120,42 @@ impl TerminalHandleInput for StudentTerminal {
                 question,
                 players_answered_count: _,
                 answered,
+                start_time: _,
+                duration_from_start,
                 choice_grid,
                 choice_selector_state,
-            } => match key_code {
-                KeyCode::Enter => {
-                    *answered = true;
+            } => {
+                if (duration_from_start.num_seconds() as usize) < question.show_choices_after {
+                    return Ok(());
+                }
 
-                    self.ws_actor_address
-                        .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
-                            player_uuid: self.uuid,
-                            question_index: question.question_index,
-                            answers: choice_selector_state.selected(),
-                        }));
-                }
-                KeyCode::Char(' ') => choice_selector_state.toggle_selection(choice_grid), // spacebar
-                KeyCode::Down | KeyCode::Char('j' | 's') => {
-                    choice_selector_state.move_down(choice_grid);
-                }
-                KeyCode::Up | KeyCode::Char('k' | 'w') => {
-                    choice_selector_state.move_up(choice_grid);
-                }
-                KeyCode::Right | KeyCode::Char('d' | 'l') => {
-                    choice_selector_state.move_right(choice_grid);
-                }
-                KeyCode::Left | KeyCode::Char('a' | 'h') => {
-                    choice_selector_state.move_left(choice_grid);
-                }
-                _ => {}
-            },
+                match key_code {
+                    KeyCode::Enter => {
+                        *answered = true;
+
+                        self.ws_actor_address
+                            .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
+                                player_uuid: self.uuid,
+                                question_index: question.question_index,
+                                answers: choice_selector_state.selected(),
+                            }));
+                    }
+                    KeyCode::Char(' ') => choice_selector_state.toggle_selection(choice_grid), // spacebar
+                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                        choice_selector_state.move_down(choice_grid);
+                    }
+                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                        choice_selector_state.move_up(choice_grid);
+                    }
+                    KeyCode::Right | KeyCode::Char('d' | 'l') => {
+                        choice_selector_state.move_right(choice_grid);
+                    }
+                    KeyCode::Left | KeyCode::Char('a' | 'h') => {
+                        choice_selector_state.move_left(choice_grid);
+                    }
+                    _ => {}
+                };
+            }
             _ => {}
         };
         Ok(())
