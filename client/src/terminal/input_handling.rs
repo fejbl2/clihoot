@@ -156,6 +156,30 @@ impl TerminalHandleInput for StudentTerminal {
                     _ => {}
                 };
             }
+            StudentTerminalState::Results {
+                results,
+                list_state,
+            } => {
+                let mut selected = list_state.selected().unwrap_or(0);
+                match key_code {
+                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                        selected += 1;
+                        if selected >= results.players.len() {
+                            selected = 0;
+                        }
+                        list_state.select(Some(selected));
+                    }
+                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                        if selected == 0 {
+                            selected = results.players.len() - 1;
+                        } else {
+                            selected -= 1;
+                        }
+                        list_state.select(Some(selected));
+                    }
+                    _ => {}
+                }
+            }
             _ => {}
         };
         Ok(())
