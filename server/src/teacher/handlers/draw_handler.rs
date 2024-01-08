@@ -24,6 +24,8 @@ impl TerminalDraw for TeacherTerminal {
             TeacherTerminalState::Question {
                 question,
                 players_answered_count,
+                start_time: _,
+                duration_from_start: _,
             } => {
                 term.draw(|frame| {
                     let _ = render::question_waiting(frame, question, *players_answered_count);

@@ -28,6 +28,8 @@ impl TerminalHandleInput for TeacherTerminal {
             TeacherTerminalState::Question {
                 question: q,
                 players_answered_count: _,
+                start_time: _,
+                duration_from_start: _,
             } => {
                 if key_code == KeyCode::Enter {
                     self.lobby.do_send(EndQuestion {

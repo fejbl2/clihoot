@@ -16,6 +16,8 @@ pub enum TeacherTerminalState {
     Question {
         question: NextQuestion,
         players_answered_count: usize,
+        start_time: chrono::DateTime<chrono::Utc>,
+        duration_from_start: chrono::Duration,
     },
     Answers {
         answers: QuestionEnded,
@@ -51,11 +53,5 @@ impl TeacherTerminal {
             players: Vec::new(),
             state: TeacherTerminalState::StartGame,
         }
-    }
-}
-
-impl common::terminal::terminal_actor::TerminalHandleTick for TeacherTerminal {
-    fn handle_tick(&mut self) -> anyhow::Result<()> {
-        Ok(())
     }
 }

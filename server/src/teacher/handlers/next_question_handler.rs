@@ -15,6 +15,8 @@ impl TerminalHandleNextQuestion for TeacherTerminal {
         self.state = TeacherTerminalState::Question {
             question,
             players_answered_count: 0,
+            start_time: chrono::Utc::now(),
+            duration_from_start: chrono::Duration::zero(),
         };
 
         Ok(())
