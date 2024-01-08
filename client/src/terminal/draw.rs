@@ -61,12 +61,9 @@ impl TerminalDraw for StudentTerminal {
                 })?;
                 Ok(())
             }
-            StudentTerminalState::Answers {
-                answers,
-                choice_grid,
-            } => {
+            StudentTerminalState::Answers { answers } => {
                 term.draw(|frame| {
-                    let _ = render::question_answers(frame, answers, choice_grid);
+                    let _ = render::question_answers(frame, answers);
                 })?;
                 Ok(())
             }

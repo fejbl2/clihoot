@@ -346,11 +346,7 @@ pub fn question_waiting(
     Ok(())
 }
 
-pub fn question_answers(
-    frame: &mut Frame,
-    question: &QuestionEnded,
-    choice_grid: &mut ChoiceGrid,
-) -> anyhow::Result<()> {
+pub fn question_answers(frame: &mut Frame, question: &QuestionEnded) -> anyhow::Result<()> {
     let outer_block = get_outer_block("Quiz name");
     let inner_block = get_inner_block(
         "Question ".to_string() + (question.question_index + 1).to_string().as_str(),
@@ -388,7 +384,10 @@ pub fn question_answers(
         frame.render_widget(code_paragraph, layout[2]);
     }
 
-    let choice_selector = ChoiceSelector::new(choice_grid.clone());
+    let choice_grid: ChoiceGrid = question.clone().question.into();
+    // TODO set some fancy colors to the grid
+
+    let choice_selector = ChoiceSelector::new(choice_grid);
     let choice_selector = choice_selector
         .vertical_gap(1)
         .horizontal_gap(3)

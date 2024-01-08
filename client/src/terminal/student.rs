@@ -38,7 +38,6 @@ pub enum StudentTerminalState {
     },
     Answers {
         answers: QuestionEnded,
-        choice_grid: ChoiceGrid,
     },
     Results {
         results: ShowLeaderboard,

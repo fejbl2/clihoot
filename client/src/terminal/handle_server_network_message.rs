@@ -68,10 +68,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
             }
             ServerNetworkMessage::QuestionEnded(question) => {
                 debug!("Student: handling question ended");
-                self.state = StudentTerminalState::Answers {
-                    answers: question,
-                    choice_grid: ChoiceGrid::default(),
-                };
+                self.state = StudentTerminalState::Answers { answers: question };
             }
             ServerNetworkMessage::ShowLeaderboard(leaderboard) => {
                 debug!("Student: handling show leaderboard");

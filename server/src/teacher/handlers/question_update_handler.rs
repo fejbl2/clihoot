@@ -13,8 +13,8 @@ impl TerminalHandleQuestionUpdate for TeacherTerminal {
         let TeacherTerminalState::Question {
             question,
             players_answered_count,
-            start_time,
-            duration_from_start,
+            start_time: _,
+            duration_from_start: _,
         } = &mut self.state
         else {
             bail!(

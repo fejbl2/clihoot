@@ -1,7 +1,6 @@
 use anyhow::bail;
 use common::{
-    messages::network::QuestionEnded,
-    terminal::{terminal_actor::TerminalHandleQuestionEnded, widgets::choice::ChoiceGrid},
+    messages::network::QuestionEnded, terminal::terminal_actor::TerminalHandleQuestionEnded,
 };
 use log::debug;
 use ratatui::widgets::ListState;
@@ -33,7 +32,6 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
         self.state = TeacherTerminalState::Answers {
             answers: question_ended,
             list_state: ListState::default(),
-            choice_grid: ChoiceGrid::default(),
         };
 
         Ok(())
