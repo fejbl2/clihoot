@@ -26,8 +26,17 @@ impl Handler<AnswerSelected> for Lobby {
             return Err(anyhow::anyhow!("Player {id} not in joined list"));
         }
 
-        if self.phase != Phase::ActiveQuestion(msg.question_index) {
+        if self.phase != Phase::ActiveQuestion(msg.question_index)
+            && self.phase != Phase::AfterQuestion(msg.question_index)
+        {
             return Err(anyhow::anyhow!("Not the right phase"));
+        }
+
+        if self.phase != Phase::ActiveQuestion(msg.question_index) {
+            debug!(
+                "Player {id} answered after the question ended, but is not cheating -- ignoring."
+            );
+            return Ok(());
         }
 
         if self
