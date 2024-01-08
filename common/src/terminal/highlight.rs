@@ -11,10 +11,11 @@ use syntect::util::LinesWithEndings;
 
 use crate::questions::{find_syntax, CodeBlock};
 
-#[derive(Clone, Copy, ValueEnum, Serialize, Default)]
+#[derive(Clone, Copy, ValueEnum, Serialize, Default, PartialEq)]
 #[serde(rename_all = "kebab-case")]
 pub enum Theme {
     #[default]
+    Default,
     EightiesDark,
     MochaDark,
     OceanDark,
@@ -27,6 +28,7 @@ pub enum Theme {
 impl From<Theme> for &str {
     fn from(value: Theme) -> Self {
         match value {
+            Theme::Default => "base16-eighties.dark",
             Theme::EightiesDark => "base16-eighties.dark",
             Theme::MochaDark => "base16-mocha.dark",
             Theme::OceanDark => "base16-ocean.dark",
@@ -38,11 +40,13 @@ impl From<Theme> for &str {
     }
 }
 
-// TODO store the tresult of this function
+// TODO store the result of this function
 // in the state so it doesnt get called with every redraw
 pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Paragraph {
     let ss = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
+
+    let use_bg_color = syntax_theme != Theme::Default;
 
     let syntax = match find_syntax(&code_block.language, Some(&code_block.code)) {
         Ok(syntax) => syntax,                          // should always happen
@@ -59,24 +63,37 @@ pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Para
             return Paragraph::new("Unable to highlight code block");
         };
 
-        let spans = ranges.into_iter().map(range_to_span).collect::<Vec<_>>();
+        let spans = ranges
+            .into_iter()
+            .map(|range| range_to_span(range, use_bg_color))
+            .collect::<Vec<_>>();
         let line = Line::from(spans);
         lines.push(line);
     }
 
     let highlighted_paragraph = Paragraph::new(lines);
+    if !use_bg_color {
+        return highlighted_paragraph;
+    }
+
     let Some(translated_color) = translate_color(theme.settings.background) else {
         return highlighted_paragraph;
     };
     highlighted_paragraph.style(RatatuiStyle::default().bg(translated_color))
 }
 
-fn range_to_span((style, content): (Style, &str)) -> Span {
+fn range_to_span((style, content): (Style, &str), use_bg_color: bool) -> Span {
+    let bg = if use_bg_color {
+        translate_color(Some(style.background))
+    } else {
+        None
+    };
+
     Span::styled(
         content,
         RatatuiStyle {
             fg: translate_color(Some(style.foreground)),
-            bg: None,
+            bg,
             underline_color: translate_color(Some(style.foreground)),
             add_modifier: translate_font_style(style.font_style),
             sub_modifier: Modifier::empty(),
