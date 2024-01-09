@@ -1,0 +1,45 @@
+questions:
+  - text: "What will happen if you try to sleep in End dimension?"
+    time_seconds: 10
+    choices:
+      - text: "The bed will explode"
+        is_correct: true
+      - text: "You will enjoy beautiful sleep"
+      - text: "You will die"
+  - text: "What is the max level of sharpness enchantment in survival?"
+    time_seconds: 7
+    choices:
+      - text: "3"
+      - text: "5"
+        is_correct: true
+      - text: "10"
+  - text: "How many wood logs do you need to make a crafting table?"
+    time_seconds: 5
+    choices:
+      - text: "1"
+        is_correct: true
+      - text: "2"
+      - text: "4"
+  - text: "Which plants can be used to breed a pig?"
+    time_seconds: 7
+    choices:
+      - text: "carrots"
+        is_correct: true
+      - text: "wheat"
+      - text: "seeds"
+      - text: "tall grass"
+  - text: "What is a default socket port for minecraft server?"
+    time_seconds: 7
+    choices:
+      - text: "25500"
+      - text: "80"
+      - text: "25565"
+        is_correct: true
+      - text: "8080"
+  - text: "How many wools do you need to craft a bed?"
+    time_seconds: 5
+    choices:
+      - text: "1"
+      - text: "3"
+        is_correct: true
+      - text: "4"
