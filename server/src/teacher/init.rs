@@ -30,8 +30,12 @@ async fn init(
     tx: Sender<Addr<Teacher>>,
     quiz_name: &str,
 ) -> anyhow::Result<()> {
-    let teacher =
-        TerminalActor::new(TeacherTerminal::new(quiz_name.to_string(), lobby.clone())).start();
+    let teacher = TerminalActor::new(TeacherTerminal::new(
+        quiz_name.to_string(),
+        lobby.clone(),
+        common::terminal::highlight::Theme::Default,
+    ))
+    .start();
 
     tx.send(teacher.clone())
         .expect("Failed to send teacher address");

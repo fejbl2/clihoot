@@ -31,7 +31,7 @@ pub fn get_outer_block(name: &str) -> Block<'static> {
 }
 
 #[must_use]
-pub fn get_inner_block(title: String) -> Block<'static> {
+pub fn get_inner_block(title: &str) -> Block<'_> {
     let block = Block::new()
         .borders(Borders::TOP)
         .title(title)
@@ -53,8 +53,13 @@ pub fn get_bordered_block() -> Block<'static> {
     block
 }
 
-pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str) -> anyhow::Result<()> {
-    let outer_block = get_outer_block("Quiz name");
+pub fn ascii_art(
+    frame: &mut Frame,
+    lines: &[&str],
+    text: &str,
+    quiz_name: &str,
+) -> anyhow::Result<()> {
+    let outer_block = get_outer_block(quiz_name);
     let inner = outer_block.inner(frame.size());
 
     let mut constraints = vec![];
@@ -100,13 +105,15 @@ pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str) -> anyhow::Resul
     Ok(())
 }
 
-pub fn welcome_layout(
+pub fn welcome_results_layout(
     frame: &mut Frame,
     constraints: Vec<Constraint>,
     paragraph_name: String,
+    block_name: &str,
+    quiz_name: &str,
 ) -> Rc<[Rect]> {
-    let outer_block = get_outer_block("Quiz name");
-    let inner_block = get_inner_block("Welcome!".to_string());
+    let outer_block = get_outer_block(quiz_name);
+    let inner_block = get_inner_block(block_name);
     let inner = outer_block.inner(frame.size());
 
     let content_space = inner_block.inner(inner);
@@ -125,8 +132,13 @@ pub fn welcome_layout(
     layout
 }
 
-pub fn simple_message(frame: &mut Frame, title: String, message: &str) -> anyhow::Result<()> {
-    let outer_block = get_outer_block("Quiz name");
+pub fn simple_message(
+    frame: &mut Frame,
+    title: &str,
+    message: &str,
+    quiz_name: &str,
+) -> anyhow::Result<()> {
+    let outer_block = get_outer_block(quiz_name);
     let inner_block = get_inner_block(title);
     let inner = outer_block.inner(frame.size());
 
@@ -143,9 +155,9 @@ pub fn simple_message(frame: &mut Frame, title: String, message: &str) -> anyhow
     Ok(())
 }
 
-pub fn welcome(frame: &mut Frame) -> anyhow::Result<()> {
+pub fn welcome(frame: &mut Frame, quiz_name: &str) -> anyhow::Result<()> {
     let lines = ["Welcome", "to", "Clihoot!"];
-    ascii_art(frame, &lines, "Press ENTER to start")?;
+    ascii_art(frame, &lines, "Press ENTER to start", quiz_name)?;
 
     Ok(())
 }
@@ -154,11 +166,14 @@ pub fn waiting(
     frame: &mut Frame,
     players: &mut [PlayerData],
     list_state: &mut ListState,
+    quiz_name: &str,
 ) -> anyhow::Result<()> {
-    let layout = welcome_layout(
+    let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
         "Waiting for the game to start:".to_string(),
+        " Welcome! ",
+        quiz_name,
     );
 
     let items: Vec<_> = players
@@ -186,14 +201,14 @@ fn question_layout(
     players_answered_count: usize,
     time_from_start: usize,
     text: &str,
+    quiz_name: &str,
 ) -> Rc<[Rect]> {
-    let outer_block = get_outer_block("Quiz name");
-    let inner_block = get_inner_block(
-        "Question ".to_string()
-            + (question.question_index + 1).to_string().as_str()
-            + "/"
-            + question.questions_count.to_string().as_str(),
-    );
+    let outer_block = get_outer_block(quiz_name);
+    let binding = "Question ".to_string()
+        + (question.question_index + 1).to_string().as_str()
+        + "/"
+        + question.questions_count.to_string().as_str();
+    let inner_block = get_inner_block(binding.as_str());
     let inner = outer_block.inner(frame.size());
 
     let content_space = inner_block.inner(inner);
@@ -249,6 +264,8 @@ pub fn question(
     choice_selector_state: &mut ChoiceSelectorState,
     time_from_start: usize,
     answered: bool,
+    theme: Theme,
+    quiz_name: &str,
 ) -> anyhow::Result<()> {
     if answered {
         let _layout = question_layout(
@@ -257,6 +274,7 @@ pub fn question(
             players_answered_count,
             time_from_start,
             "Waiting for other players to answer...",
+            quiz_name,
         );
     } else {
         let layout = question_layout(
@@ -265,12 +283,12 @@ pub fn question(
             players_answered_count,
             time_from_start,
             question.question.text.as_str(),
+            quiz_name,
         );
 
         if question.code_block.is_some() {
-            let code_paragraph =
-                highlight_code_block(question.code_block.as_ref().unwrap(), Theme::OceanDark)
-                    .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+            let code_paragraph = highlight_code_block(question.code_block.as_ref().unwrap(), theme)
+                .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
             frame.render_widget(code_paragraph, layout[2]);
         }
 
@@ -322,9 +340,8 @@ pub fn question(
 
 pub fn question_answers(frame: &mut Frame, question: &QuestionEnded) -> anyhow::Result<()> {
     let outer_block = get_outer_block("Quiz name");
-    let inner_block = get_inner_block(
-        "Question ".to_string() + (question.question_index + 1).to_string().as_str(),
-    );
+    let binding = "Question ".to_string() + (question.question_index + 1).to_string().as_str();
+    let inner_block = get_inner_block(binding.as_str());
     let inner = outer_block.inner(frame.size());
 
     let content_space = inner_block.inner(inner);
@@ -376,11 +393,14 @@ pub fn results(
     frame: &mut Frame,
     results: &ShowLeaderboard,
     table_state: &mut TableState,
+    quiz_name: &str,
 ) -> anyhow::Result<()> {
-    let layout = welcome_layout(
+    let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
         "Leaderboard:".to_string(),
+        " Results! ",
+        quiz_name,
     );
 
     let items: Vec<_> = results
@@ -389,7 +409,7 @@ pub fn results(
         .map(|(player, score)| {
             let row = vec![
                 Span::styled(player.nickname.to_string(), style::Style::default().bold()),
-                Span::raw(format!("{}", score)),
+                Span::raw(format!("{score}")),
             ];
 
             Row::new(row).style(
@@ -409,15 +429,15 @@ pub fn results(
     Ok(())
 }
 
-pub fn end_game(frame: &mut Frame) -> anyhow::Result<()> {
+pub fn end_game(frame: &mut Frame, quiz_name: &str) -> anyhow::Result<()> {
     let lines = ["Game", "Ended", "Thank You!"];
-    ascii_art(frame, &lines, "Press ENTER to close")?;
+    ascii_art(frame, &lines, "Press ENTER to close", quiz_name)?;
 
     Ok(())
 }
 
-pub fn error(frame: &mut Frame, message: &str) -> anyhow::Result<()> {
-    simple_message(frame, "Error".to_string(), message)?;
+pub fn error(frame: &mut Frame, message: &str, quiz_name: &str) -> anyhow::Result<()> {
+    simple_message(frame, "Error", message, quiz_name)?;
 
     Ok(())
 }

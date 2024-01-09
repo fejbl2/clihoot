@@ -1,13 +1,18 @@
 use crate::terminal::constants::COLORS;
 
-use common::terminal::render::{get_bordered_block, get_empty_block, welcome_layout};
+use common::terminal::render::{get_bordered_block, get_empty_block, welcome_results_layout};
 use ratatui::{
     prelude::*,
     widgets::{List, ListItem, ListState, Paragraph},
 };
 
-pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool) -> anyhow::Result<()> {
-    let layout = welcome_layout(
+pub fn render_name_selection(
+    frame: &mut Frame,
+    name: &str,
+    name_used: bool,
+    quiz_name: &str,
+) -> anyhow::Result<()> {
+    let layout = welcome_results_layout(
         frame,
         vec![
             Constraint::Length(1),
@@ -15,6 +20,8 @@ pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool) -> 
             Constraint::Percentage(80),
         ],
         "Name: ".to_string(),
+        " Welcome! ",
+        quiz_name,
     );
 
     let paragraph_name = Paragraph::new(format!("{name}|")).block(get_bordered_block());
@@ -34,11 +41,14 @@ pub fn render_color_selection(
     frame: &mut Frame,
     _color: Color,
     list_state: &mut ListState,
+    quiz_name: &str,
 ) -> anyhow::Result<()> {
-    let layout = welcome_layout(
+    let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
         "Color: ".to_string(),
+        " Welcome! ",
+        quiz_name,
     );
 
     let items: Vec<_> = COLORS

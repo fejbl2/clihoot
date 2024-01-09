@@ -2,7 +2,10 @@ use actix::prelude::*;
 
 use ratatui::widgets::{ListState, TableState};
 
-use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
+use common::{
+    messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard},
+    terminal::highlight::Theme,
+};
 
 use crate::Lobby;
 
@@ -37,16 +40,18 @@ pub struct TeacherTerminal {
     pub lobby: Addr<Lobby>,
     pub players: Vec<PlayerData>,
     pub state: TeacherTerminalState,
+    pub syntax_theme: Theme,
 }
 
 impl TeacherTerminal {
     #[must_use]
-    pub fn new(quiz_name: String, lobby: Addr<Lobby>) -> Self {
+    pub fn new(quiz_name: String, lobby: Addr<Lobby>, syntax_theme: Theme) -> Self {
         Self {
             quiz_name,
             lobby,
             players: Vec::new(),
             state: TeacherTerminalState::StartGame,
+            syntax_theme,
         }
     }
 }

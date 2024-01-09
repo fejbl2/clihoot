@@ -8,20 +8,20 @@ use ratatui::prelude::*;
 
 use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 
-use super::draw_states::{render_teacher_lobby, render_teacher_welcome};
+use super::draw_states::render_teacher_welcome;
 
 impl TerminalDraw for TeacherTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
         match &mut self.state {
             TeacherTerminalState::StartGame => {
                 term.draw(|frame| {
-                    let _ = render_teacher_welcome(frame);
+                    let _ = render_teacher_welcome(frame, &self.quiz_name);
                 })?;
                 Ok(())
             }
             TeacherTerminalState::WaitingForGame { list_state } => {
                 term.draw(|frame| {
-                    let _ = render_teacher_lobby(frame, &mut self.players, list_state);
+                    let _ = render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
                 })?;
                 Ok(())
             }
@@ -41,6 +41,8 @@ impl TerminalDraw for TeacherTerminal {
                         &mut ChoiceSelectorState::default(),
                         duration_from_start.num_seconds() as usize,
                         false,
+                        self.syntax_theme,
+                        &self.quiz_name,
                     );
                 })?;
                 Ok(())
@@ -59,19 +61,19 @@ impl TerminalDraw for TeacherTerminal {
                 table_state,
             } => {
                 term.draw(|frame| {
-                    let _ = render::results(frame, results, table_state);
+                    let _ = render::results(frame, results, table_state, &self.quiz_name);
                 })?;
                 Ok(())
             }
             TeacherTerminalState::EndGame => {
                 term.draw(|frame| {
-                    let _ = render::end_game(frame);
+                    let _ = render::end_game(frame, &self.quiz_name);
                 })?;
                 Ok(())
             }
             TeacherTerminalState::Error { message } => {
                 term.draw(|frame| {
-                    let _ = render::error(frame, message);
+                    let _ = render::error(frame, message, &self.quiz_name);
                 })?;
                 Ok(())
             }
