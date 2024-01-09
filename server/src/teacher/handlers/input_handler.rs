@@ -75,9 +75,9 @@ impl TerminalHandleInput for TeacherTerminal {
             }
             TeacherTerminalState::Results {
                 results,
-                list_state,
+                table_state,
             } => {
-                let mut selected = list_state.selected().unwrap_or(0);
+                let mut selected = table_state.selected().unwrap_or(0);
 
                 match key_code {
                     KeyCode::Enter => self.lobby.do_send(StartQuestion),
@@ -86,7 +86,7 @@ impl TerminalHandleInput for TeacherTerminal {
                         if selected >= results.players.len() {
                             selected = 0;
                         }
-                        list_state.select(Some(selected));
+                        table_state.select(Some(selected));
                     }
                     KeyCode::Up | KeyCode::Char('k' | 'w') => {
                         if selected == 0 {
@@ -94,17 +94,17 @@ impl TerminalHandleInput for TeacherTerminal {
                         } else {
                             selected -= 1;
                         }
-                        list_state.select(Some(selected));
+                        table_state.select(Some(selected));
                     }
                     KeyCode::Char('x') => {
-                        let selected = list_state.selected().unwrap_or(0);
+                        let selected = table_state.selected().unwrap_or(0);
 
                         let player_uuid = results.players[selected].0.uuid;
                         self.lobby.do_send(KickPlayer {
                             player_uuid,
                             reason: Some(PLAYER_KICKED_MESSAGE.to_string()),
                         });
-                        list_state.select(Some(selected.saturating_sub(1)));
+                        table_state.select(Some(selected.saturating_sub(1)));
                         results.players = results
                             .clone()
                             .players
@@ -115,10 +115,7 @@ impl TerminalHandleInput for TeacherTerminal {
                     _ => {}
                 };
             }
-            TeacherTerminalState::EndGame {
-                list_state: _,
-                results: _,
-            } => {
+            TeacherTerminalState::EndGame => {
                 debug!("EndGame - doing nothing: {:?}", key_code);
             }
             TeacherTerminalState::Error { message: _ } => {

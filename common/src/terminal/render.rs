@@ -4,11 +4,11 @@ use anyhow::anyhow;
 use figlet_rs::FIGfont;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    prelude::Text,
     style::{self, Color, Stylize},
-    text::{Line, Span},
+    text::Span,
     widgets::{
         block::Title, Block, BorderType, Borders, List, ListItem, ListState, Padding, Paragraph,
+        Row, Table, TableState,
     },
     Frame,
 };
@@ -180,14 +180,13 @@ pub fn waiting(
     Ok(())
 }
 
-pub fn question(
+fn question_layout(
     frame: &mut Frame,
     question: &NextQuestion,
     players_answered_count: usize,
-    choice_grid: &mut ChoiceGrid,
-    choice_selector_state: &mut ChoiceSelectorState,
     time_from_start: usize,
-) -> anyhow::Result<()> {
+    text: &str,
+) -> Rc<[Rect]> {
     let outer_block = get_outer_block("Quiz name");
     let inner_block = get_inner_block(
         "Question ".to_string()
@@ -225,7 +224,7 @@ pub fn question(
         .alignment(Alignment::Right)
         .block(get_empty_block());
 
-    let question_paragraph = Paragraph::new(question.text.to_string())
+    let paragraph = Paragraph::new(text)
         .bold()
         .block(get_empty_block().padding(Padding::new(1, 1, 1, 1)))
         .alignment(Alignment::Center);
@@ -237,111 +236,86 @@ pub fn question(
     frame.render_widget(counts_paragraph_1, counts_layout[1]);
     frame.render_widget(counts_paragraph_2, counts_layout[0]);
 
-    frame.render_widget(question_paragraph, layout[1]);
+    frame.render_widget(paragraph, layout[1]);
 
-    if question.code_block.is_some() {
-        let code_paragraph =
-            highlight_code_block(question.code_block.as_ref().unwrap(), Theme::OceanDark)
-                .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
-        frame.render_widget(code_paragraph, layout[2]);
-    }
-
-    let mut items = choice_grid.clone().items();
-
-    match &mut items[0][0] {
-        Some(item) => {
-            item.set_style_ref(style::Style::default().bg(Color::Red));
-        }
-        None => {}
-    };
-
-    match &mut items[0][1] {
-        Some(item) => {
-            item.set_style_ref(style::Style::default().bg(Color::Green));
-        }
-        None => {}
-    };
-
-    match &mut items[1][0] {
-        Some(item) => {
-            item.set_style_ref(style::Style::default().bg(Color::Blue));
-        }
-        None => {}
-    };
-
-    match &mut items[1][1] {
-        Some(item) => {
-            item.set_style_ref(style::Style::default().bg(Color::Yellow));
-        }
-        None => {}
-    };
-
-    *choice_grid = ChoiceGrid::new(items);
-
-    let choice_selector = ChoiceSelector::new(choice_grid.clone());
-    let choice_selector = choice_selector
-        .vertical_gap(1)
-        .horizontal_gap(3)
-        .block(get_empty_block());
-
-    if time_from_start >= question.show_choices_after {
-        frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
-    }
-
-    Ok(())
+    layout
 }
 
-pub fn question_waiting(
+pub fn question(
     frame: &mut Frame,
     question: &NextQuestion,
     players_answered_count: usize,
+    choice_grid: &mut ChoiceGrid,
+    choice_selector_state: &mut ChoiceSelectorState,
+    time_from_start: usize,
+    answered: bool,
 ) -> anyhow::Result<()> {
-    let outer_block = get_outer_block("Quiz name");
-    let inner_block = get_inner_block(
-        "Question ".to_string()
-            + (question.question_index + 1).to_string().as_str()
-            + "/"
-            + question.questions_count.to_string().as_str(),
-    );
-    let inner = outer_block.inner(frame.size());
+    if answered {
+        let _layout = question_layout(
+            frame,
+            question,
+            players_answered_count,
+            time_from_start,
+            "Waiting for other players to answer...",
+        );
+    } else {
+        let layout = question_layout(
+            frame,
+            question,
+            players_answered_count,
+            time_from_start,
+            question.question.text.as_str(),
+        );
 
-    let content_space = inner_block.inner(inner);
+        if question.code_block.is_some() {
+            let code_paragraph =
+                highlight_code_block(question.code_block.as_ref().unwrap(), Theme::OceanDark)
+                    .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+            frame.render_widget(code_paragraph, layout[2]);
+        }
 
-    let layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Length(3),
-            Constraint::Length(3),
-            Constraint::Percentage(40),
-            Constraint::Percentage(40),
-        ])
-        .split(content_space);
+        let mut items = choice_grid.clone().items();
 
-    let counts_block = get_bordered_block().padding(Padding::new(1, 1, 0, 0));
-    let counts_layout = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
-        .split(counts_block.inner(layout[0]));
+        match &mut items[0][0] {
+            Some(item) => {
+                item.set_style_ref(style::Style::default().bg(Color::Red));
+            }
+            None => {}
+        };
 
-    let counts_paragraph_2 = Paragraph::new(format!("Time left: {}", question.time_seconds))
-        .alignment(Alignment::Left)
-        .block(get_empty_block());
-    let counts_paragraph_1 = Paragraph::new(format!("Players answered: {players_answered_count}"))
-        .alignment(Alignment::Right)
-        .block(get_empty_block());
+        match &mut items[0][1] {
+            Some(item) => {
+                item.set_style_ref(style::Style::default().bg(Color::Green));
+            }
+            None => {}
+        };
 
-    let paragraph = Paragraph::new("Waiting for other players to answer...")
-        .block(get_empty_block().padding(Padding::new(1, 1, 1, 1)))
-        .alignment(Alignment::Center);
+        match &mut items[1][0] {
+            Some(item) => {
+                item.set_style_ref(style::Style::default().bg(Color::Blue));
+            }
+            None => {}
+        };
 
-    frame.render_widget(outer_block, frame.size());
-    frame.render_widget(inner_block, inner);
+        match &mut items[1][1] {
+            Some(item) => {
+                item.set_style_ref(style::Style::default().bg(Color::Yellow));
+            }
+            None => {}
+        };
 
-    frame.render_widget(counts_block, layout[0]);
-    frame.render_widget(counts_paragraph_1, counts_layout[1]);
-    frame.render_widget(counts_paragraph_2, counts_layout[0]);
+        *choice_grid = ChoiceGrid::new(items);
 
-    frame.render_widget(paragraph, layout[1]);
+        let choice_selector = ChoiceSelector::new(choice_grid.clone());
+        let choice_selector = choice_selector
+            .vertical_gap(1)
+            .horizontal_gap(3)
+            .block(get_empty_block());
+
+        if time_from_start >= question.show_choices_after {
+            frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
+        }
+    }
 
     Ok(())
 }
@@ -401,7 +375,7 @@ pub fn question_answers(frame: &mut Frame, question: &QuestionEnded) -> anyhow::
 pub fn results(
     frame: &mut Frame,
     results: &ShowLeaderboard,
-    list_state: &mut ListState,
+    table_state: &mut TableState,
 ) -> anyhow::Result<()> {
     let layout = welcome_layout(
         frame,
@@ -413,26 +387,24 @@ pub fn results(
         .players
         .iter()
         .map(|(player, score)| {
-            let line = Line::from(vec![
+            let row = vec![
                 Span::styled(player.nickname.to_string(), style::Style::default().bold()),
-                Span::raw(format!(": {}", score)),
-            ])
-            .alignment(Alignment::Left);
+                Span::raw(format!("{}", score)),
+            ];
 
-            let text = Text::from(line);
-
-            ListItem::new(text).style(
+            Row::new(row).style(
                 style::Style::default()
                     .fg(Color::from_str(player.color.as_str()).unwrap_or(Color::White)),
             )
         })
         .collect();
 
-    let list = List::new(items)
+    let widths = [Constraint::Percentage(50), Constraint::Percentage(50)];
+    let table = Table::new(items, widths)
         .block(get_bordered_block())
         .highlight_symbol(">> ");
 
-    frame.render_stateful_widget(list, layout[1], list_state);
+    frame.render_stateful_widget(table, layout[1], table_state);
 
     Ok(())
 }

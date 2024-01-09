@@ -46,18 +46,15 @@ impl TerminalDraw for StudentTerminal {
                 choice_selector_state,
             } => {
                 term.draw(|frame| {
-                    if *answered {
-                        let _ = render::question_waiting(frame, question, *players_answered_count);
-                    } else {
-                        let _ = render::question(
-                            frame,
-                            question,
-                            *players_answered_count,
-                            choice_grid,
-                            choice_selector_state,
-                            duration_from_start.num_seconds() as usize,
-                        );
-                    }
+                    let _ = render::question(
+                        frame,
+                        question,
+                        *players_answered_count,
+                        choice_grid,
+                        choice_selector_state,
+                        duration_from_start.num_seconds() as usize,
+                        *answered,
+                    );
                 })?;
                 Ok(())
             }
@@ -69,10 +66,10 @@ impl TerminalDraw for StudentTerminal {
             }
             StudentTerminalState::Results {
                 results,
-                list_state,
+                table_state,
             } => {
                 term.draw(|frame| {
-                    let _ = render::results(frame, results, list_state);
+                    let _ = render::results(frame, results, table_state);
                 })?;
                 Ok(())
             }

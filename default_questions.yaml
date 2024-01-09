@@ -7,7 +7,7 @@ questions:
         fn main() {
             println!("42");
         }
-    time_seconds: 4
+    time_seconds: 60
     choices:
       - text: Nothing useful
       - text: It prints 42

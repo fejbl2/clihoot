@@ -3,11 +3,11 @@ use common::constants::NICKNAME_ALREADY_TAKEN_MSG;
 use common::messages::network::CanJoin;
 use common::messages::ServerNetworkMessage;
 use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
-use common::terminal::widgets::choice::ChoiceGrid;
+
 use common::terminal::widgets::choice::ChoiceSelectorState;
 
 use log::debug;
-use ratatui::widgets::ListState;
+use ratatui::widgets::{ListState, TableState};
 
 impl TerminalHandleServerNetworkMessage for StudentTerminal {
     fn handle_network_message(
@@ -74,7 +74,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                 debug!("Student: handling show leaderboard");
                 self.state = StudentTerminalState::Results {
                     results: leaderboard,
-                    list_state: ListState::default().with_selected(Some(0)),
+                    table_state: TableState::default().with_selected(Some(0)),
                 };
             }
             ServerNetworkMessage::PlayersUpdate(update) => {

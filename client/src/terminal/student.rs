@@ -1,7 +1,7 @@
 use actix::prelude::*;
 use log::debug;
 use ratatui::style::Color;
-use ratatui::widgets::ListState;
+use ratatui::widgets::{ListState, TableState};
 
 use uuid::Uuid;
 
@@ -41,7 +41,7 @@ pub enum StudentTerminalState {
     },
     Results {
         results: ShowLeaderboard,
-        list_state: ListState,
+        table_state: TableState,
     },
     EndGame, // show some screen saying that the game ended and the student should just pres ctrl + c to close the app
     Error {

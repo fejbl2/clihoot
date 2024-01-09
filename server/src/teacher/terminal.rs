@@ -1,6 +1,6 @@
 use actix::prelude::*;
 
-use ratatui::widgets::ListState;
+use ratatui::widgets::{ListState, TableState};
 
 use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 
@@ -24,12 +24,9 @@ pub enum TeacherTerminalState {
     },
     Results {
         results: ShowLeaderboard,
-        list_state: ListState,
+        table_state: TableState,
     },
-    EndGame {
-        results: ShowLeaderboard,
-        list_state: ListState,
-    },
+    EndGame,
     Error {
         message: String,
     },

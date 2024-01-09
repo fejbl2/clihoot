@@ -158,7 +158,7 @@ impl TerminalHandleInput for StudentTerminal {
             }
             StudentTerminalState::Results {
                 results,
-                list_state,
+                table_state: list_state,
             } => {
                 let mut selected = list_state.selected().unwrap_or(0);
                 match key_code {

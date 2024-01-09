@@ -1,4 +1,8 @@
-use common::terminal::{render, terminal_actor::TerminalDraw};
+use common::terminal::{
+    render,
+    terminal_actor::TerminalDraw,
+    widgets::choice::{ChoiceGrid, ChoiceSelectorState},
+};
 
 use ratatui::prelude::*;
 
@@ -25,10 +29,19 @@ impl TerminalDraw for TeacherTerminal {
                 question,
                 players_answered_count,
                 start_time: _,
-                duration_from_start: _,
+                duration_from_start,
             } => {
                 term.draw(|frame| {
-                    let _ = render::question_waiting(frame, question, *players_answered_count);
+                    let mut grid: ChoiceGrid = question.question.clone().into();
+                    let _ = render::question(
+                        frame,
+                        question,
+                        *players_answered_count,
+                        &mut grid,
+                        &mut ChoiceSelectorState::default(),
+                        duration_from_start.num_seconds() as usize,
+                        false,
+                    );
                 })?;
                 Ok(())
             }
@@ -43,17 +56,14 @@ impl TerminalDraw for TeacherTerminal {
             }
             TeacherTerminalState::Results {
                 results,
-                list_state,
+                table_state,
             } => {
                 term.draw(|frame| {
-                    let _ = render::results(frame, results, list_state);
+                    let _ = render::results(frame, results, table_state);
                 })?;
                 Ok(())
             }
-            TeacherTerminalState::EndGame {
-                list_state: _,
-                results: _,
-            } => {
+            TeacherTerminalState::EndGame => {
                 term.draw(|frame| {
                     let _ = render::end_game(frame);
                 })?;
