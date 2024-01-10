@@ -15,6 +15,7 @@ impl TerminalHandleQuestionUpdate for TeacherTerminal {
             players_answered_count,
             start_time: _,
             duration_from_start: _,
+            skip_popup_visible: _,
         } = &mut self.state
         else {
             bail!(

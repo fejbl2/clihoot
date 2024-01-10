@@ -20,3 +20,13 @@ pub fn render_teacher_help(frame: &mut Frame) {
     ];
     render::help(frame, &help_text);
 }
+
+pub fn render_kick_popup(frame: &mut Frame) {
+    let message = "Are you sure you want to kick this player?\n They will not be able to rejoin";
+    render::yes_no_popup(frame, message);
+}
+
+pub fn render_skip_question_popup(frame: &mut Frame) {
+    let message = "Are you sure you want to skip this question?\n Players who haven't answered will get 0 points";
+    render::yes_no_popup(frame, message);
+}

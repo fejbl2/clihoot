@@ -8,7 +8,7 @@ use ratatui::{
     widgets::{
         block::{Position, Title},
         Block, BorderType, Borders, Clear, List, ListItem, ListState, Padding, Paragraph, Row,
-        Table, TableState,
+        Table, TableState, Wrap,
     },
     Frame,
 };
@@ -398,10 +398,10 @@ pub fn error(frame: &mut Frame, message: &str, quiz_name: &str) {
 }
 
 pub fn help(frame: &mut Frame, help_text: &[(&str, &str)]) {
-    let title = Title::from("  Help ")
+    let title = Title::from(" Help ")
         .alignment(Alignment::Center)
         .position(Position::Top);
-    let bottom_title = Title::from("  Press any key to close ")
+    let bottom_title = Title::from(" Press any key to close ")
         .alignment(Alignment::Center)
         .position(Position::Bottom);
     let popup_block = Block::default()
@@ -432,6 +432,32 @@ pub fn help(frame: &mut Frame, help_text: &[(&str, &str)]) {
 
     frame.render_widget(Clear, area);
     frame.render_widget(table, area);
+}
+
+pub fn yes_no_popup(frame: &mut Frame, message: &str) {
+    let title = Title::from(" Confirm ")
+        .alignment(Alignment::Center)
+        .position(Position::Top);
+    let bottom_title = Title::from(" Press y/n to confirm ")
+        .alignment(Alignment::Center)
+        .position(Position::Bottom);
+    let popup_block = Block::default()
+        .title(title)
+        .title(bottom_title)
+        .borders(Borders::ALL)
+        .border_type(BorderType::Thick)
+        .padding(Padding::new(1, 1, 1, 1))
+        .style(Style::default().bg(Color::DarkGray));
+
+    let area = centered_rect(frame.size(), 60, 30);
+
+    let paragraph = Paragraph::new(message)
+        .wrap(Wrap { trim: true })
+        .block(popup_block)
+        .alignment(Alignment::Center);
+
+    frame.render_widget(Clear, area);
+    frame.render_widget(paragraph, area);
 }
 
 // source: https://ratatui.rs/how-to/layout/center-a-rect/

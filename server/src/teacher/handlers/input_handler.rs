@@ -87,11 +87,21 @@ impl TerminalHandleInput for TeacherTerminal {
                 players_answered_count: _,
                 start_time: _,
                 duration_from_start: _,
+                skip_popup_visible,
             } => {
+                if *skip_popup_visible {
+                    match key_code {
+                        KeyCode::Char('y') => {
+                            self.lobby.do_send(EndQuestion {
+                                index: q.question_index,
+                            });
+                        }
+                        _ => {}
+                    }
+                    *skip_popup_visible = false;
+                }
                 if key_code == KeyCode::Enter {
-                    self.lobby.do_send(EndQuestion {
-                        index: q.question_index,
-                    });
+                    *skip_popup_visible = true;
                 }
             }
             TeacherTerminalState::Answers { answers: _ } => {
@@ -144,7 +154,7 @@ impl TerminalHandleInput for TeacherTerminal {
                         table_state.select(Some(selected));
                     }
                     KeyCode::Char('x') => {
-                        if !self.players.is_empty() {
+                        if !results.players.is_empty() {
                             *kick_popup_visible = true;
                         }
                     }

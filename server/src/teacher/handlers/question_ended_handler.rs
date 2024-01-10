@@ -16,6 +16,7 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
                 players_answered_count: _,
                 start_time: _,
                 duration_from_start: _,
+                skip_popup_visible: _,
             } => question,
             _ => bail!(
                 "Teacher: received question ended, but the terminal is not in the Question state"

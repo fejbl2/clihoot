@@ -21,6 +21,7 @@ pub enum TeacherTerminalState {
         players_answered_count: usize,
         start_time: chrono::DateTime<chrono::Utc>,
         duration_from_start: chrono::Duration,
+        skip_popup_visible: bool,
     },
     Answers {
         answers: QuestionEnded,

@@ -7,6 +7,7 @@ impl common::terminal::terminal_actor::TerminalHandleTick for TeacherTerminal {
             players_answered_count: _,
             start_time,
             duration_from_start,
+            skip_popup_visible: _,
         } = &mut self.state
         else {
             return Ok(());

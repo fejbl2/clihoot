@@ -17,6 +17,7 @@ impl TerminalHandleNextQuestion for TeacherTerminal {
             players_answered_count: 0,
             start_time: chrono::Utc::now(),
             duration_from_start: chrono::Duration::zero(),
+            skip_popup_visible: false,
         };
 
         Ok(())
