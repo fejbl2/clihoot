@@ -8,7 +8,7 @@ use ratatui::prelude::*;
 
 use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 
-use super::draw_states::render_teacher_welcome;
+use super::draw_states::{render_teacher_help, render_teacher_welcome};
 
 impl TerminalDraw for TeacherTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
@@ -61,7 +61,7 @@ impl TerminalDraw for TeacherTerminal {
             }
 
             if self.help_visible {
-                // TODO draw the help pop-up
+                render_teacher_help(frame);
             }
         })?;
 

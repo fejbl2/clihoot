@@ -6,6 +6,8 @@ use common::terminal::terminal_actor::TerminalDraw;
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
+use super::draw_states::render_help;
+
 impl TerminalDraw for StudentTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
         term.draw(|frame| {
@@ -65,7 +67,7 @@ impl TerminalDraw for StudentTerminal {
             };
 
             if self.help_visible {
-                // TODO draw the help pop-up
+                render_help(frame);
             }
         })?;
 

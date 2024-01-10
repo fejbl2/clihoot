@@ -3,11 +3,12 @@ use std::{rc::Rc, str::FromStr};
 use figlet_rs::FIGfont;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{self, Color, Stylize},
-    text::Span,
+    style::{self, Color, Style, Stylize},
+    text::Line,
     widgets::{
-        block::Title, Block, BorderType, Borders, List, ListItem, ListState, Padding, Paragraph,
-        Row, Table, TableState,
+        block::{Position, Title},
+        Block, BorderType, Borders, Clear, List, ListItem, ListState, Padding, Paragraph, Row,
+        Table, TableState,
     },
     Frame,
 };
@@ -19,7 +20,7 @@ use crate::terminal::widgets::choice::{ChoiceGrid, ChoiceSelector, ChoiceSelecto
 
 #[must_use]
 pub fn get_outer_block(name: &str) -> Block<'static> {
-    let title = Title::from("Clihoot: ".to_owned() + name);
+    let title = Title::from(" Clihoot: ".to_owned() + name + " ");
     let block = Block::default()
         .title(title)
         .title_style(style::Style::default().bold())
@@ -367,8 +368,9 @@ pub fn results(
         .iter()
         .map(|(player, score)| {
             let row = vec![
-                Span::styled(player.nickname.to_string(), style::Style::default().bold()),
-                Span::raw(format!("{score}")),
+                Line::styled(player.nickname.to_string(), style::Style::default().bold())
+                    .alignment(Alignment::Left),
+                Line::raw(format!("{score}")).alignment(Alignment::Right),
             ];
 
             Row::new(row).style(
@@ -393,4 +395,62 @@ pub fn end_game(frame: &mut Frame, quiz_name: &str) {
 
 pub fn error(frame: &mut Frame, message: &str, quiz_name: &str) {
     simple_message(frame, "Error", message, quiz_name);
+}
+
+pub fn help(frame: &mut Frame, help_text: &[(&str, &str)]) {
+    let title = Title::from("  Help ")
+        .alignment(Alignment::Center)
+        .position(Position::Top);
+    let bottom_title = Title::from("  Press any key to close ")
+        .alignment(Alignment::Center)
+        .position(Position::Bottom);
+    let popup_block = Block::default()
+        .title(title)
+        .title(bottom_title)
+        .borders(Borders::ALL)
+        .border_type(BorderType::Thick)
+        .padding(Padding::new(1, 1, 1, 1))
+        .style(Style::default().bg(Color::DarkGray));
+
+    let area = centered_rect(frame.size(), 60, 60);
+
+    let items: Vec<_> = help_text
+        .iter()
+        .map(|(key, function)| {
+            let row = vec![
+                Line::styled((*key).to_string(), style::Style::default().bold())
+                    .alignment(Alignment::Left),
+                Line::raw((*function).to_string()).alignment(Alignment::Right),
+            ];
+
+            Row::new(row)
+        })
+        .collect();
+
+    let widths = [Constraint::Percentage(30), Constraint::Percentage(70)];
+    let table = Table::new(items, widths).block(popup_block);
+
+    frame.render_widget(Clear, area);
+    frame.render_widget(table, area);
+}
+
+// source: https://ratatui.rs/how-to/layout/center-a-rect/
+fn centered_rect(r: Rect, percent_x: u16, percent_y: u16) -> Rect {
+    let popup_layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Percentage((100 - percent_y) / 2),
+            Constraint::Percentage(percent_y),
+            Constraint::Percentage((100 - percent_y) / 2),
+        ])
+        .split(r);
+
+    Layout::default()
+        .direction(Direction::Horizontal)
+        .constraints([
+            Constraint::Percentage((100 - percent_x) / 2),
+            Constraint::Percentage(percent_x),
+            Constraint::Percentage((100 - percent_x) / 2),
+        ])
+        .split(popup_layout[1])[1]
 }
