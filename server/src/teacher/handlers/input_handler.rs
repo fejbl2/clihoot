@@ -44,12 +44,15 @@ impl TerminalHandleInput for TeacherTerminal {
                 let mut selected = list_state.selected().unwrap_or(0);
 
                 if *kick_popup_visible {
-                    let player_uuid = self.players[selected].uuid;
-                    let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
+                    if !self.players.is_empty() {
+                        let player_uuid = self.players[selected].uuid;
+                        let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
 
-                    if kicked {
-                        list_state.select(Some(selected.saturating_sub(1)));
+                        if kicked {
+                            list_state.select(Some(selected.saturating_sub(1)));
+                        }
                     }
+
                     *kick_popup_visible = false;
                     return Ok(());
                 }
@@ -71,7 +74,11 @@ impl TerminalHandleInput for TeacherTerminal {
                         }
                         list_state.select(Some(selected));
                     }
-                    KeyCode::Char('x') => *kick_popup_visible = true,
+                    KeyCode::Char('x') => {
+                        if !self.players.is_empty() {
+                            *kick_popup_visible = true;
+                        }
+                    }
                     _ => {}
                 };
             }
@@ -100,17 +107,19 @@ impl TerminalHandleInput for TeacherTerminal {
                 let mut selected = table_state.selected().unwrap_or(0);
 
                 if *kick_popup_visible {
-                    let player_uuid = results.players[selected].0.uuid;
-                    let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
+                    if !self.players.is_empty() {
+                        let player_uuid = results.players[selected].0.uuid;
+                        let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
 
-                    if kicked {
-                        table_state.select(Some(selected.saturating_sub(1)));
-                        results.players = results
-                            .clone()
-                            .players
-                            .into_iter()
-                            .filter(|p| p.0.uuid != player_uuid)
-                            .collect();
+                        if kicked {
+                            table_state.select(Some(selected.saturating_sub(1)));
+                            results.players = results
+                                .clone()
+                                .players
+                                .into_iter()
+                                .filter(|p| p.0.uuid != player_uuid)
+                                .collect();
+                        }
                     }
 
                     *kick_popup_visible = false;
@@ -134,7 +143,11 @@ impl TerminalHandleInput for TeacherTerminal {
                         }
                         table_state.select(Some(selected));
                     }
-                    KeyCode::Char('x') => *kick_popup_visible = true,
+                    KeyCode::Char('x') => {
+                        if !self.players.is_empty() {
+                            *kick_popup_visible = true;
+                        }
+                    }
                     _ => {}
                 };
             }
