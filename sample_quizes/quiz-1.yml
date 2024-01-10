@@ -2,6 +2,7 @@ quiz_name: Rust language Quiz
 questions:
   - text: How much time did you spend doing 1st iteration?
     time_seconds: 20
+    is_multichoice: false
     choices:
       - text: 1-2 hours
         is_correct: true
@@ -13,6 +14,7 @@ questions:
         is_correct: true
   - text: What data type is used for 64-bit unsigned integer in Rust?
     time_seconds: 20
+    is_multichoice: false
     choices:
       - text: u64
         is_correct: true
@@ -21,6 +23,7 @@ questions:
       - text: char
   - text: What data type do we choose when we want to store the person's name in Rust?
     time_seconds: 20
+    is_multichoice: false
     choices:
       - text: u64
       - text: i64
@@ -40,6 +43,7 @@ questions:
               println!("{a}");
             }
         }
+    is_multichoice: false
     choices:
       - text: "42"
       - text: "a"
@@ -48,12 +52,14 @@ questions:
       - text: "0"
   - text: Can we define and use our own macros in Rust?
     time_seconds: 10
+    is_multichoice: false
     choices:
       - text: "Yes"
         is_correct: true
       - text: "No"
   - text: Why is program written in Rust usually faster than programs in other modern languages?
     time_seconds: 20
+    is_multichoice: false
     choices:
       - text: "Rust uses black magic"
       - text: "Rust is more modern"
@@ -70,12 +76,14 @@ questions:
             a = 5;
             println!("{a}");
         }
+    is_multichoice: false
     choices:
       - text: "Yes"
       - text: "No"
         is_correct: true
   - text: Which suffix should all file names containing rust code have?
     time_seconds: 20
+    is_multichoice: false
     choices:
       - text: ".txt"
       - text: ".java"

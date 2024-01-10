@@ -2,12 +2,14 @@ quiz_name: IB107 Quiz
 questions:
   - text: Is halting problem recursively enumerable?
     time_seconds: 20
+    is_multichoice: false
     choices:
       - text: "Yes"
         is_correct: true
       - text: "No"
   - text: When is function f total?
     time_seconds: 40
+    is_multichoice: false
     choices:
       - text: "domain of f is empty"
       - text: "domain of f is N"
@@ -16,6 +18,7 @@ questions:
       - text: "range of f is empty"
   - text: Select valid keywords of while-program language defined in IB107
     time_seconds: 30
+    is_multichoice: false
     choices:
       - text: "while, do, then"
         is_correct: true
@@ -24,6 +27,7 @@ questions:
       - text: "let, while, begin"
   - text: Select valid keywords of while-program language defined in IB107
     time_seconds: 30
+    is_multichoice: false
     choices:
       - text: "then, end, begin"
         is_correct: true
@@ -39,6 +43,7 @@ questions:
           x1 = x1 + 1;
           x1 = x1 - 1
         end
+    is_multichoice: false
     choices:
       - text: "Yes"
         is_correct: true
@@ -51,6 +56,7 @@ questions:
         begin
           while x1 != x2 then x1 = x1 + 1
         end
+    is_multichoice: false
     choices:
       - text: "Yes"
       - text: "No"
