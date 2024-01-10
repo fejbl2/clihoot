@@ -66,39 +66,40 @@ fn test_one_row_move_around() {
 }
 
 #[test]
-fn test_one_row_toggle_selection() {
+fn test_one_row_toggle_selection_multichoice() {
+    let is_multichoice = true;
     let uuids = [Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()];
     let grid = one_row_fixture(&uuids);
 
     let mut state = ChoiceSelectorState::default();
     assert!(state.selected().is_empty());
 
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, is_multichoice);
     let selected = state.selected();
     assert!(selected.len() == 1 && selected.contains(&uuids[0]));
 
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, is_multichoice);
     let selected = state.selected();
     assert!(selected.is_empty());
 
     state.move_right(&grid);
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, is_multichoice);
     let selected = state.selected();
     assert!(selected.len() == 1 && selected.contains(&uuids[1]));
 
     state.move_right(&grid);
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, is_multichoice);
     let selected = state.selected();
     assert!(selected.len() == 2 && selected.contains(&uuids[1]) && selected.contains(&uuids[2]));
 
     state.move_left(&grid);
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, is_multichoice);
     let selected = state.selected();
     assert!(selected.len() == 1 && selected.contains(&uuids[2]));
 
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, is_multichoice);
     state.move_left(&grid);
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, is_multichoice);
     let selected = state.selected();
     assert!(
         selected.len() == 3
@@ -106,6 +107,45 @@ fn test_one_row_toggle_selection() {
             && selected.contains(&uuids[1])
             && selected.contains(&uuids[2])
     );
+}
+
+#[test]
+fn test_one_row_toggle_selection_singlechoice() {
+    let is_multichoice = false;
+    let uuids = [Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()];
+    let grid = one_row_fixture(&uuids);
+
+    let mut state = ChoiceSelectorState::default();
+    assert!(state.selected().is_empty());
+
+    state.toggle_selection(&grid, is_multichoice);
+    let selected = state.selected();
+    assert!(selected.len() == 1 && selected.contains(&uuids[0]));
+
+    state.toggle_selection(&grid, is_multichoice);
+    let selected = state.selected();
+    assert!(selected.is_empty());
+
+    state.move_right(&grid);
+    state.toggle_selection(&grid, is_multichoice);
+    let selected = state.selected();
+    assert!(selected.len() == 1 && selected.contains(&uuids[1]));
+
+    state.move_right(&grid);
+    state.toggle_selection(&grid, is_multichoice);
+    let selected = state.selected();
+    assert!(selected.len() == 1 && selected.contains(&uuids[2]));
+
+    state.move_left(&grid);
+    state.toggle_selection(&grid, is_multichoice);
+    let selected = state.selected();
+    assert!(selected.len() == 1 && selected.contains(&uuids[1]));
+
+    state.toggle_selection(&grid, is_multichoice);
+    state.move_left(&grid);
+    state.toggle_selection(&grid, is_multichoice);
+    let selected = state.selected();
+    assert!(selected.len() == 1 && selected.contains(&uuids[0]));
 }
 
 #[test]
@@ -179,28 +219,28 @@ fn test_classic_4_choices_toggle_selection() {
     let mut state = ChoiceSelectorState::default();
     assert!(state.selected().is_empty());
 
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, true);
     let selected = state.selected();
     assert!(selected.len() == 1 && selected.contains(&uuids[0][0]));
 
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, true);
     let selected = state.selected();
     assert!(selected.is_empty());
 
     state.move_right(&grid);
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, true);
     let selected = state.selected();
     assert!(selected.len() == 1 && selected.contains(&uuids[0][1]));
 
     state.move_right(&grid);
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, true);
     let selected = state.selected();
     assert!(
         selected.len() == 2 && selected.contains(&uuids[0][0]) && selected.contains(&uuids[0][1])
     );
 
     state.move_down(&grid);
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, true);
     let selected = state.selected();
     assert!(
         selected.len() == 3
@@ -210,7 +250,7 @@ fn test_classic_4_choices_toggle_selection() {
     );
 
     state.move_right(&grid);
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, true);
     let selected = state.selected();
     assert!(
         selected.len() == 4
@@ -308,7 +348,7 @@ fn test_reconfigure_grid() {
     ]]);
 
     // try to select item under the cursor, without calling the move_to_last_known_choice function
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, true);
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 1);
     assert_eq!(state.last_under_cursor(), Some(uuids[1]));
@@ -705,7 +745,7 @@ fn test_reconfigure_with_none() {
     ]]);
 
     // try to select item under the cursor, without calling the move_to_last_known_choice function
-    state.toggle_selection(&grid);
+    state.toggle_selection(&grid, true);
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 2);
     assert_eq!(state.last_under_cursor(), Some(uuids[1]));

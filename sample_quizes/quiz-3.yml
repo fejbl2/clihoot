@@ -2,6 +2,7 @@ quiz_name: Minecraft Quiz
 questions:
   - text: "What will happen if you try to sleep in End dimension?"
     time_seconds: 10
+    is_multichoice: false
     choices:
       - text: "The bed will explode"
         is_correct: true
@@ -9,6 +10,7 @@ questions:
       - text: "You will die"
   - text: "What is the max level of sharpness enchantment in survival?"
     time_seconds: 7
+    is_multichoice: false
     choices:
       - text: "3"
       - text: "5"
@@ -16,6 +18,7 @@ questions:
       - text: "10"
   - text: "How many wood logs do you need to make a crafting table?"
     time_seconds: 5
+    is_multichoice: false
     choices:
       - text: "1"
         is_correct: true
@@ -23,6 +26,7 @@ questions:
       - text: "4"
   - text: "Which plants can be used to breed a pig?"
     time_seconds: 7
+    is_multichoice: false
     choices:
       - text: "carrots"
         is_correct: true
@@ -31,6 +35,7 @@ questions:
       - text: "tall grass"
   - text: "What is a default socket port for minecraft server?"
     time_seconds: 7
+    is_multichoice: false
     choices:
       - text: "25500"
       - text: "80"
@@ -39,6 +44,7 @@ questions:
       - text: "8080"
   - text: "How many wools do you need to craft a bed?"
     time_seconds: 5
+    is_multichoice: false
     choices:
       - text: "1"
       - text: "3"

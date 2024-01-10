@@ -181,7 +181,7 @@ impl ChoiceSelectorState {
         self.selected.clone().into_iter().collect()
     }
 
-    pub fn toggle_selection(&mut self, grid: &ChoiceGrid) {
+    pub fn toggle_selection(&mut self, grid: &ChoiceGrid, is_multichoice: bool) {
         if grid.is_empty() {
             return;
         }
@@ -196,6 +196,9 @@ impl ChoiceSelectorState {
         if self.selected.contains(&id) {
             self.selected.remove(&id);
         } else {
+            if !is_multichoice {
+                self.selected.clear();
+            }
             self.selected.insert(id);
         }
     }

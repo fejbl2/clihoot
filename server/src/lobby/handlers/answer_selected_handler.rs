@@ -6,7 +6,7 @@ use crate::{
     messages::lobby::EndQuestion,
 };
 use actix::{prelude::Handler, AsyncContext};
-use anyhow::Ok;
+use anyhow::{bail, Ok};
 use chrono::Utc;
 use common::messages::network::AnswerSelected;
 use log::debug;
@@ -23,13 +23,13 @@ impl Handler<AnswerSelected> for Lobby {
         let id = msg.player_uuid;
 
         if !self.joined_players.contains_key(&id) {
-            return Err(anyhow::anyhow!("Player {id} not in joined list"));
+            bail!("Player {id} not in joined list");
         }
 
         if self.phase != Phase::ActiveQuestion(msg.question_index)
             && self.phase != Phase::AfterQuestion(msg.question_index)
         {
-            return Err(anyhow::anyhow!("Not the right phase"));
+            bail!("Not the right phase");
         }
 
         if self.phase != Phase::ActiveQuestion(msg.question_index) {
@@ -45,9 +45,12 @@ impl Handler<AnswerSelected> for Lobby {
             .or_default()
             .contains_key(&id)
         {
-            return Err(anyhow::anyhow!(
-                "Player {id} already answered this question"
-            ));
+            bail!("Player {id} already answered this question");
+        }
+
+        // If player selected more than one answer, but the question is not multichoice, return error
+        if msg.answers.len() > 1 && !self.questions[msg.question_index].is_multichoice {
+            bail!("Player {id} selected more than one answer, but the question is not multichoice");
         }
 
         let answer_order = self.results.entry(msg.question_index).or_default().len();

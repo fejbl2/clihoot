@@ -32,6 +32,10 @@ pub fn compare_censored_questions(
         return false;
     }
 
+    if left.is_multichoice != right.is_multichoice {
+        return false;
+    }
+
     for (left_choice, right_choice) in left.choices.iter().zip(right.choices.iter()) {
         if left_choice.text != right_choice.text {
             return false;
@@ -58,6 +62,10 @@ fn compare_questions(left: &questions::Question, right: &questions::Question) ->
         return false;
     }
 
+    if left.is_multichoice != right.is_multichoice {
+        return false;
+    }
+
     for (left_choice, right_choice) in left.choices.iter().zip(right.choices.iter()) {
         if left_choice.text != right_choice.text {
             return false;
@@ -78,6 +86,7 @@ pub fn no_code_question_fixture() -> questions::Question {
             .to_string(),
         code_block: None,
         time_seconds: 42,
+        is_multichoice: false,
         choices: vec![
             questions::Choice {
                 id: uuid::Uuid::nil(),
