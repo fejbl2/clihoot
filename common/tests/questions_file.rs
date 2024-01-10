@@ -44,7 +44,7 @@ fn test_ok_code() {
             code: "fn main() {\n    println!(\"42\");\n}\n".to_string(),
         }),
         time_seconds: 42,
-        is_multichoice: false,
+        is_multichoice: true,
         choices: vec![
             questions::Choice {
                 id: Uuid::nil(),

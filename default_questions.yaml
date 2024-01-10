@@ -8,7 +8,7 @@ questions:
             println!("42");
         }
     time_seconds: 4
-    is_multichoice: false
+    is_multichoice: true
     choices:
       - text: Nothing useful
       - text: It prints 42
