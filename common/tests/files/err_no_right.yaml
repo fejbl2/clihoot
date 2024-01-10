@@ -1,6 +1,7 @@
 questions:
   - text: Why?
     time_seconds: 42
+    is_multichoice: false
     choices:
       - text: yes
         is_correct: true
@@ -9,6 +10,7 @@ questions:
       - text: certainly
   - text: Who?
     time_seconds: 42
+    is_multichoice: false
     choices:
       - text: them
       - text: we

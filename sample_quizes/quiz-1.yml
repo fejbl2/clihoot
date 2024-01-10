@@ -1,0 +1,92 @@
+quiz_name: Rust language Quiz
+questions:
+  - text: How much time did you spend doing 1st iteration?
+    time_seconds: 20
+    is_multichoice: false
+    choices:
+      - text: 1-2 hours
+        is_correct: true
+      - text: 3-6 hours
+        is_correct: true
+      - text: 6-20 hours
+        is_correct: true
+      - text: 20-I don't have life hours
+        is_correct: true
+  - text: What data type is used for 64-bit unsigned integer in Rust?
+    time_seconds: 20
+    is_multichoice: false
+    choices:
+      - text: u64
+        is_correct: true
+      - text: i64
+      - text: String
+      - text: char
+  - text: What data type do we choose when we want to store the person's name in Rust?
+    time_seconds: 20
+    is_multichoice: false
+    choices:
+      - text: u64
+      - text: i64
+      - text: String
+        is_correct: true
+      - text: char
+  - text: What will this code print?
+    time_seconds: 40
+    code_block:
+      language: rust
+      code: >
+        fn main() {
+            let a = 1;
+            if a % 2 == 0 {
+              println!("42");
+            }else {
+              println!("{a}");
+            }
+        }
+    is_multichoice: false
+    choices:
+      - text: "42"
+      - text: "a"
+      - text: "1"
+        is_correct: true
+      - text: "0"
+  - text: Can we define and use our own macros in Rust?
+    time_seconds: 10
+    is_multichoice: false
+    choices:
+      - text: "Yes"
+        is_correct: true
+      - text: "No"
+  - text: Why is program written in Rust usually faster than programs in other modern languages?
+    time_seconds: 20
+    is_multichoice: false
+    choices:
+      - text: "Rust uses black magic"
+      - text: "Rust is more modern"
+      - text: "it is not usually faster"
+      - text: "Rust is compiled into native machine code"
+        is_correct: true
+  - text: Will this compile?
+    time_seconds: 60
+    code_block:
+      language: rust
+      code: >
+        fn main() {
+            let a = 1;
+            a = 5;
+            println!("{a}");
+        }
+    is_multichoice: false
+    choices:
+      - text: "Yes"
+      - text: "No"
+        is_correct: true
+  - text: Which suffix should all file names containing rust code have?
+    time_seconds: 20
+    is_multichoice: false
+    choices:
+      - text: ".txt"
+      - text: ".java"
+      - text: ".rust"
+      - text: ".rs"
+        is_correct: true

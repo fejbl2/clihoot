@@ -32,6 +32,7 @@ async fn question_ends_itself_after_timeout_test_implementation() -> anyhow::Res
             code_block: None,
             text: "question".to_string(),
             time_seconds: 2,
+            is_multichoice: false,
         }],
     });
 

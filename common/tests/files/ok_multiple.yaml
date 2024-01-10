@@ -1,6 +1,7 @@
 questions:
   - text: What is the answer to the ultimate question of life, the Universe, and Everything?
     time_seconds: 42
+    is_multichoice: false
     choices:
       - text: sleep
       - text: "42"
@@ -10,6 +11,7 @@ questions:
 
   - text: What is the answer to the ultimate question of life, the Universe, and Everything?
     time_seconds: 42
+    is_multichoice: false
     choices:
       - text: sleep
       - text: "42"
@@ -19,6 +21,7 @@ questions:
 
   - text: What is the answer to the ultimate question of life, the Universe, and Everything?
     time_seconds: 42
+    is_multichoice: false
     choices:
       - text: sleep
       - text: "42"

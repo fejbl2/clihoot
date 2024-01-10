@@ -190,6 +190,7 @@ questions:
             println!("42");
         }
     time_seconds: 42
+    is_multichoice: false
     choices:
       - text: Nothing useful
       - text: It prints 42
