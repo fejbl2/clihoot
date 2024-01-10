@@ -62,6 +62,7 @@ fn get_questions() -> QuestionSet {
         code_block: None,
         text: Q1_TEXT.to_string(),
         time_seconds: Q1_TIME,
+        is_multichoice: false,
         choices: vec![q1_choice1, q1_choice2, q1_choice3, q1_choice4],
     };
 
@@ -84,6 +85,7 @@ fn get_questions() -> QuestionSet {
         }),
         text: Q2_TEXT.to_string(),
         time_seconds: Q2_TIME,
+        is_multichoice: false,
         choices: vec![q2_choice1, q2_choice2],
     };
 
