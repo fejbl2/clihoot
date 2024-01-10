@@ -7,8 +7,8 @@ use uuid::Uuid; // Import the missing module `tests` from the `common` module..
 
 #[test]
 fn test_ok_minimal() {
-    let result =
-        questions::QuestionSet::from_file(Path::new("./tests/files/ok_minimal.yaml")).unwrap();
+    let result = questions::QuestionSet::from_file(Path::new("./tests/files/ok_minimal.yaml"))
+        .expect("Question file should be OK");
 
     let wanted = questions::QuestionSet::new(vec![no_code_question_fixture()]);
 
@@ -34,8 +34,8 @@ fn test_ok_language_name_uppercase() {
 
 #[test]
 fn test_ok_code() {
-    let result =
-        questions::QuestionSet::from_file(Path::new("./tests/files/ok_code.yaml")).unwrap();
+    let result = questions::QuestionSet::from_file(Path::new("./tests/files/ok_code.yaml"))
+        .expect("Question file should be OK");
 
     let wanted = questions::QuestionSet::new(vec![questions::Question {
         text: "What does this code do?".to_string(),
@@ -75,8 +75,8 @@ fn test_ok_code() {
 
 #[test]
 fn test_ok_multiple() {
-    let result =
-        questions::QuestionSet::from_file(Path::new("./tests/files/ok_multiple.yaml")).unwrap();
+    let result = questions::QuestionSet::from_file(Path::new("./tests/files/ok_multiple.yaml"))
+        .expect("Question file should be OK");
 
     let wanted = questions::QuestionSet::new(vec![
         no_code_question_fixture(),
@@ -140,4 +140,12 @@ fn test_too_much_choices() {
         questions::QuestionSet::from_file(Path::new("./tests/files/err_too_much_choices.yaml"));
 
     assert!(result.is_err());
+}
+
+#[test]
+fn test_quiz_name() {
+    let result = questions::QuestionSet::from_file(Path::new("./tests/files/ok_quiz_name.yaml"))
+        .expect("Question file should be OK");
+
+    assert_eq!(result.quiz_name, "Very fancy quiz");
 }

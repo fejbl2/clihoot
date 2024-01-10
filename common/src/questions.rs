@@ -14,7 +14,7 @@ fn falsy() -> bool {
     false
 }
 
-fn random_quiz_name() -> String {
+fn default_quiz_name() -> String {
     DEFAULT_QUIZ_NAME.to_owned()
 }
 
@@ -28,7 +28,7 @@ pub struct QuestionSet {
     #[serde(default = "falsy", skip_deserializing, skip_serializing)]
     pub randomize_questions: bool,
 
-    #[serde(default = "random_quiz_name", skip_deserializing, skip_serializing)]
+    #[serde(default = "default_quiz_name")]
     pub quiz_name: String,
 }
 
