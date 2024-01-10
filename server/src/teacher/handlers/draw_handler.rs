@@ -12,29 +12,23 @@ use super::draw_states::render_teacher_welcome;
 
 impl TerminalDraw for TeacherTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
-        match &mut self.state {
-            TeacherTerminalState::StartGame => {
-                term.draw(|frame| {
+        term.draw(|frame| {
+            match &mut self.state {
+                TeacherTerminalState::StartGame => {
                     let _ = render_teacher_welcome(frame, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            TeacherTerminalState::WaitingForGame {
-                list_state,
-                kick_popup_visible: _,
-            } => {
-                term.draw(|frame| {
+                }
+                TeacherTerminalState::WaitingForGame {
+                    list_state,
+                    kick_popup_visible: _,
+                } => {
                     let _ = render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            TeacherTerminalState::Question {
-                question,
-                players_answered_count,
-                start_time: _,
-                duration_from_start,
-            } => {
-                term.draw(|frame| {
+                }
+                TeacherTerminalState::Question {
+                    question,
+                    players_answered_count,
+                    start_time: _,
+                    duration_from_start,
+                } => {
                     let mut grid: ChoiceGrid = question.question.clone().into();
                     let _ = render::question(
                         frame,
@@ -47,42 +41,35 @@ impl TerminalDraw for TeacherTerminal {
                         self.syntax_theme,
                         &self.quiz_name,
                     );
-                })?;
-                Ok(())
-            }
-            TeacherTerminalState::Answers { answers } => {
-                term.draw(|frame| {
+                }
+                TeacherTerminalState::Answers { answers } => {
                     let _ = render::question_answers(
                         frame,
                         answers,
                         self.syntax_theme,
                         &self.quiz_name,
                     );
-                })?;
-                Ok(())
-            }
-            TeacherTerminalState::Results {
-                results,
-                table_state,
-                kick_popup_visible: _,
-            } => {
-                term.draw(|frame| {
+                }
+                TeacherTerminalState::Results {
+                    results,
+                    table_state,
+                    kick_popup_visible: _,
+                } => {
                     let _ = render::results(frame, results, table_state, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            TeacherTerminalState::EndGame => {
-                term.draw(|frame| {
+                }
+                TeacherTerminalState::EndGame => {
                     let _ = render::end_game(frame, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            TeacherTerminalState::Error { message } => {
-                term.draw(|frame| {
+                }
+                TeacherTerminalState::Error { message } => {
                     let _ = render::error(frame, message, &self.quiz_name);
-                })?;
-                Ok(())
+                }
             }
-        }
+
+            if self.help_visible {
+                // TODO draw the help pop-up
+            }
+        })?;
+
+        Ok(())
     }
 }

@@ -18,6 +18,17 @@ fn name_in_players(name: &str, players: &[PlayerData]) -> bool {
 
 impl TerminalHandleInput for StudentTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
+        // hide help pop-up if it is visible and any key is pressed
+        if self.help_visible {
+            self.help_visible = false;
+            return Ok(());
+        }
+
+        if key_code == KeyCode::Char('h') {
+            self.help_visible = true;
+            return Ok(());
+        }
+
         match &mut self.state {
             StudentTerminalState::StartGame => {
                 if key_code == KeyCode::Enter {

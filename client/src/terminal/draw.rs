@@ -8,44 +8,32 @@ use ratatui::Terminal;
 
 impl TerminalDraw for StudentTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
-        match &mut self.state {
-            StudentTerminalState::StartGame => {
-                term.draw(|frame| {
+        term.draw(|frame| {
+            match &mut self.state {
+                StudentTerminalState::StartGame => {
                     let _ = render::welcome(frame, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            StudentTerminalState::NameSelection {
-                name,
-                name_already_used,
-            } => {
-                term.draw(|frame| {
+                }
+                StudentTerminalState::NameSelection {
+                    name,
+                    name_already_used,
+                } => {
                     let _ = render_name_selection(frame, name, *name_already_used, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            StudentTerminalState::ColorSelection { list_state } => {
-                term.draw(|frame| {
+                }
+                StudentTerminalState::ColorSelection { list_state } => {
                     let _ = render_color_selection(frame, self.color, list_state, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            StudentTerminalState::WaitingForGame { list_state } => {
-                term.draw(|frame| {
+                }
+                StudentTerminalState::WaitingForGame { list_state } => {
                     let _ = render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            StudentTerminalState::Question {
-                question,
-                players_answered_count,
-                answered,
-                start_time: _,
-                duration_from_start,
-                choice_grid,
-                choice_selector_state,
-            } => {
-                term.draw(|frame| {
+                }
+                StudentTerminalState::Question {
+                    question,
+                    players_answered_count,
+                    answered,
+                    start_time: _,
+                    duration_from_start,
+                    choice_grid,
+                    choice_selector_state,
+                } => {
                     let _ = render::question(
                         frame,
                         question,
@@ -57,42 +45,35 @@ impl TerminalDraw for StudentTerminal {
                         self.syntax_theme,
                         &self.quiz_name,
                     );
-                })?;
-                Ok(())
-            }
-            StudentTerminalState::Answers { answers } => {
-                term.draw(|frame| {
+                }
+                StudentTerminalState::Answers { answers } => {
                     let _ = render::question_answers(
                         frame,
                         answers,
                         self.syntax_theme,
                         &self.quiz_name,
                     );
-                })?;
-                Ok(())
-            }
-            StudentTerminalState::Results {
-                results,
-                table_state,
-            } => {
-                term.draw(|frame| {
+                }
+                StudentTerminalState::Results {
+                    results,
+                    table_state,
+                } => {
                     let _ = render::results(frame, results, table_state, &self.quiz_name);
-                })?;
-                Ok(())
-            }
+                }
 
-            StudentTerminalState::EndGame {} => {
-                term.draw(|frame| {
+                StudentTerminalState::EndGame {} => {
                     let _ = render::end_game(frame, &self.quiz_name);
-                })?;
-                Ok(())
-            }
-            StudentTerminalState::Error { message } => {
-                term.draw(|frame| {
+                }
+                StudentTerminalState::Error { message } => {
                     let _ = render::error(frame, message, &self.quiz_name);
-                })?;
-                Ok(())
+                }
+            };
+
+            if self.help_visible {
+                // TODO draw the help pop-up
             }
-        }
+        })?;
+
+        Ok(())
     }
 }

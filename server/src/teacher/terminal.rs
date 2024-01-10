@@ -40,6 +40,7 @@ pub struct TeacherTerminal {
     pub quiz_name: String,
     pub lobby: Addr<Lobby>,
     pub players: Vec<PlayerData>,
+    pub help_visible: bool,
     pub state: TeacherTerminalState,
     pub syntax_theme: Theme,
 }
@@ -51,6 +52,7 @@ impl TeacherTerminal {
             quiz_name,
             lobby,
             players: Vec::new(),
+            help_visible: false,
             state: TeacherTerminalState::StartGame,
             syntax_theme,
         }

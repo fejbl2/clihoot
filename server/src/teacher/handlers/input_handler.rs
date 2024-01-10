@@ -16,6 +16,18 @@ use crate::{
 impl TerminalHandleInput for TeacherTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
         debug!("Key pressed: {:?}", key_code);
+
+        // hide help pop-up if it is visible and any key is pressed
+        if self.help_visible {
+            self.help_visible = false;
+            return Ok(());
+        }
+
+        if key_code == KeyCode::Char('h') {
+            self.help_visible = true;
+            return Ok(());
+        }
+
         match &mut self.state {
             TeacherTerminalState::StartGame {} => {
                 if key_code == KeyCode::Enter {
