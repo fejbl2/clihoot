@@ -52,7 +52,12 @@ impl TerminalDraw for TeacherTerminal {
                 list_state: _,
             } => {
                 term.draw(|frame| {
-                    let _ = render::question_answers(frame, answers);
+                    let _ = render::question_answers(
+                        frame,
+                        answers,
+                        self.syntax_theme,
+                        &self.quiz_name,
+                    );
                 })?;
                 Ok(())
             }

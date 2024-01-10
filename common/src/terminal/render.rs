@@ -195,34 +195,13 @@ pub fn waiting(
     Ok(())
 }
 
-fn question_layout(
+fn question_time(
     frame: &mut Frame,
     question: &NextQuestion,
     players_answered_count: usize,
     time_from_start: usize,
-    text: &str,
-    quiz_name: &str,
-) -> Rc<[Rect]> {
-    let outer_block = get_outer_block(quiz_name);
-    let binding = "Question ".to_string()
-        + (question.question_index + 1).to_string().as_str()
-        + "/"
-        + question.questions_count.to_string().as_str();
-    let inner_block = get_inner_block(binding.as_str());
-    let inner = outer_block.inner(frame.size());
-
-    let content_space = inner_block.inner(inner);
-
-    let layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Length(3),
-            Constraint::Length(3),
-            Constraint::Percentage(40),
-            Constraint::Percentage(40),
-        ])
-        .split(content_space);
-
+    layout: &[Rect],
+) {
     let counts_block = get_bordered_block().padding(Padding::new(1, 1, 0, 0));
     let counts_layout = Layout::default()
         .direction(Direction::Horizontal)
@@ -239,6 +218,29 @@ fn question_layout(
         .alignment(Alignment::Right)
         .block(get_empty_block());
 
+    frame.render_widget(counts_block, layout[0]);
+    frame.render_widget(counts_paragraph_1, counts_layout[1]);
+    frame.render_widget(counts_paragraph_2, counts_layout[0]);
+}
+
+fn question_layout(frame: &mut Frame, title: &str, text: &str, quiz_name: &str) -> Rc<[Rect]> {
+    let outer_block = get_outer_block(quiz_name);
+
+    let inner_block = get_inner_block(title);
+    let inner = outer_block.inner(frame.size());
+
+    let content_space = inner_block.inner(inner);
+
+    let layout = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints(vec![
+            Constraint::Length(3),
+            Constraint::Length(3),
+            Constraint::Percentage(40),
+            Constraint::Percentage(40),
+        ])
+        .split(content_space);
+
     let paragraph = Paragraph::new(text)
         .bold()
         .block(get_empty_block().padding(Padding::new(1, 1, 1, 1)))
@@ -246,10 +248,6 @@ fn question_layout(
 
     frame.render_widget(outer_block, frame.size());
     frame.render_widget(inner_block, inner);
-
-    frame.render_widget(counts_block, layout[0]);
-    frame.render_widget(counts_paragraph_1, counts_layout[1]);
-    frame.render_widget(counts_paragraph_2, counts_layout[0]);
 
     frame.render_widget(paragraph, layout[1]);
 
@@ -267,31 +265,33 @@ pub fn question(
     theme: Theme,
     quiz_name: &str,
 ) -> anyhow::Result<()> {
+    let binding = "Question ".to_string()
+        + (question.question_index + 1).to_string().as_str()
+        + "/"
+        + question.questions_count.to_string().as_str();
+
+    let mut text = question.question.text.as_str();
     if answered {
-        let _layout = question_layout(
-            frame,
-            question,
-            players_answered_count,
-            time_from_start,
-            "Waiting for other players to answer...",
-            quiz_name,
-        );
-    } else {
-        let layout = question_layout(
-            frame,
-            question,
-            players_answered_count,
-            time_from_start,
-            question.question.text.as_str(),
-            quiz_name,
-        );
+        text = "Waiting for other players to answer...";
+    }
 
-        if question.code_block.is_some() {
-            let code_paragraph = highlight_code_block(question.code_block.as_ref().unwrap(), theme)
-                .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
-            frame.render_widget(code_paragraph, layout[2]);
-        }
+    let layout = question_layout(frame, &binding, text, quiz_name);
 
+    question_time(
+        frame,
+        question,
+        players_answered_count,
+        time_from_start,
+        &layout,
+    );
+
+    if question.code_block.is_some() {
+        let code_paragraph = highlight_code_block(question.code_block.as_ref().unwrap(), theme)
+            .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+        frame.render_widget(code_paragraph, layout[2]);
+    }
+
+    if !answered {
         let mut items = choice_grid.clone().items();
 
         match &mut items[0][0] {
@@ -338,40 +338,20 @@ pub fn question(
     Ok(())
 }
 
-pub fn question_answers(frame: &mut Frame, question: &QuestionEnded) -> anyhow::Result<()> {
-    let outer_block = get_outer_block("Quiz name");
+pub fn question_answers(
+    frame: &mut Frame,
+    question: &QuestionEnded,
+    theme: Theme,
+    quiz_name: &str,
+) -> anyhow::Result<()> {
     let binding = "Question ".to_string() + (question.question_index + 1).to_string().as_str();
-    let inner_block = get_inner_block(binding.as_str());
-    let inner = outer_block.inner(frame.size());
 
-    let content_space = inner_block.inner(inner);
-
-    let layout = Layout::default()
-        .direction(Direction::Vertical)
-        .constraints(vec![
-            Constraint::Length(3),
-            Constraint::Length(3),
-            Constraint::Percentage(40),
-            Constraint::Percentage(40),
-        ])
-        .split(content_space);
-
-    let question_paragraph = Paragraph::new(question.question.text.to_string())
-        .bold()
-        .block(get_empty_block().padding(Padding::new(1, 1, 1, 1)))
-        .alignment(Alignment::Center);
-
-    frame.render_widget(outer_block, frame.size());
-    frame.render_widget(inner_block, inner);
-
-    frame.render_widget(question_paragraph, layout[1]);
+    let layout = question_layout(frame, &binding, &question.question.text, quiz_name);
 
     if question.question.code_block.is_some() {
-        let code_paragraph = highlight_code_block(
-            question.question.code_block.as_ref().unwrap(),
-            Theme::SolarizedDark,
-        )
-        .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+        let code_paragraph =
+            highlight_code_block(question.question.code_block.as_ref().unwrap(), theme)
+                .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
         frame.render_widget(code_paragraph, layout[2]);
     }
 
