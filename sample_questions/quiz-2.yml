@@ -1,3 +1,4 @@
+quiz_name: IB107 Quiz
 questions:
   - text: Is halting problem recursively enumerable?
     time_seconds: 20

@@ -1,3 +1,4 @@
+quiz_name: Rust language Quiz
 questions:
   - text: How much time did you spend doing 1st iteration?
     time_seconds: 20

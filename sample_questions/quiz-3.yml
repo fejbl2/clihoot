@@ -1,3 +1,4 @@
+quiz_name: Minecraft Quiz
 questions:
   - text: "What will happen if you try to sleep in End dimension?"
     time_seconds: 10
