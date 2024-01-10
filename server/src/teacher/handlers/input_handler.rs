@@ -33,11 +33,7 @@ impl TerminalHandleInput for TeacherTerminal {
 
                 if *kick_popup_visible {
                     let player_uuid = self.players[selected].uuid;
-                    let Some(kicked) =
-                        handle_kick_player(self.lobby.clone(), key_code, player_uuid)
-                    else {
-                        return Ok(());
-                    };
+                    let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
 
                     if kicked {
                         list_state.select(Some(selected.saturating_sub(1)));
@@ -93,11 +89,7 @@ impl TerminalHandleInput for TeacherTerminal {
 
                 if *kick_popup_visible {
                     let player_uuid = results.players[selected].0.uuid;
-                    let Some(kicked) =
-                        handle_kick_player(self.lobby.clone(), key_code, player_uuid)
-                    else {
-                        return Ok(());
-                    };
+                    let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
 
                     if kicked {
                         table_state.select(Some(selected.saturating_sub(1)));
@@ -145,20 +137,15 @@ impl TerminalHandleInput for TeacherTerminal {
     }
 }
 
-fn handle_kick_player(
-    lobby_addr: Addr<Lobby>,
-    key_code: KeyCode,
-    player_uuid: Uuid,
-) -> Option<bool> {
+fn handle_kick_player(lobby_addr: Addr<Lobby>, key_code: KeyCode, player_uuid: Uuid) -> bool {
     match key_code {
         KeyCode::Char('y') => {
             lobby_addr.do_send(KickPlayer {
                 player_uuid,
                 reason: Some(PLAYER_KICKED_MESSAGE.to_string()),
             });
-            Some(true)
+            true
         }
-        KeyCode::Char('n') => Some(false),
-        _ => None,
+        _ => false,
     }
 }
