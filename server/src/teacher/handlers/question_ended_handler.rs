@@ -3,7 +3,6 @@ use common::{
     messages::network::QuestionEnded, terminal::terminal_actor::TerminalHandleQuestionEnded,
 };
 use log::debug;
-use ratatui::widgets::ListState;
 
 use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 
@@ -31,7 +30,6 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
 
         self.state = TeacherTerminalState::Answers {
             answers: question_ended,
-            list_state: ListState::default(),
         };
 
         Ok(())

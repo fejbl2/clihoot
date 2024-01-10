@@ -23,7 +23,6 @@ pub enum TeacherTerminalState {
     },
     Answers {
         answers: QuestionEnded,
-        list_state: ListState,
     },
     Results {
         results: ShowLeaderboard,

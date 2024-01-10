@@ -47,10 +47,7 @@ impl TerminalDraw for TeacherTerminal {
                 })?;
                 Ok(())
             }
-            TeacherTerminalState::Answers {
-                answers,
-                list_state: _,
-            } => {
+            TeacherTerminalState::Answers { answers } => {
                 term.draw(|frame| {
                     let _ = render::question_answers(
                         frame,

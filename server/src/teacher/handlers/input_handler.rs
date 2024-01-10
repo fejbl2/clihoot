@@ -65,10 +65,7 @@ impl TerminalHandleInput for TeacherTerminal {
                     });
                 }
             }
-            TeacherTerminalState::Answers {
-                answers: _,
-                list_state: _,
-            } => {
+            TeacherTerminalState::Answers { answers: _ } => {
                 if key_code == KeyCode::Enter {
                     self.lobby.do_send(SwitchToLeaderboard);
                 }
