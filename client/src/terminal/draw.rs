@@ -11,19 +11,19 @@ impl TerminalDraw for StudentTerminal {
         term.draw(|frame| {
             match &mut self.state {
                 StudentTerminalState::StartGame => {
-                    let _ = render::welcome(frame, &self.quiz_name);
+                    render::welcome(frame, &self.quiz_name);
                 }
                 StudentTerminalState::NameSelection {
                     name,
                     name_already_used,
                 } => {
-                    let _ = render_name_selection(frame, name, *name_already_used, &self.quiz_name);
+                    render_name_selection(frame, name, *name_already_used, &self.quiz_name);
                 }
                 StudentTerminalState::ColorSelection { list_state } => {
-                    let _ = render_color_selection(frame, self.color, list_state, &self.quiz_name);
+                    render_color_selection(frame, self.color, list_state, &self.quiz_name);
                 }
                 StudentTerminalState::WaitingForGame { list_state } => {
-                    let _ = render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
+                    render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
                 }
                 StudentTerminalState::Question {
                     question,
@@ -34,7 +34,7 @@ impl TerminalDraw for StudentTerminal {
                     choice_grid,
                     choice_selector_state,
                 } => {
-                    let _ = render::question(
+                    render::question(
                         frame,
                         question,
                         *players_answered_count,
@@ -47,25 +47,20 @@ impl TerminalDraw for StudentTerminal {
                     );
                 }
                 StudentTerminalState::Answers { answers } => {
-                    let _ = render::question_answers(
-                        frame,
-                        answers,
-                        self.syntax_theme,
-                        &self.quiz_name,
-                    );
+                    render::question_answers(frame, answers, self.syntax_theme, &self.quiz_name);
                 }
                 StudentTerminalState::Results {
                     results,
                     table_state,
                 } => {
-                    let _ = render::results(frame, results, table_state, &self.quiz_name);
+                    render::results(frame, results, table_state, &self.quiz_name);
                 }
 
                 StudentTerminalState::EndGame {} => {
-                    let _ = render::end_game(frame, &self.quiz_name);
+                    render::end_game(frame, &self.quiz_name);
                 }
                 StudentTerminalState::Error { message } => {
-                    let _ = render::error(frame, message, &self.quiz_name);
+                    render::error(frame, message, &self.quiz_name);
                 }
             };
 

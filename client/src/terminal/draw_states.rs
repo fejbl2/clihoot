@@ -6,12 +6,7 @@ use ratatui::{
     widgets::{List, ListItem, ListState, Paragraph},
 };
 
-pub fn render_name_selection(
-    frame: &mut Frame,
-    name: &str,
-    name_used: bool,
-    quiz_name: &str,
-) -> anyhow::Result<()> {
+pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool, quiz_name: &str) {
     let layout = welcome_results_layout(
         frame,
         vec![
@@ -33,8 +28,6 @@ pub fn render_name_selection(
     if name_used {
         frame.render_widget(paragraph_used_name, layout[2]);
     }
-
-    Ok(())
 }
 
 pub fn render_color_selection(
@@ -42,7 +35,7 @@ pub fn render_color_selection(
     _color: Color,
     list_state: &mut ListState,
     quiz_name: &str,
-) -> anyhow::Result<()> {
+) {
     let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
@@ -62,6 +55,4 @@ pub fn render_color_selection(
         .highlight_symbol(">> ");
 
     frame.render_stateful_widget(list, layout[1], list_state);
-
-    Ok(())
 }

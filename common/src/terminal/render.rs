@@ -1,6 +1,5 @@
 use std::{rc::Rc, str::FromStr};
 
-use anyhow::anyhow;
 use figlet_rs::FIGfont;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
@@ -53,18 +52,13 @@ pub fn get_bordered_block() -> Block<'static> {
     block
 }
 
-pub fn ascii_art(
-    frame: &mut Frame,
-    lines: &[&str],
-    text: &str,
-    quiz_name: &str,
-) -> anyhow::Result<()> {
+pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str, quiz_name: &str) {
     let outer_block = get_outer_block(quiz_name);
     let inner = outer_block.inner(frame.size());
 
     let mut constraints = vec![];
     for _ in lines {
-        let constraint = Constraint::Percentage((95 / lines.len()).try_into()?);
+        let constraint = Constraint::Percentage((95 / lines.len()) as u16);
         constraints.push(constraint);
     }
     constraints.push(Constraint::Min(1));
@@ -76,24 +70,26 @@ pub fn ascii_art(
 
     frame.render_widget(outer_block, frame.size());
 
-    if frame.size().height > MINIMAL_ASCII_HEIGHT {
-        let standard_font = FIGfont::standard().map_err(|_| anyhow!("Couldn't get font"))?;
-
-        for i in 0..lines.len() {
-            let figure = standard_font
-                .convert(lines[i])
-                .ok_or(anyhow!("Couldn't convert text to figure"))?;
-            let paragraph = Paragraph::new(figure.to_string())
-                .block(get_empty_block())
-                .alignment(Alignment::Center);
-            frame.render_widget(paragraph, layout[i]);
+    match FIGfont::standard() {
+        Ok(standard_font) if frame.size().height > MINIMAL_ASCII_HEIGHT => {
+            for i in 0..lines.len() {
+                let Some(figure) = standard_font.convert(lines[i]) else {
+                    // returns none when there is nothing to draw
+                    continue;
+                };
+                let paragraph = Paragraph::new(figure.to_string())
+                    .block(get_empty_block())
+                    .alignment(Alignment::Center);
+                frame.render_widget(paragraph, layout[i]);
+            }
         }
-    } else {
-        for i in 0..lines.len() {
-            let paragraph = Paragraph::new(lines[i])
-                .block(get_empty_block())
-                .alignment(Alignment::Center);
-            frame.render_widget(paragraph, layout[i]);
+        _ => {
+            for i in 0..lines.len() {
+                let paragraph = Paragraph::new(lines[i])
+                    .block(get_empty_block())
+                    .alignment(Alignment::Center);
+                frame.render_widget(paragraph, layout[i]);
+            }
         }
     }
 
@@ -101,8 +97,6 @@ pub fn ascii_art(
         .block(get_empty_block())
         .alignment(Alignment::Center);
     frame.render_widget(paragraph, layout[lines.len()]);
-
-    Ok(())
 }
 
 pub fn welcome_results_layout(
@@ -132,12 +126,7 @@ pub fn welcome_results_layout(
     layout
 }
 
-pub fn simple_message(
-    frame: &mut Frame,
-    title: &str,
-    message: &str,
-    quiz_name: &str,
-) -> anyhow::Result<()> {
+pub fn simple_message(frame: &mut Frame, title: &str, message: &str, quiz_name: &str) {
     let outer_block = get_outer_block(quiz_name);
     let inner_block = get_inner_block(title);
     let inner = outer_block.inner(frame.size());
@@ -151,15 +140,11 @@ pub fn simple_message(
     frame.render_widget(outer_block, frame.size());
     frame.render_widget(inner_block, inner);
     frame.render_widget(paragraph, content_space);
-
-    Ok(())
 }
 
-pub fn welcome(frame: &mut Frame, quiz_name: &str) -> anyhow::Result<()> {
+pub fn welcome(frame: &mut Frame, quiz_name: &str) {
     let lines = ["Welcome", "to", "Clihoot!"];
-    ascii_art(frame, &lines, "Press ENTER to start", quiz_name)?;
-
-    Ok(())
+    ascii_art(frame, &lines, "Press ENTER to start", quiz_name);
 }
 
 pub fn waiting(
@@ -167,7 +152,7 @@ pub fn waiting(
     players: &mut [PlayerData],
     list_state: &mut ListState,
     quiz_name: &str,
-) -> anyhow::Result<()> {
+) {
     let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
@@ -191,8 +176,6 @@ pub fn waiting(
         .highlight_symbol(">> ");
 
     frame.render_stateful_widget(list, layout[1], list_state);
-
-    Ok(())
 }
 
 fn question_time(
@@ -264,7 +247,7 @@ pub fn question(
     answered: bool,
     theme: Theme,
     quiz_name: &str,
-) -> anyhow::Result<()> {
+) {
     let binding = "Question ".to_string()
         + (question.question_index + 1).to_string().as_str()
         + "/"
@@ -334,8 +317,6 @@ pub fn question(
             frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
         }
     }
-
-    Ok(())
 }
 
 pub fn question_answers(
@@ -343,7 +324,7 @@ pub fn question_answers(
     question: &QuestionEnded,
     theme: Theme,
     quiz_name: &str,
-) -> anyhow::Result<()> {
+) {
     let binding = "Question ".to_string() + (question.question_index + 1).to_string().as_str();
 
     let layout = question_layout(frame, &binding, &question.question.text, quiz_name);
@@ -365,8 +346,6 @@ pub fn question_answers(
         .block(get_empty_block());
 
     frame.render_widget(choice_selector, layout[3]);
-
-    Ok(())
 }
 
 pub fn results(
@@ -374,7 +353,7 @@ pub fn results(
     results: &ShowLeaderboard,
     table_state: &mut TableState,
     quiz_name: &str,
-) -> anyhow::Result<()> {
+) {
     let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
@@ -405,19 +384,13 @@ pub fn results(
         .highlight_symbol(">> ");
 
     frame.render_stateful_widget(table, layout[1], table_state);
-
-    Ok(())
 }
 
-pub fn end_game(frame: &mut Frame, quiz_name: &str) -> anyhow::Result<()> {
+pub fn end_game(frame: &mut Frame, quiz_name: &str) {
     let lines = ["Game", "Ended", "Thank You!"];
-    ascii_art(frame, &lines, "Press ENTER to close", quiz_name)?;
-
-    Ok(())
+    ascii_art(frame, &lines, "Press ENTER to close", quiz_name);
 }
 
-pub fn error(frame: &mut Frame, message: &str, quiz_name: &str) -> anyhow::Result<()> {
-    simple_message(frame, "Error", message, quiz_name)?;
-
-    Ok(())
+pub fn error(frame: &mut Frame, message: &str, quiz_name: &str) {
+    simple_message(frame, "Error", message, quiz_name);
 }

@@ -15,13 +15,13 @@ impl TerminalDraw for TeacherTerminal {
         term.draw(|frame| {
             match &mut self.state {
                 TeacherTerminalState::StartGame => {
-                    let _ = render_teacher_welcome(frame, &self.quiz_name);
+                    render_teacher_welcome(frame, &self.quiz_name);
                 }
                 TeacherTerminalState::WaitingForGame {
                     list_state,
                     kick_popup_visible: _,
                 } => {
-                    let _ = render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
+                    render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
                 }
                 TeacherTerminalState::Question {
                     question,
@@ -30,7 +30,7 @@ impl TerminalDraw for TeacherTerminal {
                     duration_from_start,
                 } => {
                     let mut grid: ChoiceGrid = question.question.clone().into();
-                    let _ = render::question(
+                    render::question(
                         frame,
                         question,
                         *players_answered_count,
@@ -43,25 +43,20 @@ impl TerminalDraw for TeacherTerminal {
                     );
                 }
                 TeacherTerminalState::Answers { answers } => {
-                    let _ = render::question_answers(
-                        frame,
-                        answers,
-                        self.syntax_theme,
-                        &self.quiz_name,
-                    );
+                    render::question_answers(frame, answers, self.syntax_theme, &self.quiz_name);
                 }
                 TeacherTerminalState::Results {
                     results,
                     table_state,
                     kick_popup_visible: _,
                 } => {
-                    let _ = render::results(frame, results, table_state, &self.quiz_name);
+                    render::results(frame, results, table_state, &self.quiz_name);
                 }
                 TeacherTerminalState::EndGame => {
-                    let _ = render::end_game(frame, &self.quiz_name);
+                    render::end_game(frame, &self.quiz_name);
                 }
                 TeacherTerminalState::Error { message } => {
-                    let _ = render::error(frame, message, &self.quiz_name);
+                    render::error(frame, message, &self.quiz_name);
                 }
             }
 
