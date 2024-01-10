@@ -95,7 +95,7 @@ fn range_to_span((style, content): (Style, &str), use_bg_color: bool) -> Span {
         RatatuiStyle {
             fg: translate_color(Some(style.foreground)),
             bg,
-            underline_color: translate_color(Some(style.foreground)),
+            underline_color: None,
             add_modifier: translate_font_style(style.font_style),
             sub_modifier: Modifier::empty(),
         },
