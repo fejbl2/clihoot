@@ -133,7 +133,9 @@ impl TerminalHandleInput for StudentTerminal {
                             answers: choice_selector_state.selected(),
                         }));
                 }
-                KeyCode::Char(' ') => choice_selector_state.toggle_selection(choice_grid), // spacebar
+                KeyCode::Char(' ') => {
+                    choice_selector_state.toggle_selection(choice_grid, question.is_multichoice)
+                } // spacebar
                 KeyCode::Down | KeyCode::Char('j' | 's') => {
                     choice_selector_state.move_down(choice_grid);
                 }
