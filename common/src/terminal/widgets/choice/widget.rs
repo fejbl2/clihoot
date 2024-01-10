@@ -11,8 +11,11 @@ pub struct ChoiceSelector<'a> {
     grid: ChoiceGrid,
     block: Option<Block<'a>>,
     current_item_style: Style,
+    current_item_block: Option<Block<'a>>,
     selected_item_style: Style,
-    right_item_style: Style,
+    selected_item_block: Option<Block<'a>>,
+    correct_item_style: Style,
+    correct_item_block: Option<Block<'a>>,
     horizontal_gap: u16,
     vertical_gap: u16,
     max_width_percentage: u8,
@@ -25,8 +28,11 @@ impl<'a> ChoiceSelector<'a> {
             grid,
             block: None,
             current_item_style: Style::default().italic(),
+            current_item_block: None,
             selected_item_style: Style::default().bold(),
-            right_item_style: Style::default(),
+            selected_item_block: None,
+            correct_item_style: Style::default(),
+            correct_item_block: None,
             horizontal_gap: 0,
             vertical_gap: 0,
             max_width_percentage: 100,
@@ -46,14 +52,32 @@ impl<'a> ChoiceSelector<'a> {
     }
 
     #[must_use]
+    pub fn current_item_block(mut self, block: Block<'a>) -> Self {
+        self.current_item_block = Some(block);
+        self
+    }
+
+    #[must_use]
     pub fn selected_item_style(mut self, style: Style) -> Self {
         self.selected_item_style = style;
         self
     }
 
     #[must_use]
-    pub fn right_item_style(mut self, style: Style) -> Self {
-        self.right_item_style = style;
+    pub fn selected_item_block(mut self, block: Block<'a>) -> Self {
+        self.selected_item_block = Some(block);
+        self
+    }
+
+    #[must_use]
+    pub fn correct_item_style(mut self, style: Style) -> Self {
+        self.correct_item_style = style;
+        self
+    }
+
+    #[must_use]
+    pub fn correct_item_block(mut self, block: Block<'a>) -> Self {
+        self.correct_item_block = Some(block);
         self
     }
 
@@ -174,8 +198,18 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                     style = style.patch(self.selected_item_style);
                 }
                 if item.is_correct {
-                    style = style.patch(self.right_item_style);
+                    style = style.patch(self.correct_item_style);
                 }
+
+                let block = if self.current_item_block.is_some() {
+                    self.current_item_block.take()
+                } else if self.selected_item_block.is_some() {
+                    self.selected_item_block.take()
+                } else {
+                    self.correct_item_block.take()
+                };
+
+                let block = block.unwrap_or(item.block.clone());
 
                 let text = Text::from(item.content.clone());
                 let text_height = text.height() as u16 + 2;
@@ -183,7 +217,7 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                 let padding = Padding::new(0, 0, area.height.saturating_sub(text_height) / 2, 0);
 
                 Paragraph::new(text)
-                    .block(item.block.clone().padding(padding))
+                    .block(block.padding(padding))
                     .style(style)
                     .wrap(Wrap { trim: true })
                     .alignment(Alignment::Center)
