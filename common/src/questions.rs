@@ -57,6 +57,7 @@ pub struct Question {
     pub text: String,
     pub code_block: Option<CodeBlock>,
     pub time_seconds: usize,
+    pub is_multichoice: bool,
     #[serde(deserialize_with = "deserialize_choices")]
     pub choices: Vec<Choice>,
 }
@@ -67,6 +68,7 @@ pub struct QuestionCensored {
     pub text: String,
     pub code_block: Option<CodeBlock>,
     pub time_seconds: usize,
+    pub is_multichoice: bool,
     pub choices: Vec<ChoiceCensored>,
 }
 
@@ -76,6 +78,7 @@ impl From<Question> for QuestionCensored {
             text: question.text,
             code_block: question.code_block,
             time_seconds: question.time_seconds,
+            is_multichoice: question.is_multichoice,
             choices: question
                 .choices
                 .iter()

@@ -46,6 +46,7 @@ fn test_choice_grid_from_censored_2_choices() {
         text: "Why are we here?".to_string(),
         code_block: None,
         time_seconds: 42,
+        is_multichoice: false,
         choices: vec![
             ChoiceCensored {
                 id: id_1,
@@ -79,6 +80,7 @@ fn test_choice_grid_from_censored_3_choices() {
         text: "Why are we here?".to_string(),
         code_block: None,
         time_seconds: 42,
+        is_multichoice: false,
         choices: vec![
             ChoiceCensored {
                 id: id_1,
@@ -120,6 +122,7 @@ fn test_choice_grid_from_censored_4_choices() {
         text: "Why are we here?".to_string(),
         code_block: None,
         time_seconds: 42,
+        is_multichoice: false,
         choices: vec![
             ChoiceCensored {
                 id: id_1,
@@ -166,6 +169,7 @@ fn test_choice_grid_from_uncensored_2_choices() {
         text: "Why are we here?".to_string(),
         code_block: None,
         time_seconds: 42,
+        is_multichoice: false,
         choices: vec![
             Choice {
                 id: id_1,
@@ -201,6 +205,7 @@ fn test_choice_grid_from_uncensored_3_choices() {
         text: "Why are we here?".to_string(),
         code_block: None,
         time_seconds: 42,
+        is_multichoice: false,
         choices: vec![
             Choice {
                 id: id_1,
@@ -245,6 +250,7 @@ fn test_choice_grid_from_uncensored_4_choices() {
         text: "Why are we here?".to_string(),
         code_block: None,
         time_seconds: 42,
+        is_multichoice: false,
         choices: vec![
             Choice {
                 id: id_1,
