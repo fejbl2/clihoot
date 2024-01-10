@@ -14,6 +14,7 @@ pub enum TeacherTerminalState {
     StartGame,
     WaitingForGame {
         list_state: ListState,
+        kick_popup_visible: bool,
     },
     Question {
         question: NextQuestion,
@@ -27,6 +28,7 @@ pub enum TeacherTerminalState {
     Results {
         results: ShowLeaderboard,
         table_state: TableState,
+        kick_popup_visible: bool,
     },
     EndGame,
     Error {

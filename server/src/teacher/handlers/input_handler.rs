@@ -1,4 +1,6 @@
+use actix::Addr;
 use crossterm::event::KeyCode;
+use uuid::Uuid;
 
 use common::constants::PLAYER_KICKED_MESSAGE;
 use common::terminal::terminal_actor::TerminalHandleInput;
@@ -8,6 +10,7 @@ use ratatui::widgets::ListState;
 use crate::{
     messages::lobby::{EndQuestion, KickPlayer, StartQuestion, SwitchToLeaderboard},
     teacher::terminal::{TeacherTerminal, TeacherTerminalState},
+    Lobby,
 };
 
 impl TerminalHandleInput for TeacherTerminal {
@@ -18,11 +21,30 @@ impl TerminalHandleInput for TeacherTerminal {
                 if key_code == KeyCode::Enter {
                     self.state = TeacherTerminalState::WaitingForGame {
                         list_state: ListState::default().with_selected(Some(0)),
+                        kick_popup_visible: false,
                     };
                 }
             }
-            TeacherTerminalState::WaitingForGame { list_state } => {
+            TeacherTerminalState::WaitingForGame {
+                list_state,
+                kick_popup_visible,
+            } => {
                 let mut selected = list_state.selected().unwrap_or(0);
+
+                if *kick_popup_visible {
+                    let player_uuid = self.players[selected].uuid;
+                    let Some(kicked) =
+                        handle_kick_player(self.lobby.clone(), key_code, player_uuid)
+                    else {
+                        return Ok(());
+                    };
+
+                    if kicked {
+                        list_state.select(Some(selected.saturating_sub(1)));
+                    }
+                    *kick_popup_visible = false;
+                    return Ok(());
+                }
 
                 match key_code {
                     KeyCode::Enter => self.lobby.do_send(StartQuestion),
@@ -41,15 +63,7 @@ impl TerminalHandleInput for TeacherTerminal {
                         }
                         list_state.select(Some(selected));
                     }
-                    KeyCode::Char('x') => {
-                        let selected = list_state.selected().unwrap_or(0);
-
-                        self.lobby.do_send(KickPlayer {
-                            player_uuid: self.players[selected].uuid,
-                            reason: Some(PLAYER_KICKED_MESSAGE.to_string()),
-                        });
-                        list_state.select(Some(selected.saturating_sub(1)));
-                    }
+                    KeyCode::Char('x') => *kick_popup_visible = true,
                     _ => {}
                 };
             }
@@ -73,8 +87,31 @@ impl TerminalHandleInput for TeacherTerminal {
             TeacherTerminalState::Results {
                 results,
                 table_state,
+                kick_popup_visible,
             } => {
                 let mut selected = table_state.selected().unwrap_or(0);
+
+                if *kick_popup_visible {
+                    let player_uuid = results.players[selected].0.uuid;
+                    let Some(kicked) =
+                        handle_kick_player(self.lobby.clone(), key_code, player_uuid)
+                    else {
+                        return Ok(());
+                    };
+
+                    if kicked {
+                        table_state.select(Some(selected.saturating_sub(1)));
+                        results.players = results
+                            .clone()
+                            .players
+                            .into_iter()
+                            .filter(|p| p.0.uuid != player_uuid)
+                            .collect();
+                    }
+
+                    *kick_popup_visible = false;
+                    return Ok(());
+                }
 
                 match key_code {
                     KeyCode::Enter => self.lobby.do_send(StartQuestion),
@@ -93,22 +130,7 @@ impl TerminalHandleInput for TeacherTerminal {
                         }
                         table_state.select(Some(selected));
                     }
-                    KeyCode::Char('x') => {
-                        let selected = table_state.selected().unwrap_or(0);
-
-                        let player_uuid = results.players[selected].0.uuid;
-                        self.lobby.do_send(KickPlayer {
-                            player_uuid,
-                            reason: Some(PLAYER_KICKED_MESSAGE.to_string()),
-                        });
-                        table_state.select(Some(selected.saturating_sub(1)));
-                        results.players = results
-                            .clone()
-                            .players
-                            .into_iter()
-                            .filter(|p| p.0.uuid != player_uuid)
-                            .collect();
-                    }
+                    KeyCode::Char('x') => *kick_popup_visible = true,
                     _ => {}
                 };
             }
@@ -120,5 +142,23 @@ impl TerminalHandleInput for TeacherTerminal {
             }
         };
         Ok(())
+    }
+}
+
+fn handle_kick_player(
+    lobby_addr: Addr<Lobby>,
+    key_code: KeyCode,
+    player_uuid: Uuid,
+) -> Option<bool> {
+    match key_code {
+        KeyCode::Char('y') => {
+            lobby_addr.do_send(KickPlayer {
+                player_uuid,
+                reason: Some(PLAYER_KICKED_MESSAGE.to_string()),
+            });
+            Some(true)
+        }
+        KeyCode::Char('n') => Some(false),
+        _ => None,
     }
 }

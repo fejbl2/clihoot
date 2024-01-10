@@ -19,7 +19,10 @@ impl TerminalDraw for TeacherTerminal {
                 })?;
                 Ok(())
             }
-            TeacherTerminalState::WaitingForGame { list_state } => {
+            TeacherTerminalState::WaitingForGame {
+                list_state,
+                kick_popup_visible: _,
+            } => {
                 term.draw(|frame| {
                     let _ = render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
                 })?;
@@ -61,6 +64,7 @@ impl TerminalDraw for TeacherTerminal {
             TeacherTerminalState::Results {
                 results,
                 table_state,
+                kick_popup_visible: _,
             } => {
                 term.draw(|frame| {
                     let _ = render::results(frame, results, table_state, &self.quiz_name);

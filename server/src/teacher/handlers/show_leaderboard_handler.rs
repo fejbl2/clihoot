@@ -13,6 +13,7 @@ impl TerminalHandleShowLeaderboard for TeacherTerminal {
         self.state = TeacherTerminalState::Results {
             results: show,
             table_state: TableState::default().with_selected(Some(0)),
+            kick_popup_visible: false,
         };
 
         Ok(())
