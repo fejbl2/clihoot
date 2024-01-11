@@ -1,7 +1,7 @@
 use common::{
     messages::network::ShowLeaderboard, terminal::terminal_actor::TerminalHandleShowLeaderboard,
 };
-use ratatui::widgets::ListState;
+use ratatui::widgets::TableState;
 
 use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 use log::debug;
@@ -12,7 +12,8 @@ impl TerminalHandleShowLeaderboard for TeacherTerminal {
 
         self.state = TeacherTerminalState::Results {
             results: show,
-            list_state: ListState::default(),
+            table_state: TableState::default().with_selected(Some(0)),
+            kick_popup_visible: false,
         };
 
         Ok(())

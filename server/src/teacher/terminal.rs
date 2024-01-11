@@ -1,8 +1,11 @@
 use actix::prelude::*;
 
-use ratatui::widgets::ListState;
+use ratatui::widgets::{ListState, TableState};
 
-use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
+use common::{
+    messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard},
+    terminal::highlight::Theme,
+};
 
 use crate::Lobby;
 
@@ -11,26 +14,24 @@ pub enum TeacherTerminalState {
     StartGame,
     WaitingForGame {
         list_state: ListState,
-        players: Vec<PlayerData>,
+        kick_popup_visible: bool,
     },
     Question {
         question: NextQuestion,
         players_answered_count: usize,
-        players: Vec<PlayerData>,
+        start_time: chrono::DateTime<chrono::Utc>,
+        duration_from_start: chrono::Duration,
+        skip_popup_visible: bool,
     },
     Answers {
         answers: QuestionEnded,
-        players: Vec<PlayerData>,
-        list_state: ListState,
     },
     Results {
         results: ShowLeaderboard,
-        list_state: ListState,
+        table_state: TableState,
+        kick_popup_visible: bool,
     },
-    EndGame {
-        results: ShowLeaderboard,
-        list_state: ListState,
-    },
+    EndGame,
     Error {
         message: String,
     },
@@ -39,16 +40,22 @@ pub enum TeacherTerminalState {
 pub struct TeacherTerminal {
     pub quiz_name: String,
     pub lobby: Addr<Lobby>,
+    pub players: Vec<PlayerData>,
+    pub help_visible: bool,
     pub state: TeacherTerminalState,
+    pub syntax_theme: Theme,
 }
 
 impl TeacherTerminal {
     #[must_use]
-    pub fn new(quiz_name: String, lobby: Addr<Lobby>) -> Self {
+    pub fn new(quiz_name: String, lobby: Addr<Lobby>, syntax_theme: Theme) -> Self {
         Self {
             quiz_name,
             lobby,
+            players: Vec::new(),
+            help_visible: false,
             state: TeacherTerminalState::StartGame,
+            syntax_theme,
         }
     }
 }

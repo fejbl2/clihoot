@@ -1,7 +1,7 @@
 use actix::prelude::*;
 use log::debug;
 use ratatui::style::Color;
-use ratatui::widgets::ListState;
+use ratatui::widgets::{ListState, TableState};
 
 use uuid::Uuid;
 
@@ -31,6 +31,8 @@ pub enum StudentTerminalState {
         question: NextQuestion,
         players_answered_count: usize,
         answered: bool,
+        start_time: chrono::DateTime<chrono::Utc>,
+        duration_from_start: chrono::Duration,
         choice_grid: ChoiceGrid,
         choice_selector_state: ChoiceSelectorState,
     },
@@ -39,6 +41,7 @@ pub enum StudentTerminalState {
     },
     Results {
         results: ShowLeaderboard,
+        table_state: TableState,
     },
     EndGame, // show some screen saying that the game ended and the student should just pres ctrl + c to close the app
     Error {
@@ -52,6 +55,7 @@ pub struct StudentTerminal {
     pub color: Color,
     pub quiz_name: String,
     pub syntax_theme: Theme,
+    pub help_visible: bool,
     pub players: Vec<PlayerData>,
     pub ws_actor_address: Addr<WebsocketActor>,
     pub state: StudentTerminalState,
@@ -72,6 +76,7 @@ impl StudentTerminal {
             name: String::new(),
             color: Color::default(),
             quiz_name,
+            help_visible: false,
             players: Vec::new(),
             ws_actor_address: ws_addr,
             state: StudentTerminalState::StartGame,

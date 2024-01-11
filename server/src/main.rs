@@ -52,7 +52,8 @@ fn main() -> anyhow::Result<()> {
 
     let teacher_thread = thread::spawn(move || {
         let server = rx_server.recv().expect("Failed to receive server address");
-        run_teacher(server, tx_teacher, &quiz_name).expect("Failed to run teacher");
+        run_teacher(server, tx_teacher, &quiz_name, args.syntax_theme)
+            .expect("Failed to run teacher");
     });
 
     // wait for threads to finish

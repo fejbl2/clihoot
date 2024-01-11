@@ -1,13 +1,13 @@
 use crate::terminal::constants::COLORS;
 
-use common::terminal::render::{get_bordered_block, get_empty_block, welcome_layout};
+use common::terminal::render::{self, get_bordered_block, get_empty_block, welcome_results_layout};
 use ratatui::{
     prelude::*,
     widgets::{List, ListItem, ListState, Paragraph},
 };
 
-pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool) -> anyhow::Result<()> {
-    let layout = welcome_layout(
+pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool, quiz_name: &str) {
+    let layout = welcome_results_layout(
         frame,
         vec![
             Constraint::Length(1),
@@ -15,6 +15,8 @@ pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool) -> 
             Constraint::Percentage(80),
         ],
         "Name: ".to_string(),
+        " Welcome! ",
+        quiz_name,
     );
 
     let paragraph_name = Paragraph::new(format!("{name}|")).block(get_bordered_block());
@@ -26,19 +28,20 @@ pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool) -> 
     if name_used {
         frame.render_widget(paragraph_used_name, layout[2]);
     }
-
-    Ok(())
 }
 
 pub fn render_color_selection(
     frame: &mut Frame,
     _color: Color,
     list_state: &mut ListState,
-) -> anyhow::Result<()> {
-    let layout = welcome_layout(
+    quiz_name: &str,
+) {
+    let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
         "Color: ".to_string(),
+        " Welcome! ",
+        quiz_name,
     );
 
     let items: Vec<_> = COLORS
@@ -52,6 +55,16 @@ pub fn render_color_selection(
         .highlight_symbol(">> ");
 
     frame.render_stateful_widget(list, layout[1], list_state);
+}
 
-    Ok(())
+pub fn render_help(frame: &mut Frame) {
+    let help_text = [
+        ("ENTER", "Move to the next state"),
+        ("CTRL C", "Exit the game"),
+        ("SPACE", "Select an option"),
+        ("h", "Show this help"),
+        ("↑↓ | jk | ws", "Move up and down"),
+        ("←→ | hl | ad", "Move left and right"),
+    ];
+    render::help(frame, &help_text);
 }

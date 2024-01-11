@@ -5,6 +5,8 @@ use clap_num::number_range;
 
 use log::info;
 
+use common::terminal::highlight::Theme;
+
 fn valid_port(s: &str) -> Result<u16, String> {
     number_range(s, 1025u16, u16::MAX)
 }
@@ -51,4 +53,8 @@ pub struct Args {
     /// Whether to randomize answers order (default: false)
     #[clap(short = 'a', long, default_value = "false")]
     pub randomize_answers: bool,
+
+    /// Theme for syntax highlighting of code in questions
+    #[clap(short('t'), long, default_value_t, value_enum)]
+    pub syntax_theme: Theme,
 }

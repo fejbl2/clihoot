@@ -3,7 +3,6 @@ use common::{
     messages::network::QuestionEnded, terminal::terminal_actor::TerminalHandleQuestionEnded,
 };
 use log::debug;
-use ratatui::widgets::ListState;
 
 use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 
@@ -11,12 +10,14 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
     fn handle_question_ended(&mut self, question_ended: QuestionEnded) -> anyhow::Result<()> {
         debug!("Teacher: handling question ended");
 
-        let (question, players) = match &self.state {
+        let question = match &self.state {
             TeacherTerminalState::Question {
                 question,
-                players,
                 players_answered_count: _,
-            } => (question, players),
+                start_time: _,
+                duration_from_start: _,
+                skip_popup_visible: _,
+            } => question,
             _ => bail!(
                 "Teacher: received question ended, but the terminal is not in the Question state"
             ),
@@ -30,8 +31,6 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
 
         self.state = TeacherTerminalState::Answers {
             answers: question_ended,
-            players: players.clone(),
-            list_state: ListState::default(),
         };
 
         Ok(())

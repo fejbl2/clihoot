@@ -18,6 +18,17 @@ fn name_in_players(name: &str, players: &[PlayerData]) -> bool {
 
 impl TerminalHandleInput for StudentTerminal {
     fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()> {
+        // hide help pop-up if it is visible and any key is pressed
+        if self.help_visible {
+            self.help_visible = false;
+            return Ok(());
+        }
+
+        if key_code == KeyCode::Char('h') {
+            self.help_visible = true;
+            return Ok(());
+        }
+
         match &mut self.state {
             StudentTerminalState::StartGame => {
                 if key_code == KeyCode::Enter {
@@ -120,36 +131,68 @@ impl TerminalHandleInput for StudentTerminal {
                 question,
                 players_answered_count: _,
                 answered,
+                start_time: _,
+                duration_from_start,
                 choice_grid,
                 choice_selector_state,
-            } => match key_code {
-                KeyCode::Enter => {
-                    *answered = true;
+            } => {
+                if (duration_from_start.num_seconds() as usize) < question.show_choices_after {
+                    return Ok(());
+                }
 
-                    self.ws_actor_address
-                        .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
-                            player_uuid: self.uuid,
-                            question_index: question.question_index,
-                            answers: choice_selector_state.selected(),
-                        }));
+                match key_code {
+                    KeyCode::Enter => {
+                        *answered = true;
+
+                        self.ws_actor_address
+                            .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
+                                player_uuid: self.uuid,
+                                question_index: question.question_index,
+                                answers: choice_selector_state.selected(),
+                            }));
+                    }
+                    KeyCode::Char(' ') => {
+                        choice_selector_state.toggle_selection(choice_grid, question.is_multichoice)
+                    } // spacebar
+                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                        choice_selector_state.move_down(choice_grid);
+                    }
+                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                        choice_selector_state.move_up(choice_grid);
+                    }
+                    KeyCode::Right | KeyCode::Char('d' | 'l') => {
+                        choice_selector_state.move_right(choice_grid);
+                    }
+                    KeyCode::Left | KeyCode::Char('a' | 'h') => {
+                        choice_selector_state.move_left(choice_grid);
+                    }
+                    _ => {}
+                };
+            }
+            StudentTerminalState::Results {
+                results,
+                table_state: list_state,
+            } => {
+                let mut selected = list_state.selected().unwrap_or(0);
+                match key_code {
+                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                        selected += 1;
+                        if selected >= results.players.len() {
+                            selected = 0;
+                        }
+                        list_state.select(Some(selected));
+                    }
+                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                        if selected == 0 {
+                            selected = results.players.len() - 1;
+                        } else {
+                            selected -= 1;
+                        }
+                        list_state.select(Some(selected));
+                    }
+                    _ => {}
                 }
-                KeyCode::Char(' ') => {
-                    choice_selector_state.toggle_selection(choice_grid, question.is_multichoice)
-                } // spacebar
-                KeyCode::Down | KeyCode::Char('j' | 's') => {
-                    choice_selector_state.move_down(choice_grid);
-                }
-                KeyCode::Up | KeyCode::Char('k' | 'w') => {
-                    choice_selector_state.move_up(choice_grid);
-                }
-                KeyCode::Right | KeyCode::Char('d' | 'l') => {
-                    choice_selector_state.move_right(choice_grid);
-                }
-                KeyCode::Left | KeyCode::Char('a' | 'h') => {
-                    choice_selector_state.move_left(choice_grid);
-                }
-                _ => {}
-            },
+            }
             _ => {}
         };
         Ok(())

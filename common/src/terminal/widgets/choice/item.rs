@@ -37,6 +37,19 @@ impl ChoiceItem {
         self.block = block;
         self
     }
+
+    pub fn set_style_ref(&mut self, style: Style) {
+        self.style = style;
+    }
+
+    pub fn set_block_ref(&mut self, block: Block<'static>) {
+        self.block = block;
+    }
+
+    #[must_use]
+    pub fn get_uuid(&self) -> Uuid {
+        self.uuid
+    }
 }
 
 impl From<ChoiceCensored> for ChoiceItem {
