@@ -190,24 +190,30 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                     continue;
                 };
 
+                let selected = state.selected.contains(&item.uuid);
+                let current = state.row() == i && state.col() == j;
+                let correct = item.is_correct;
+
                 let mut style = item.style;
-                if state.selected.contains(&item.uuid) {
+                if selected {
                     style = style.patch(self.selected_item_style);
                 }
-                if state.row() == i && state.col() == j {
+                if current {
                     style = style.patch(self.current_item_style);
                 }
 
-                if item.is_correct {
+                if correct {
                     style = style.patch(self.correct_item_style);
                 }
 
-                let block = if self.current_item_block.is_some() {
-                    self.current_item_block.take()
-                } else if self.selected_item_block.is_some() {
-                    self.selected_item_block.take()
+                let block = if self.current_item_block.is_some() && current {
+                    self.current_item_block.clone().take()
+                } else if self.selected_item_block.is_some() && selected {
+                    self.selected_item_block.clone().take()
+                } else if self.correct_item_block.is_some() && correct {
+                    self.correct_item_block.clone().take()
                 } else {
-                    self.correct_item_block.take()
+                    None
                 };
 
                 let block = block.unwrap_or(item.block.clone());

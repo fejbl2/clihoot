@@ -313,7 +313,11 @@ pub fn question(
             .vertical_gap(1)
             .horizontal_gap(2)
             .current_item_style(Style::default().bg(Color::White))
-            .selected_item_style(Style::default().bold().bg(Color::LightCyan))
+            .selected_item_block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .border_type(BorderType::Double),
+            )
             .block(get_empty_block());
 
         if time_from_start >= question.show_choices_after {
