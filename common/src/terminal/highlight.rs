@@ -40,8 +40,8 @@ impl From<Theme> for &str {
     }
 }
 
-// TODO store the result of this function
-// in the state so it doesnt get called with every redraw
+// NICE TO HAVE: store the result of this function
+// in the state so it doesn't get called with every redraw
 #[must_use]
 pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Paragraph {
     let ss = SyntaxSet::load_defaults_newlines();

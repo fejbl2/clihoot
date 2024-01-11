@@ -70,7 +70,7 @@ impl TerminalHandleInput for StudentTerminal {
                         self.ws_actor_address
                             .do_send(ClientNetworkMessage::JoinRequest(JoinRequest {
                                 player_data: PlayerData {
-                                    color: self.color.to_string(),
+                                    color: self.color,
                                     uuid: self.uuid,
                                     nickname: self.name.to_string(),
                                 },
