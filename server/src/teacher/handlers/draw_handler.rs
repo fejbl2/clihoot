@@ -1,7 +1,10 @@
-use common::terminal::{
-    render,
-    terminal_actor::TerminalDraw,
-    widgets::choice::{ChoiceGrid, ChoiceSelectorState},
+use common::{
+    constants::{MINIMAL_QUESTION_HEIGHT, MINIMAL_SCREEN_HEIGHT},
+    terminal::{
+        render,
+        terminal_actor::TerminalDraw,
+        widgets::choice::{ChoiceGrid, ChoiceSelectorState},
+    },
 };
 
 use ratatui::prelude::*;
@@ -35,25 +38,38 @@ impl TerminalDraw for TeacherTerminal {
                     duration_from_start,
                     skip_popup_visible,
                 } => {
-                    let mut grid: ChoiceGrid = question.question.clone().into();
-                    render::question(
-                        frame,
-                        question,
-                        *players_answered_count,
-                        &mut grid,
-                        &mut ChoiceSelectorState::default(),
-                        duration_from_start.num_seconds() as usize,
-                        false,
-                        self.syntax_theme,
-                        &self.quiz_name,
-                    );
+                    if frame.size().height < MINIMAL_QUESTION_HEIGHT {
+                        render::resize(frame, &self.quiz_name, MINIMAL_QUESTION_HEIGHT);
+                    } else {
+                        let mut grid: ChoiceGrid = question.question.clone().into();
+                        render::question(
+                            frame,
+                            question,
+                            *players_answered_count,
+                            &mut grid,
+                            &mut ChoiceSelectorState::default(),
+                            duration_from_start.num_seconds() as usize,
+                            false,
+                            self.syntax_theme,
+                            &self.quiz_name,
+                        );
 
-                    if *skip_popup_visible {
-                        render_skip_question_popup(frame);
+                        if *skip_popup_visible {
+                            render_skip_question_popup(frame);
+                        }
                     }
                 }
                 TeacherTerminalState::Answers { answers } => {
-                    render::question_answers(frame, answers, self.syntax_theme, &self.quiz_name);
+                    if frame.size().height < MINIMAL_QUESTION_HEIGHT {
+                        render::resize(frame, &self.quiz_name, MINIMAL_QUESTION_HEIGHT);
+                    } else {
+                        render::question_answers(
+                            frame,
+                            answers,
+                            self.syntax_theme,
+                            &self.quiz_name,
+                        );
+                    }
                 }
                 TeacherTerminalState::Results {
                     results,
@@ -75,6 +91,10 @@ impl TerminalDraw for TeacherTerminal {
 
             if self.help_visible {
                 render_teacher_help(frame);
+            }
+
+            if frame.size().height < MINIMAL_SCREEN_HEIGHT {
+                render::resize(frame, &self.quiz_name, MINIMAL_SCREEN_HEIGHT);
             }
         })?;
 

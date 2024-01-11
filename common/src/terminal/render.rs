@@ -13,7 +13,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::constants::MINIMAL_ASCII_HEIGHT;
+use crate::constants::{COLORS, MINIMAL_ASCII_HEIGHT};
 use crate::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 use crate::terminal::highlight::{highlight_code_block, Theme};
 use crate::terminal::widgets::choice::{ChoiceGrid, ChoiceSelector, ChoiceSelectorState};
@@ -189,22 +189,36 @@ fn question_time(
     let counts_block = get_bordered_block().padding(Padding::new(1, 1, 0, 0));
     let counts_layout = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints(vec![Constraint::Percentage(50), Constraint::Percentage(50)])
+        .constraints(vec![
+            Constraint::Percentage(33),
+            Constraint::Percentage(33),
+            Constraint::Percentage(33),
+        ])
         .split(counts_block.inner(layout[0]));
 
-    let counts_paragraph_2 = Paragraph::new(format!(
+    let time_paragraph = Paragraph::new(format!(
         "Time left: {}",
         (question.show_choices_after + question.time_seconds).saturating_sub(time_from_start)
     ))
     .alignment(Alignment::Left)
     .block(get_empty_block());
-    let counts_paragraph_1 = Paragraph::new(format!("Players answered: {players_answered_count}"))
+    let asnwered_paragraph = Paragraph::new(format!("Players answered: {players_answered_count}"))
         .alignment(Alignment::Right)
         .block(get_empty_block());
+    let type_paragraph = Paragraph::new(format!(
+        "Type: {}",
+        match question.is_multichoice {
+            true => "Multi choice",
+            false => "Single choice",
+        }
+    ))
+    .alignment(Alignment::Center)
+    .block(get_empty_block());
 
     frame.render_widget(counts_block, layout[0]);
-    frame.render_widget(counts_paragraph_1, counts_layout[1]);
-    frame.render_widget(counts_paragraph_2, counts_layout[0]);
+    frame.render_widget(time_paragraph, counts_layout[0]);
+    frame.render_widget(type_paragraph, counts_layout[1]);
+    frame.render_widget(asnwered_paragraph, counts_layout[2]);
 }
 
 fn question_layout(frame: &mut Frame, title: &str, text: &str, quiz_name: &str) -> Rc<[Rect]> {
@@ -269,49 +283,37 @@ pub fn question(
         &layout,
     );
 
-    if question.code_block.is_some() {
-        let code_paragraph = highlight_code_block(question.code_block.as_ref().unwrap(), theme)
-            .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
-        frame.render_widget(code_paragraph, layout[2]);
-    }
-
     if !answered {
+        if question.code_block.is_some() {
+            let code_paragraph = highlight_code_block(question.code_block.as_ref().unwrap(), theme)
+                .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+            frame.render_widget(code_paragraph, layout[2]);
+        }
+
         let mut items = choice_grid.clone().items();
 
-        match &mut items[0][0] {
-            Some(item) => {
-                item.set_style_ref(style::Style::default().bg(Color::Red));
-            }
-            None => {}
-        };
+        let mut color_index = 0;
+        for (_row, items) in items.iter_mut().enumerate() {
+            for (_col, mut items) in items.iter_mut().enumerate() {
+                match &mut items {
+                    Some(item) => {
+                        color_index += 1;
 
-        match &mut items[0][1] {
-            Some(item) => {
-                item.set_style_ref(style::Style::default().bg(Color::Green));
+                        item.set_style_ref(style::Style::default().fg(COLORS[color_index]));
+                    }
+                    None => {}
+                }
             }
-            None => {}
-        };
-
-        match &mut items[1][0] {
-            Some(item) => {
-                item.set_style_ref(style::Style::default().bg(Color::Blue));
-            }
-            None => {}
-        };
-
-        match &mut items[1][1] {
-            Some(item) => {
-                item.set_style_ref(style::Style::default().bg(Color::Yellow));
-            }
-            None => {}
-        };
+        }
 
         *choice_grid = ChoiceGrid::new(items);
 
         let choice_selector = ChoiceSelector::new(choice_grid.clone());
         let choice_selector = choice_selector
             .vertical_gap(1)
-            .horizontal_gap(3)
+            .horizontal_gap(2)
+            .current_item_style(Style::default().bg(Color::White))
+            .selected_item_style(Style::default().bold().bg(Color::LightCyan))
             .block(get_empty_block());
 
         if time_from_start >= question.show_choices_after {
@@ -337,13 +339,38 @@ pub fn question_answers(
         frame.render_widget(code_paragraph, layout[2]);
     }
 
-    let choice_grid: ChoiceGrid = question.clone().question.into();
-    // TODO set some fancy colors to the grid
+    let mut choice_grid: ChoiceGrid = question.clone().question.into();
+    let mut items = choice_grid.clone().items();
+
+    for (_row, items) in items.iter_mut().enumerate() {
+        for (_col, mut items) in items.iter_mut().enumerate() {
+            match &mut items {
+                Some(item) => {
+                    item.set_style_ref(Style::default());
+
+                    let answers_count = match question.stats.get(&item.get_uuid()) {
+                        Some(count) => count.players_answered_count,
+                        None => 0,
+                    };
+
+                    let title = Title::from(answers_count.to_string())
+                        .alignment(Alignment::Right)
+                        .position(Position::Top);
+                    item.set_block_ref(get_bordered_block().title(title));
+                }
+                None => {}
+            }
+        }
+    }
+
+    choice_grid = ChoiceGrid::new(items);
 
     let choice_selector = ChoiceSelector::new(choice_grid);
     let choice_selector = choice_selector
         .vertical_gap(1)
         .horizontal_gap(3)
+        .current_item_style(Style::default())
+        .correct_item_style(Style::default().bg(Color::Green))
         .block(get_empty_block());
 
     frame.render_widget(choice_selector, layout[3]);
@@ -390,11 +417,23 @@ pub fn results(
 
 pub fn end_game(frame: &mut Frame, quiz_name: &str) {
     let lines = ["Game", "Ended", "Thank You!"];
-    ascii_art(frame, &lines, "Press ENTER to close", quiz_name);
+    ascii_art(frame, &lines, "Press CTRL C to close", quiz_name);
 }
 
 pub fn error(frame: &mut Frame, message: &str, quiz_name: &str) {
     simple_message(frame, "Error", message, quiz_name);
+}
+
+pub fn resize(frame: &mut Frame, quiz_name: &str, height: u16) {
+    frame.render_widget(Clear, frame.size());
+    simple_message(
+        frame,
+        "Terminal height is too small",
+        &("Please resize your terminal to at least".to_owned()
+            + height.to_string().as_str()
+            + "lines"),
+        quiz_name,
+    );
 }
 
 pub fn help(frame: &mut Frame, help_text: &[(&str, &str)]) {

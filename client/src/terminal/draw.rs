@@ -1,5 +1,6 @@
 use crate::terminal::draw_states::{render_color_selection, render_name_selection};
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
+use common::constants::{MINIMAL_QUESTION_HEIGHT, MINIMAL_SCREEN_HEIGHT};
 use common::terminal::render::{self};
 use common::terminal::terminal_actor::TerminalDraw;
 
@@ -36,20 +37,33 @@ impl TerminalDraw for StudentTerminal {
                     choice_grid,
                     choice_selector_state,
                 } => {
-                    render::question(
-                        frame,
-                        question,
-                        *players_answered_count,
-                        choice_grid,
-                        choice_selector_state,
-                        duration_from_start.num_seconds() as usize,
-                        *answered,
-                        self.syntax_theme,
-                        &self.quiz_name,
-                    );
+                    if frame.size().height < MINIMAL_QUESTION_HEIGHT {
+                        render::resize(frame, &self.quiz_name, MINIMAL_QUESTION_HEIGHT);
+                    } else {
+                        render::question(
+                            frame,
+                            question,
+                            *players_answered_count,
+                            choice_grid,
+                            choice_selector_state,
+                            duration_from_start.num_seconds() as usize,
+                            *answered,
+                            self.syntax_theme,
+                            &self.quiz_name,
+                        );
+                    }
                 }
                 StudentTerminalState::Answers { answers } => {
-                    render::question_answers(frame, answers, self.syntax_theme, &self.quiz_name);
+                    if frame.size().height < MINIMAL_QUESTION_HEIGHT {
+                        render::resize(frame, &self.quiz_name, MINIMAL_QUESTION_HEIGHT);
+                    } else {
+                        render::question_answers(
+                            frame,
+                            answers,
+                            self.syntax_theme,
+                            &self.quiz_name,
+                        );
+                    }
                 }
                 StudentTerminalState::Results {
                     results,
@@ -68,6 +82,10 @@ impl TerminalDraw for StudentTerminal {
 
             if self.help_visible {
                 render_help(frame);
+            }
+
+            if frame.size().height < MINIMAL_SCREEN_HEIGHT {
+                render::resize(frame, &self.quiz_name, MINIMAL_SCREEN_HEIGHT);
             }
         })?;
 

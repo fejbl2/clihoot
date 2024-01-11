@@ -191,12 +191,13 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                 };
 
                 let mut style = item.style;
-                if state.row() == i && state.col() == j {
-                    style = style.patch(self.current_item_style);
-                }
                 if state.selected.contains(&item.uuid) {
                     style = style.patch(self.selected_item_style);
                 }
+                if state.row() == i && state.col() == j {
+                    style = style.patch(self.current_item_style);
+                }
+
                 if item.is_correct {
                     style = style.patch(self.correct_item_style);
                 }
