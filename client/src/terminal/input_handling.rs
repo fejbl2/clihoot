@@ -2,6 +2,7 @@ use crate::terminal::constants::COLORS;
 use crossterm::event::KeyCode;
 use ratatui::widgets::ListState;
 
+use crate::music_actor::SoundEffectMessage;
 use crate::terminal::student::{StudentTerminal, StudentTerminalState};
 use common::terminal::terminal_actor::TerminalHandleInput;
 use common::{
@@ -55,6 +56,7 @@ impl TerminalHandleInput for StudentTerminal {
                 KeyCode::Enter if !name.is_empty() => {
                     *name_already_used = name_in_players(name, &self.players);
                     if !*name_already_used {
+                        self.music_address.do_send(SoundEffectMessage::EnterPressed);
                         self.name = (*name).to_string();
                         self.state = StudentTerminalState::ColorSelection {
                             list_state: ListState::default().with_selected(Some(0)),
@@ -74,6 +76,7 @@ impl TerminalHandleInput for StudentTerminal {
                         };
                     }
                     KeyCode::Enter => {
+                        self.music_address.do_send(SoundEffectMessage::EnterPressed);
                         self.color = COLORS[list_state.selected().unwrap_or(0)];
                         self.state = StudentTerminalState::WaitingForGame {
                             list_state: ListState::default().with_selected(Some(0)),
@@ -88,6 +91,7 @@ impl TerminalHandleInput for StudentTerminal {
                             }));
                     }
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         selected += 1;
                         if selected >= COLORS.len() {
                             selected = 0;
@@ -95,6 +99,7 @@ impl TerminalHandleInput for StudentTerminal {
                         list_state.select(Some(selected));
                     }
                     KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         if selected == 0 {
                             selected = COLORS.len() - 1;
                         } else {
@@ -110,6 +115,7 @@ impl TerminalHandleInput for StudentTerminal {
 
                 match key_code {
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         selected += 1;
                         if selected >= self.players.len() {
                             selected = 0;
@@ -117,6 +123,7 @@ impl TerminalHandleInput for StudentTerminal {
                         list_state.select(Some(selected));
                     }
                     KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         if selected == 0 {
                             selected = self.players.len() - 1;
                         } else {
@@ -142,6 +149,7 @@ impl TerminalHandleInput for StudentTerminal {
 
                 match key_code {
                     KeyCode::Enter => {
+                        self.music_address.do_send(SoundEffectMessage::EnterPressed);
                         *answered = true;
 
                         self.ws_actor_address
@@ -155,15 +163,19 @@ impl TerminalHandleInput for StudentTerminal {
                         choice_selector_state.toggle_selection(choice_grid, question.is_multichoice)
                     } // spacebar
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         choice_selector_state.move_down(choice_grid);
                     }
                     KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         choice_selector_state.move_up(choice_grid);
                     }
                     KeyCode::Right | KeyCode::Char('d' | 'l') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         choice_selector_state.move_right(choice_grid);
                     }
                     KeyCode::Left | KeyCode::Char('a' | 'h') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         choice_selector_state.move_left(choice_grid);
                     }
                     _ => {}
@@ -176,6 +188,7 @@ impl TerminalHandleInput for StudentTerminal {
                 let mut selected = list_state.selected().unwrap_or(0);
                 match key_code {
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         selected += 1;
                         if selected >= results.players.len() {
                             selected = 0;
@@ -183,6 +196,7 @@ impl TerminalHandleInput for StudentTerminal {
                         list_state.select(Some(selected));
                     }
                     KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                        self.music_address.do_send(SoundEffectMessage::Tap);
                         if selected == 0 {
                             selected = results.players.len() - 1;
                         } else {

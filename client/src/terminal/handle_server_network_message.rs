@@ -6,6 +6,7 @@ use common::terminal::terminal_actor::TerminalHandleServerNetworkMessage;
 
 use common::terminal::widgets::choice::ChoiceSelectorState;
 
+use crate::music_actor::{MusicMessage, SoundEffectMessage};
 use log::debug;
 use ratatui::widgets::{ListState, TableState};
 
@@ -35,6 +36,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
             }
             ServerNetworkMessage::NextQuestion(question) => {
                 debug!("Student: handling next question");
+                self.music_address.do_send(MusicMessage::Countdown);
                 self.state = StudentTerminalState::Question {
                     question: question.clone(),
                     players_answered_count: 0,
@@ -68,6 +70,8 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
             }
             ServerNetworkMessage::QuestionEnded(question) => {
                 debug!("Student: handling question ended");
+                self.music_address.do_send(SoundEffectMessage::Gong);
+                self.music_address.do_send(MusicMessage::NoMusic);
                 self.state = StudentTerminalState::Answers { answers: question };
             }
             ServerNetworkMessage::ShowLeaderboard(leaderboard) => {
