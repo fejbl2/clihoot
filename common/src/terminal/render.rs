@@ -1,10 +1,10 @@
-use std::{rc::Rc, str::FromStr};
+use std::rc::Rc;
 
 use anyhow::anyhow;
 use figlet_rs::FIGfont;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
-    style::{self, Color, Stylize},
+    style::{self, Stylize},
     widgets::{block::Title, Block, Borders, List, ListItem, ListState, Padding, Paragraph},
     Frame,
 };
@@ -69,7 +69,7 @@ pub fn question(
 }
 
 pub fn question_answers(frame: &mut Frame, _question: &QuestionEnded) -> anyhow::Result<()> {
-    let paragraph = Paragraph::new(format!("{}\n\n{}", "TODO", "TODO"))
+    let paragraph = Paragraph::new(format!("{}\n\n{}", "xxx", "xxx"))
         .block(Block::default().title("Results").borders(Borders::ALL));
     frame.render_widget(paragraph, frame.size());
 
@@ -96,10 +96,8 @@ pub fn waiting(
     let items: Vec<_> = players
         .iter()
         .map(|player| {
-            ListItem::new(player.nickname.to_string()).style(
-                style::Style::default()
-                    .fg(Color::from_str(player.color.as_str()).unwrap_or(Color::White)),
-            )
+            ListItem::new(player.nickname.to_string())
+                .style(style::Style::default().fg(player.color))
         })
         .collect();
 

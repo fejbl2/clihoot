@@ -36,8 +36,7 @@ where
                         term.send(Redraw).await??;
                     }
                     Some(Err(e)) => return Err(e.into()),
-                    None => {}
-                    _ => todo!()
+                    _ => {}
                 }
             }
         }

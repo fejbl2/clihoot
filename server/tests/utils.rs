@@ -13,6 +13,8 @@ use futures_util::{
     stream::{SplitSink, SplitStream},
     StreamExt,
 };
+use rand::random;
+use ratatui::style::Color;
 use tokio::net::TcpStream;
 
 use tokio_tungstenite::{MaybeTlsStream, WebSocketStream};
@@ -85,11 +87,11 @@ pub async fn join_server(
 ) -> anyhow::Result<(PlayerData, JoinResponse)> {
     thread::sleep(Duration::from_millis(100));
 
-    let random_string_color = Uuid::new_v4().to_string();
+    let random_color = Color::Rgb(random(), random(), random());
     let random_string_nickname = Uuid::new_v4().to_string();
 
     let player_data = PlayerData {
-        color: random_string_color,
+        color: random_color,
         nickname: random_string_nickname,
         uuid: id,
     };
