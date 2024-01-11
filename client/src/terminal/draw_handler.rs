@@ -40,7 +40,13 @@ impl TerminalDraw for StudentTerminal {
                     render_color_selection(frame, self.color, list_state, &self.quiz_name);
                 }
                 StudentTerminalState::WaitingForGame { list_state } => {
-                    render::waiting(frame, &mut self.players, list_state, &self.quiz_name);
+                    render::waiting(
+                        frame,
+                        &mut self.players,
+                        list_state,
+                        &self.name,
+                        &self.quiz_name,
+                    );
                 }
                 StudentTerminalState::Question {
                     question,
@@ -97,7 +103,7 @@ impl TerminalDraw for StudentTerminal {
                     results,
                     table_state,
                 } => {
-                    render::results(frame, results, table_state, &self.quiz_name);
+                    render::results(frame, results, table_state, &self.name, &self.quiz_name);
                 }
 
                 StudentTerminalState::EndGame {} => {

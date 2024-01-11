@@ -91,6 +91,7 @@ pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str, quiz_name: &str)
         _ => {
             for i in 0..lines.len() {
                 let paragraph = Paragraph::new(lines[i])
+                    .wrap(Wrap { trim: true })
                     .block(get_empty_block())
                     .alignment(Alignment::Center);
                 frame.render_widget(paragraph, layout[i]);
@@ -99,6 +100,7 @@ pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str, quiz_name: &str)
     }
 
     let paragraph = Paragraph::new(text)
+        .wrap(Wrap { trim: true })
         .block(get_empty_block())
         .alignment(Alignment::Center);
     frame.render_widget(paragraph, layout[lines.len()]);
@@ -122,7 +124,9 @@ pub fn welcome_results_layout(
         .constraints(constraints)
         .split(content_space);
 
-    let paragraph = Paragraph::new(paragraph_name).block(get_empty_block());
+    let paragraph = Paragraph::new(paragraph_name)
+        .wrap(Wrap { trim: true })
+        .block(get_empty_block());
 
     frame.render_widget(outer_block, frame.size());
     frame.render_widget(inner_block, inner);
@@ -162,6 +166,7 @@ pub fn waiting(
     frame: &mut Frame,
     players: &mut [PlayerData],
     list_state: &mut ListState,
+    player_name: &str,
     quiz_name: &str,
 ) {
     let layout = welcome_results_layout(
@@ -175,8 +180,13 @@ pub fn waiting(
     let items: Vec<_> = players
         .iter()
         .map(|player| {
-            ListItem::new(player.nickname.to_string())
-                .style(style::Style::default().fg(player.color))
+            let item = ListItem::new(player.nickname.to_string())
+                .style(style::Style::default().fg(player.color));
+            if player.nickname == player_name {
+                item.underlined()
+            } else {
+                item
+            }
         })
         .collect();
 
@@ -208,9 +218,11 @@ fn question_time(
         "Time left: {}",
         (question.show_choices_after + question.time_seconds).saturating_sub(time_from_start)
     ))
+    .wrap(Wrap { trim: true })
     .alignment(Alignment::Left)
     .block(get_empty_block());
     let asnwered_paragraph = Paragraph::new(format!("Players answered: {players_answered_count}"))
+        .wrap(Wrap { trim: true })
         .alignment(Alignment::Right)
         .block(get_empty_block());
     let type_paragraph = Paragraph::new(format!(
@@ -220,6 +232,7 @@ fn question_time(
             false => "Single choice",
         }
     ))
+    .wrap(Wrap { trim: true })
     .alignment(Alignment::Center)
     .block(get_empty_block());
 
@@ -249,6 +262,7 @@ fn question_layout(frame: &mut Frame, title: &str, text: &str, quiz_name: &str) 
 
     let paragraph = Paragraph::new(text)
         .bold()
+        .wrap(Wrap { trim: true })
         .block(get_empty_block().padding(Padding::new(1, 1, 1, 1)))
         .alignment(Alignment::Center);
 
@@ -312,6 +326,7 @@ pub fn question(
             time,
             if time == 1 { "" } else { "s" }
         ))
+        .wrap(Wrap { trim: true })
         .block(Block::default().padding(Padding::new(0, 0, layout[3].height / 2, 0)))
         .alignment(Alignment::Center);
 
@@ -436,6 +451,7 @@ pub fn results(
     frame: &mut Frame,
     results: &ShowLeaderboard,
     table_state: &mut TableState,
+    player_name: &str,
     quiz_name: &str,
 ) {
     let mut layout = welcome_results_layout(
@@ -460,6 +476,7 @@ pub fn results(
         );
 
         let paragraph = Paragraph::new("Great job!")
+            .wrap(Wrap { trim: true })
             .block(get_empty_block())
             .alignment(Alignment::Center);
         frame.render_widget(paragraph, layout[2]);
@@ -469,9 +486,14 @@ pub fn results(
         .players
         .iter()
         .map(|(player, score)| {
-            let row = vec![
+            let mut line =
                 Line::styled(player.nickname.to_string(), style::Style::default().bold())
-                    .alignment(Alignment::Left),
+                    .alignment(Alignment::Left);
+            if player.nickname == player_name {
+                line.patch_style(style::Style::default().underlined());
+            }
+            let row = vec![
+                line,
                 Line::raw(format!("{score}")).alignment(Alignment::Right),
             ];
 
@@ -479,8 +501,15 @@ pub fn results(
         })
         .collect();
 
-    let widths = [Constraint::Percentage(50), Constraint::Percentage(50)];
+    let widths = [Constraint::Percentage(70), Constraint::Percentage(30)];
+
+    let cells = vec![
+        Line::styled("Player", style::Style::default().bold()).alignment(Alignment::Left),
+        Line::raw("Score").alignment(Alignment::Right),
+    ];
+
     let table = Table::new(items, widths)
+        .header(Row::new(cells))
         .block(get_bordered_block())
         .highlight_symbol(">> ");
 
