@@ -46,7 +46,8 @@ impl ChoiceItem {
         self.block = block;
     }
 
-    #[must_use] pub fn get_uuid(&self) -> Uuid {
+    #[must_use]
+    pub fn get_uuid(&self) -> Uuid {
         self.uuid
     }
 }

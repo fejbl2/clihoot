@@ -90,13 +90,10 @@ impl TerminalHandleInput for TeacherTerminal {
                 skip_popup_visible,
             } => {
                 if *skip_popup_visible {
-                    match key_code {
-                        KeyCode::Char('y') => {
-                            self.lobby.do_send(EndQuestion {
-                                index: q.question_index,
-                            });
-                        }
-                        _ => {}
+                    if let KeyCode::Char('y') = key_code {
+                        self.lobby.do_send(EndQuestion {
+                            index: q.question_index,
+                        });
                     }
                     *skip_popup_visible = false;
                 }

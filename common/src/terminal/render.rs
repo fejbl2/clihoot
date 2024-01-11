@@ -1,6 +1,7 @@
 use std::{rc::Rc, str::FromStr};
 
 use figlet_rs::FIGfont;
+use log::debug;
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{self, Color, Style, Stylize},
@@ -346,11 +347,18 @@ pub fn question_answers(
     let mut choice_grid: ChoiceGrid = question.clone().question.into();
     let mut items = choice_grid.clone().items();
 
-    for (_row, items) in items.iter_mut().enumerate() {
-        for (_col, mut items) in items.iter_mut().enumerate() {
+    for (row, items) in items.iter_mut().enumerate() {
+        for (col, mut items) in items.iter_mut().enumerate() {
             match &mut items {
                 Some(item) => {
                     item.set_style_ref(Style::default());
+
+                    let was_selected_by_user = question
+                        .player_answer
+                        .iter()
+                        .any(|choice| choice.contains(&item.get_uuid()));
+
+                    debug!("was_selected_by_user {row} {col}: {was_selected_by_user}");
 
                     let answers_count = match question.stats.get(&item.get_uuid()) {
                         Some(count) => count.players_answered_count,
