@@ -9,13 +9,14 @@ use actix::Message;
 use chrono::DateTime;
 use chrono::Utc;
 use common::questions::QuestionSet;
+use ratatui::style::Color;
 
 use std::collections::HashMap;
 use std::ops::Deref;
 use uuid::Uuid;
 
 #[derive(Default, PartialEq, Clone, Debug)]
-#[allow(dead_code)]
+
 pub enum Phase {
     #[default]
     WaitingForPlayers,
@@ -43,7 +44,7 @@ pub type QuestionRecords = HashMap<usize, PlayerRecords>;
 pub struct JoinedPlayer {
     pub uuid: Uuid,
     pub nickname: String,
-    pub color: String,
+    pub color: Color,
     pub addr: Addr<Websocket>,
     pub joined_at: DateTime<Utc>,
 }

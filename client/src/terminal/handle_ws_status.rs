@@ -15,7 +15,6 @@ impl TerminalHandleClientWebsocketStatus for StudentTerminal {
                     message: "Message cannot be send over websocket".to_string(),
                 }
             }
-            // TODO is this error as well ?
             ClientWebsocketStatus::SocketClosed => self.state = StudentTerminalState::EndGame,
             ClientWebsocketStatus::CloseFrameReceived(message) => {
                 self.state = StudentTerminalState::Error { message }

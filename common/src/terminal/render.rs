@@ -1,4 +1,4 @@
-use std::{rc::Rc, str::FromStr};
+use std::rc::Rc;
 
 use figlet_rs::FIGfont;
 use log::debug;
@@ -166,10 +166,8 @@ pub fn waiting(
     let items: Vec<_> = players
         .iter()
         .map(|player| {
-            ListItem::new(player.nickname.to_string()).style(
-                style::Style::default()
-                    .fg(Color::from_str(player.color.as_str()).unwrap_or(Color::White)),
-            )
+            ListItem::new(player.nickname.to_string())
+                .style(style::Style::default().fg(player.color))
         })
         .collect();
 
@@ -413,10 +411,7 @@ pub fn results(
                 Line::raw(format!("{score}")).alignment(Alignment::Right),
             ];
 
-            Row::new(row).style(
-                style::Style::default()
-                    .fg(Color::from_str(player.color.as_str()).unwrap_or(Color::White)),
-            )
+            Row::new(row).style(style::Style::default().fg(player.color))
         })
         .collect();
 

@@ -274,6 +274,9 @@ name = "bitflags"
 version = "2.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "327762f6e5a765692301e5bb513e0d9fef63be86bbc14528052b1cd3e6f03e07"
+dependencies = [
+ "serde",
+]
 
 [[package]]
 name = "block-buffer"
@@ -1450,6 +1453,7 @@ dependencies = [
  "itertools",
  "lru",
  "paste",
+ "serde",
  "stability",
  "strum",
  "unicode-segmentation",

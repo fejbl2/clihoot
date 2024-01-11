@@ -6,6 +6,7 @@ use actix::{
     prelude::Message,
     Actor,
 };
+use ratatui::style::Color;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -15,7 +16,7 @@ use uuid::Uuid;
 pub struct PlayerData {
     pub uuid: Uuid,
     pub nickname: String,
-    pub color: String, // TODO enum?
+    pub color: Color,
 }
 
 // these models (structs) describe messages used in network communication between client - server - teacher

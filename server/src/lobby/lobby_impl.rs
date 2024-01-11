@@ -48,7 +48,7 @@ impl Lobby {
         players
             .into_iter()
             .map(|val| PlayerData {
-                color: val.color.clone(),
+                color: val.color,
                 nickname: val.nickname.clone(),
                 uuid: val.uuid,
             })
@@ -156,7 +156,6 @@ impl Lobby {
         Ok(())
     }
 
-    #[allow(dead_code)]
     pub fn send_leaderboard(&self, index: usize) -> anyhow::Result<bool> {
         let is_final = index == self.questions.len() - 1;
 
@@ -246,19 +245,6 @@ impl Lobby {
         Ok(reading_time + answer_time)
     }
 
-    #[allow(dead_code)]
-    /// Sends a message to a specific player
-    /// # Errors
-    /// - when the `id_to` does not exist in the `joined_players` hashmap
-    pub fn send_to(&self, _message: &str, id_to: &Uuid) -> anyhow::Result<()> {
-        let Some(_socket_recipient) = self.joined_players.get(id_to) else {
-            anyhow::bail!("attempting to send message but couldn't find user id.");
-        };
-
-        // TODO
-        Ok(())
-    }
-
     /// Sends the `message` to all joined players
     pub fn send_to_all(&self, message: &ServerNetworkMessage) {
         for socket_recipient in self.joined_players.values() {
@@ -267,7 +253,6 @@ impl Lobby {
     }
 
     /// Sends the `message` to all joined players except the one with `id_from`
-    #[allow(dead_code)]
     pub fn send_to_others(&self, message: &ServerNetworkMessage, id_from: &Uuid) {
         for (id, socket_recipient) in &self.joined_players {
             if id != id_from {
