@@ -1,7 +1,7 @@
 use std::rc::Rc;
 
 use figlet_rs::FIGfont;
-use log::debug;
+use log::{debug, trace};
 use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     style::{self, Color, Style, Stylize},
@@ -293,8 +293,9 @@ pub fn question(
         let mut items = choice_grid.clone().items();
 
         let mut color_index = 0;
-        for (_row, items) in items.iter_mut().enumerate() {
-            for (_col, mut items) in items.iter_mut().enumerate() {
+        for (row, items) in items.iter_mut().enumerate() {
+            for (col, mut items) in items.iter_mut().enumerate() {
+                trace!("row: {row}, col: {col}");
                 match &mut items {
                     Some(item) => {
                         color_index += 1;
