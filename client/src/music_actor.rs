@@ -4,6 +4,7 @@ use rodio::{OutputStream, OutputStreamHandle};
 use rodio::{Sink, Source};
 use std::io::{BufReader, Cursor};
 
+use crate::music_actor::MusicMessage::NoMusic;
 use log::error;
 
 const LOBBY_MUSIC: &[u8] = include_bytes!("../assets/lobby.mp3");
@@ -15,11 +16,12 @@ const CORRECT_ANSWER_SOUND: &[u8] = include_bytes!("../assets/correct_answer_sou
 const WRONG_ANSWER_SOUND: &[u8] = include_bytes!("../assets/wrong_answer_sound.mp3");
 const GONG_SOUND: &[u8] = include_bytes!("../assets/gong_sound.mp3");
 
-#[derive(Message)]
+#[derive(Message, PartialEq)]
 #[rtype(result = "()")]
 pub enum MusicMessage {
     Lobby,
     Countdown,
+    NoMusic,
 }
 
 #[derive(Message)]
@@ -36,7 +38,7 @@ impl MusicMessage {
     fn get_content(&self) -> &'static [u8] {
         match self {
             MusicMessage::Lobby => LOBBY_MUSIC,
-            MusicMessage::Countdown => COUNTDOWN_MUSIC,
+            MusicMessage::Countdown | NoMusic => COUNTDOWN_MUSIC,
         }
     }
 }
@@ -98,12 +100,19 @@ impl Handler<MusicMessage> for MusicActor {
 
         sink.stop(); // stop currently playing music
 
-        let reader = BufReader::new(Cursor::new(msg.get_content()));
+        if msg == NoMusic {
+            return;
+        }
 
-        if let Ok(source) = rodio::Decoder::new(reader) {
-            sink.append(source);
-        } else {
-            error!("Failed to decode the music.");
+        for _ in 0..3 {
+            // repeat one music file more times
+            let reader = BufReader::new(Cursor::new(msg.get_content()));
+
+            if let Ok(source) = rodio::Decoder::new(reader) {
+                sink.append(source);
+            } else {
+                error!("Failed to decode the music.");
+            }
         }
     }
 }
