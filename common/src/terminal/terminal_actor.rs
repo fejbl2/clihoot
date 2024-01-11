@@ -117,7 +117,7 @@ where
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        ctx.run_interval(std::time::Duration::from_secs(1), |_, ctx| {
+        ctx.run_interval(std::time::Duration::from_millis(500), |_, ctx| {
             ctx.address().do_send(Tick)
         });
 

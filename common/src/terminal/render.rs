@@ -20,7 +20,7 @@ use crate::terminal::highlight::{highlight_code_block, Theme};
 use crate::terminal::widgets::choice::{ChoiceGrid, ChoiceSelector, ChoiceSelectorState};
 
 #[must_use]
-pub fn get_outer_block(name: &str) -> Block<'static> {
+pub fn get_outer_block(name: &str) -> Block<'_> {
     let title = Title::from(" Clihoot: ".to_owned() + name + " ");
     let block = Block::default()
         .title(title)
@@ -283,48 +283,63 @@ pub fn question(
         &layout,
     );
 
-    if !answered {
-        if question.code_block.is_some() {
-            let code_paragraph = highlight_code_block(question.code_block.as_ref().unwrap(), theme)
-                .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
-            frame.render_widget(code_paragraph, layout[2]);
-        }
+    if answered {
+        return;
+    }
 
-        let mut items = choice_grid.clone().items();
+    if question.code_block.is_some() {
+        let code_paragraph = highlight_code_block(question.code_block.as_ref().unwrap(), theme)
+            .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+        frame.render_widget(code_paragraph, layout[2]);
+    }
 
-        let mut color_index = 0;
-        for (row, items) in items.iter_mut().enumerate() {
-            for (col, mut items) in items.iter_mut().enumerate() {
-                trace!("row: {row}, col: {col}");
-                match &mut items {
-                    Some(item) => {
-                        color_index += 1;
+    if time_from_start < question.show_choices_after {
+        let time = question.show_choices_after.saturating_sub(time_from_start);
+        frame.render_widget(
+            Paragraph::new(format!(
+                "Choices will be displayed in {} second{}!",
+                time,
+                if time == 1 { "" } else { "s" }
+            ))
+            .block(Block::default().padding(Padding::new(0, 0, layout[3].height / 2, 0)))
+            .alignment(Alignment::Center),
+            layout[3],
+        );
+        return;
+    }
 
-                        item.set_style_ref(style::Style::default().fg(COLORS[color_index]));
-                    }
-                    None => {}
+    let mut items = choice_grid.clone().items();
+
+    let mut color_index = 0;
+    for (row, items) in items.iter_mut().enumerate() {
+        for (col, mut items) in items.iter_mut().enumerate() {
+            trace!("row: {row}, col: {col}");
+            match &mut items {
+                Some(item) => {
+                    color_index += 1;
+
+                    item.set_style_ref(style::Style::default().fg(COLORS[color_index]));
                 }
+                None => {}
             }
         }
-
-        *choice_grid = ChoiceGrid::new(items);
-
-        let choice_selector = ChoiceSelector::new(choice_grid.clone());
-        let choice_selector = choice_selector
-            .vertical_gap(1)
-            .horizontal_gap(2)
-            .current_item_style(Style::default().bg(Color::White))
-            .selected_item_block(
-                Block::default()
-                    .borders(Borders::ALL)
-                    .border_type(BorderType::Double),
-            )
-            .block(get_empty_block());
-
-        if time_from_start >= question.show_choices_after {
-            frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
-        }
     }
+
+    *choice_grid = ChoiceGrid::new(items);
+
+    let choice_selector = ChoiceSelector::new(choice_grid.clone());
+    let choice_selector = choice_selector
+        .vertical_gap(1)
+        .horizontal_gap(2)
+        .current_item_style(Style::default().bg(Color::White))
+        .selected_item_block(
+            Block::default()
+                .borders(Borders::ALL)
+                .border_type(BorderType::Double),
+        )
+        .block(get_empty_block());
+
+    frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
 }
 
 pub fn question_answers(
