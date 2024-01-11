@@ -14,9 +14,7 @@ use ratatui::prelude::*;
 
 use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 
-use super::draw_states::{
-    render_kick_popup, render_skip_question_popup, render_teacher_help,
-};
+use super::draw_states::{render_kick_popup, render_skip_question_popup, render_teacher_help};
 
 impl TerminalDraw for TeacherTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
