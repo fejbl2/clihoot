@@ -1,5 +1,8 @@
 use common::{
-    constants::{MINIMAL_QUESTION_HEIGHT, MINIMAL_SCREEN_HEIGHT},
+    constants::{
+        MINIMAL_QUESTION_HEIGHT, MINIMAL_QUESTION_WIDTH, MINIMAL_SCREEN_HEIGHT,
+        MINIMAL_SCREEN_WIDTH,
+    },
     terminal::{
         render,
         terminal_actor::TerminalDraw,
@@ -12,15 +15,28 @@ use ratatui::prelude::*;
 use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
 
 use super::draw_states::{
-    render_kick_popup, render_skip_question_popup, render_teacher_help, render_teacher_welcome,
+    render_kick_popup, render_skip_question_popup, render_teacher_help,
 };
 
 impl TerminalDraw for TeacherTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
         term.draw(|frame| {
+            if frame.size().height < MINIMAL_SCREEN_HEIGHT
+                || frame.size().width < MINIMAL_SCREEN_WIDTH
+            {
+                render::resize(
+                    frame,
+                    &self.quiz_name,
+                    MINIMAL_SCREEN_HEIGHT,
+                    MINIMAL_SCREEN_WIDTH,
+                );
+
+                return;
+            }
+
             match &mut self.state {
                 TeacherTerminalState::StartGame => {
-                    render_teacher_welcome(frame, &self.quiz_name);
+                    render::welcome(frame, &self.quiz_name);
                 }
                 TeacherTerminalState::WaitingForGame {
                     list_state,
@@ -38,8 +54,15 @@ impl TerminalDraw for TeacherTerminal {
                     duration_from_start,
                     skip_popup_visible,
                 } => {
-                    if frame.size().height < MINIMAL_QUESTION_HEIGHT {
-                        render::resize(frame, &self.quiz_name, MINIMAL_QUESTION_HEIGHT);
+                    if frame.size().height < MINIMAL_QUESTION_HEIGHT
+                        || frame.size().width < MINIMAL_QUESTION_WIDTH
+                    {
+                        render::resize(
+                            frame,
+                            &self.quiz_name,
+                            MINIMAL_QUESTION_HEIGHT,
+                            MINIMAL_QUESTION_WIDTH,
+                        );
                     } else {
                         let mut grid: ChoiceGrid = question.question.clone().into();
                         render::question(
@@ -47,7 +70,7 @@ impl TerminalDraw for TeacherTerminal {
                             question,
                             *players_answered_count,
                             &mut grid,
-                            &mut ChoiceSelectorState::default(),
+                            &mut ChoiceSelectorState::empty(),
                             duration_from_start.num_seconds() as usize,
                             false,
                             self.syntax_theme,
@@ -60,8 +83,15 @@ impl TerminalDraw for TeacherTerminal {
                     }
                 }
                 TeacherTerminalState::Answers { answers } => {
-                    if frame.size().height < MINIMAL_QUESTION_HEIGHT {
-                        render::resize(frame, &self.quiz_name, MINIMAL_QUESTION_HEIGHT);
+                    if frame.size().height < MINIMAL_QUESTION_HEIGHT
+                        || frame.size().width < MINIMAL_QUESTION_WIDTH
+                    {
+                        render::resize(
+                            frame,
+                            &self.quiz_name,
+                            MINIMAL_QUESTION_HEIGHT,
+                            MINIMAL_QUESTION_WIDTH,
+                        );
                     } else {
                         render::question_answers(
                             frame,
@@ -91,10 +121,6 @@ impl TerminalDraw for TeacherTerminal {
 
             if self.help_visible {
                 render_teacher_help(frame);
-            }
-
-            if frame.size().height < MINIMAL_SCREEN_HEIGHT {
-                render::resize(frame, &self.quiz_name, MINIMAL_SCREEN_HEIGHT);
             }
         })?;
 

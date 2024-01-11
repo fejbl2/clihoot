@@ -14,7 +14,7 @@ use ratatui::{
     Frame,
 };
 
-use crate::constants::{COLORS, MINIMAL_ASCII_HEIGHT};
+use crate::constants::{COLORS, MINIMAL_ASCII_HEIGHT, MINIMAL_ASCII_WIDTH};
 use crate::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
 use crate::terminal::highlight::{highlight_code_block, Theme};
 use crate::terminal::widgets::choice::{ChoiceGrid, ChoiceSelector, ChoiceSelectorState};
@@ -73,7 +73,10 @@ pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str, quiz_name: &str)
     frame.render_widget(outer_block, frame.size());
 
     match FIGfont::standard() {
-        Ok(standard_font) if frame.size().height > MINIMAL_ASCII_HEIGHT => {
+        Ok(standard_font)
+            if frame.size().height > MINIMAL_ASCII_HEIGHT
+                && frame.size().width > MINIMAL_ASCII_WIDTH =>
+        {
             for i in 0..lines.len() {
                 let Some(figure) = standard_font.convert(lines[i]) else {
                     // returns none when there is nothing to draw
@@ -136,6 +139,7 @@ pub fn simple_message(frame: &mut Frame, title: &str, message: &str, quiz_name: 
     let content_space = inner_block.inner(inner);
 
     let paragraph = Paragraph::new(message)
+        .wrap(Wrap { trim: true })
         .block(get_empty_block())
         .alignment(Alignment::Center);
 
@@ -146,7 +150,12 @@ pub fn simple_message(frame: &mut Frame, title: &str, message: &str, quiz_name: 
 
 pub fn welcome(frame: &mut Frame, quiz_name: &str) {
     let lines = ["Welcome", "to", "Clihoot!"];
-    ascii_art(frame, &lines, "Press ENTER to start", quiz_name);
+    ascii_art(
+        frame,
+        &lines,
+        "Press ENTER to start!\nPress h for help",
+        quiz_name,
+    );
 }
 
 pub fn waiting(
@@ -158,7 +167,7 @@ pub fn waiting(
     let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
-        "Waiting for the game to start:".to_string(),
+        "Players waiting for the game to start:".to_string(),
         " Welcome! ",
         quiz_name,
     );
@@ -263,17 +272,20 @@ pub fn question(
     theme: Theme,
     quiz_name: &str,
 ) {
-    let binding = "Question ".to_string()
-        + (question.question_index + 1).to_string().as_str()
-        + "/"
-        + question.questions_count.to_string().as_str();
-
-    let mut text = question.question.text.as_str();
-    if answered {
-        text = "Waiting for other players to answer...";
-    }
-
-    let layout = question_layout(frame, &binding, text, quiz_name);
+    let layout = question_layout(
+        frame,
+        &format!(
+            " Question {}/{} ",
+            question.question_index + 1,
+            question.questions_count
+        ),
+        if answered {
+            "Waiting for other players to answer..."
+        } else {
+            question.question.text.as_str()
+        },
+        quiz_name,
+    );
 
     question_time(
         frame,
@@ -295,16 +307,15 @@ pub fn question(
 
     if time_from_start < question.show_choices_after {
         let time = question.show_choices_after.saturating_sub(time_from_start);
-        frame.render_widget(
-            Paragraph::new(format!(
-                "Choices will be displayed in {} second{}!",
-                time,
-                if time == 1 { "" } else { "s" }
-            ))
-            .block(Block::default().padding(Padding::new(0, 0, layout[3].height / 2, 0)))
-            .alignment(Alignment::Center),
-            layout[3],
-        );
+        let paragraph = Paragraph::new(format!(
+            "Choices will be displayed in {} second{}!",
+            time,
+            if time == 1 { "" } else { "s" }
+        ))
+        .block(Block::default().padding(Padding::new(0, 0, layout[3].height / 2, 0)))
+        .alignment(Alignment::Center);
+
+        frame.render_widget(paragraph, layout[3]);
         return;
     }
 
@@ -339,7 +350,12 @@ pub fn question(
         )
         .block(get_empty_block());
 
-    frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
+    if choice_selector_state.is_none() {
+        let choice_selector = choice_selector.current_item_style(Style::default());
+        frame.render_widget(choice_selector, layout[3]);
+    } else {
+        frame.render_stateful_widget(choice_selector, layout[3], choice_selector_state);
+    }
 }
 
 pub fn question_answers(
@@ -348,9 +364,12 @@ pub fn question_answers(
     theme: Theme,
     quiz_name: &str,
 ) {
-    let binding = "Question ".to_string() + (question.question_index + 1).to_string().as_str();
-
-    let layout = question_layout(frame, &binding, &question.question.text, quiz_name);
+    let layout = question_layout(
+        frame,
+        &format!(" Question {} ", question.question_index + 1),
+        &question.question.text,
+        quiz_name,
+    );
 
     if question.question.code_block.is_some() {
         let code_paragraph =
@@ -383,7 +402,17 @@ pub fn question_answers(
                     let title = Title::from(answers_count.to_string())
                         .alignment(Alignment::Right)
                         .position(Position::Top);
-                    item.set_block_ref(get_bordered_block().title(title));
+
+                    if was_selected_by_user {
+                        item.set_block_ref(
+                            get_bordered_block()
+                                .border_type(BorderType::Double)
+                                .title(title),
+                        );
+                        item.set_style_ref(Style::default().bold());
+                    } else {
+                        item.set_block_ref(get_bordered_block().title(title));
+                    }
                 }
                 None => {}
             }
@@ -409,13 +438,32 @@ pub fn results(
     table_state: &mut TableState,
     quiz_name: &str,
 ) {
-    let layout = welcome_results_layout(
+    let mut layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
         "Leaderboard:".to_string(),
         " Results! ",
         quiz_name,
     );
+
+    if results.was_final_round {
+        layout = welcome_results_layout(
+            frame,
+            vec![
+                Constraint::Length(1),
+                Constraint::Percentage(90),
+                Constraint::Length(1),
+            ],
+            "Final Leaderboard:".to_string(),
+            " Final Results! ",
+            quiz_name,
+        );
+
+        let paragraph = Paragraph::new("Great job!")
+            .block(get_empty_block())
+            .alignment(Alignment::Center);
+        frame.render_widget(paragraph, layout[2]);
+    }
 
     let items: Vec<_> = results
         .players
@@ -448,14 +496,12 @@ pub fn error(frame: &mut Frame, message: &str, quiz_name: &str) {
     simple_message(frame, "Error", message, quiz_name);
 }
 
-pub fn resize(frame: &mut Frame, quiz_name: &str, height: u16) {
+pub fn resize(frame: &mut Frame, quiz_name: &str, height: u16, width: u16) {
     frame.render_widget(Clear, frame.size());
     simple_message(
         frame,
         "Terminal height is too small",
-        &("Please resize your terminal to at least".to_owned()
-            + height.to_string().as_str()
-            + "lines"),
+        &format!("Please resize your terminal to at least {height}x{width} size"),
         quiz_name,
     );
 }
@@ -501,7 +547,7 @@ pub fn yes_no_popup(frame: &mut Frame, message: &str) {
     let title = Title::from(" Confirm ")
         .alignment(Alignment::Center)
         .position(Position::Top);
-    let bottom_title = Title::from(" Press y/n to confirm ")
+    let bottom_title = Title::from(" Press y to confirm ")
         .alignment(Alignment::Center)
         .position(Position::Bottom);
     let popup_block = Block::default()

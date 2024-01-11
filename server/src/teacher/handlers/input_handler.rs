@@ -134,7 +134,12 @@ impl TerminalHandleInput for TeacherTerminal {
                 }
 
                 match key_code {
-                    KeyCode::Enter => self.lobby.do_send(StartQuestion),
+                    KeyCode::Enter => {
+                        if results.was_final_round {
+                            self.state = TeacherTerminalState::EndGame;
+                        }
+                        self.lobby.do_send(StartQuestion);
+                    }
                     KeyCode::Down | KeyCode::Char('j' | 's') => {
                         selected += 1;
                         if selected >= results.players.len() {
