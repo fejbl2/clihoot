@@ -500,7 +500,7 @@ pub fn resize(frame: &mut Frame, quiz_name: &str, height: u16, width: u16) {
     frame.render_widget(Clear, frame.size());
     simple_message(
         frame,
-        "Terminal height is too small",
+        "Terminal is too small",
         &format!("Please resize your terminal to at least {height}x{width} size"),
         quiz_name,
     );
