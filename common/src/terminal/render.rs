@@ -253,6 +253,7 @@ fn question_layout(frame: &mut Frame, title: &str, text: &str, quiz_name: &str) 
     layout
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn question(
     frame: &mut Frame,
     question: &NextQuestion,
