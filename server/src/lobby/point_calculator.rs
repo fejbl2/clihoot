@@ -130,7 +130,7 @@ mod tests {
         assert!(points > 200);
 
         let answers = AnswerSelected {
-            answers: vec![choice_1.id, choice_3.id],
+            answers: HashSet::from([choice_1.id, choice_3.id]),
             player_uuid: player_id,
             question_index,
         };
@@ -149,7 +149,7 @@ mod tests {
         assert!(points > 0);
 
         let answers = AnswerSelected {
-            answers: vec![choice_4.id, choice_3.id],
+            answers: HashSet::from([choice_4.id, choice_3.id]),
             player_uuid: player_id,
             question_index,
         };
