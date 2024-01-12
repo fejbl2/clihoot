@@ -90,7 +90,7 @@ impl TerminalHandleInput for StudentTerminal {
                                 },
                             }));
                     }
-                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                    KeyCode::Down | KeyCode::Char('s') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         selected += 1;
                         if selected >= COLORS.len() {
@@ -98,7 +98,7 @@ impl TerminalHandleInput for StudentTerminal {
                         }
                         list_state.select(Some(selected));
                     }
-                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                    KeyCode::Up | KeyCode::Char('w') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         if selected == 0 {
                             selected = COLORS.len() - 1;
@@ -114,7 +114,7 @@ impl TerminalHandleInput for StudentTerminal {
                 let mut selected = list_state.selected().unwrap_or(0);
 
                 match key_code {
-                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                    KeyCode::Down | KeyCode::Char('s') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         selected += 1;
                         if selected >= self.players.len() {
@@ -122,7 +122,7 @@ impl TerminalHandleInput for StudentTerminal {
                         }
                         list_state.select(Some(selected));
                     }
-                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                    KeyCode::Up | KeyCode::Char('w') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         if selected == 0 {
                             selected = self.players.len() - 1;
@@ -162,19 +162,19 @@ impl TerminalHandleInput for StudentTerminal {
                     KeyCode::Char(' ') => {
                         choice_selector_state.toggle_selection(choice_grid, question.is_multichoice)
                     } // spacebar
-                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                    KeyCode::Down | KeyCode::Char('s') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         choice_selector_state.move_down(choice_grid);
                     }
-                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                    KeyCode::Up | KeyCode::Char('w') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         choice_selector_state.move_up(choice_grid);
                     }
-                    KeyCode::Right | KeyCode::Char('d' | 'l') => {
+                    KeyCode::Right | KeyCode::Char('d') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         choice_selector_state.move_right(choice_grid);
                     }
-                    KeyCode::Left | KeyCode::Char('a' | 'h') => {
+                    KeyCode::Left | KeyCode::Char('a') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         choice_selector_state.move_left(choice_grid);
                     }
@@ -187,7 +187,7 @@ impl TerminalHandleInput for StudentTerminal {
             } => {
                 let mut selected = list_state.selected().unwrap_or(0);
                 match key_code {
-                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                    KeyCode::Down | KeyCode::Char('s') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         selected += 1;
                         if selected >= results.players.len() {
@@ -195,7 +195,7 @@ impl TerminalHandleInput for StudentTerminal {
                         }
                         list_state.select(Some(selected));
                     }
-                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                    KeyCode::Up | KeyCode::Char('w') => {
                         self.music_address.do_send(SoundEffectMessage::Tap);
                         if selected == 0 {
                             selected = results.players.len() - 1;

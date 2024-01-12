@@ -16,7 +16,7 @@ pub fn render_teacher_help(frame: &mut Frame) {
         ("CTRL C", "Exit the game"),
         ("x", "Kick a player"),
         ("h", "Show this help"),
-        ("↑↓ | jk | ws", "Move up and down"),
+        ("↑↓ | ws", "Move up and down"),
     ];
     render::help(frame, &help_text);
 }
