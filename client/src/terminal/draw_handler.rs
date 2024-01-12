@@ -44,7 +44,7 @@ impl TerminalDraw for StudentTerminal {
                         frame,
                         &mut self.players,
                         list_state,
-                        &self.name,
+                        Some(self.uuid),
                         &self.quiz_name,
                     );
                 }

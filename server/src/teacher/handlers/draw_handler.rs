@@ -40,7 +40,7 @@ impl TerminalDraw for TeacherTerminal {
                     list_state,
                     kick_popup_visible,
                 } => {
-                    render::waiting(frame, &mut self.players, list_state, "", &self.quiz_name);
+                    render::waiting(frame, &mut self.players, list_state, None, &self.quiz_name);
                     if *kick_popup_visible {
                         render_kick_popup(frame);
                     }
