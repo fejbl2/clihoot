@@ -1,12 +1,16 @@
-use crate::terminal::constants::COLORS;
-
-use common::terminal::render::{self, get_bordered_block, get_empty_block, welcome_results_layout};
 use ratatui::{
     prelude::*,
-    widgets::{List, ListItem, ListState, Paragraph},
+    widgets::{List, ListItem, Paragraph},
 };
 
-pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool, quiz_name: &str) {
+use common::{
+    constants::COLORS,
+    terminal::render::{self, get_bordered_block, get_empty_block, welcome_results_layout},
+};
+
+use crate::student::state::{ColorSelectionState, NameSelectionState};
+
+pub fn render_name_selection(frame: &mut Frame, state: &NameSelectionState, quiz_name: &str) {
     let layout = welcome_results_layout(
         frame,
         vec![
@@ -19,23 +23,18 @@ pub fn render_name_selection(frame: &mut Frame, name: &str, name_used: bool, qui
         quiz_name,
     );
 
-    let paragraph_name = Paragraph::new(format!("{name}|")).block(get_bordered_block());
+    let paragraph_name = Paragraph::new(format!("{}|", state.name)).block(get_bordered_block());
     let paragraph_used_name = Paragraph::new("Name already used")
         .fg(Color::Red)
         .block(get_empty_block());
 
     frame.render_widget(paragraph_name, layout[1]);
-    if name_used {
+    if state.name_already_used {
         frame.render_widget(paragraph_used_name, layout[2]);
     }
 }
 
-pub fn render_color_selection(
-    frame: &mut Frame,
-    _color: Color,
-    list_state: &mut ListState,
-    quiz_name: &str,
-) {
+pub fn render_color_selection(frame: &mut Frame, state: &mut ColorSelectionState, quiz_name: &str) {
     let layout = welcome_results_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
@@ -54,7 +53,7 @@ pub fn render_color_selection(
         .highlight_style(Style::default().add_modifier(Modifier::ITALIC))
         .highlight_symbol(">> ");
 
-    frame.render_stateful_widget(list, layout[1], list_state);
+    frame.render_stateful_widget(list, layout[1], &mut state.list_state);
 }
 
 pub fn render_help(frame: &mut Frame) {

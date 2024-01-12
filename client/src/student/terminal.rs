@@ -1,53 +1,22 @@
 use actix::prelude::*;
 use log::debug;
 use ratatui::style::Color;
-use ratatui::widgets::{ListState, TableState};
 
 use uuid::Uuid;
 
-use crate::music_actor::{MusicActor, MusicMessage};
-use crate::websocket::WebsocketActor;
-use common::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
+use common::{
+    messages::network::PlayerData,
+    terminal::{
+        highlight::Theme,
+        terminal_actor::{TerminalActor, TerminalStop},
+    },
+};
 
-use common::terminal::highlight::Theme;
-
-use common::terminal::terminal_actor::{TerminalActor, TerminalStop};
-use common::terminal::widgets::choice::{ChoiceGrid, ChoiceSelectorState};
-
-#[derive(Debug)]
-pub enum StudentTerminalState {
-    StartGame,
-    NameSelection {
-        name: String,
-        name_already_used: bool,
-    },
-    ColorSelection {
-        list_state: ListState,
-    },
-    WaitingForGame {
-        list_state: ListState,
-    },
-    Question {
-        question: NextQuestion,
-        players_answered_count: usize,
-        answered: bool,
-        start_time: chrono::DateTime<chrono::Utc>,
-        duration_from_start: chrono::Duration,
-        choice_grid: ChoiceGrid,
-        choice_selector_state: ChoiceSelectorState,
-    },
-    Answers {
-        answers: QuestionEnded,
-    },
-    Results {
-        results: ShowLeaderboard,
-        table_state: TableState,
-    },
-    EndGame, // show some screen saying that the game ended and the student should just pres ctrl + c to close the app
-    Error {
-        message: String,
-    },
-}
+use crate::{
+    music_actor::{MusicActor, MusicMessage},
+    student::state::StudentTerminalState,
+    websocket::WebsocketActor,
+};
 
 pub struct StudentTerminal {
     pub uuid: Uuid,

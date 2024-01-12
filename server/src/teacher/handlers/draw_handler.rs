@@ -12,9 +12,11 @@ use common::{
 
 use ratatui::prelude::*;
 
-use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
-
-use super::draw_states::{render_kick_popup, render_skip_question_popup, render_teacher_help};
+use crate::teacher::{
+    draw_states::{render_kick_popup, render_skip_question_popup, render_teacher_help},
+    state::TeacherTerminalState,
+    terminal::TeacherTerminal,
+};
 
 impl TerminalDraw for TeacherTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
@@ -36,22 +38,19 @@ impl TerminalDraw for TeacherTerminal {
                 TeacherTerminalState::StartGame => {
                     render::welcome(frame, &self.quiz_name);
                 }
-                TeacherTerminalState::WaitingForGame {
-                    list_state,
-                    kick_popup_visible,
-                } => {
-                    render::waiting(frame, &mut self.players, list_state, None, &self.quiz_name);
-                    if *kick_popup_visible {
+                TeacherTerminalState::WaitingForGame(state) => {
+                    render::waiting(
+                        frame,
+                        &mut self.players,
+                        &mut state.list_state,
+                        None,
+                        &self.quiz_name,
+                    );
+                    if state.kick_popup_visible {
                         render_kick_popup(frame);
                     }
                 }
-                TeacherTerminalState::Question {
-                    question,
-                    players_answered_count,
-                    start_time: _,
-                    duration_from_start,
-                    skip_popup_visible,
-                } => {
+                TeacherTerminalState::Question(state) => {
                     if frame.size().height < MINIMAL_QUESTION_HEIGHT
                         || frame.size().width < MINIMAL_QUESTION_WIDTH
                     {
@@ -62,25 +61,25 @@ impl TerminalDraw for TeacherTerminal {
                             MINIMAL_QUESTION_WIDTH,
                         );
                     } else {
-                        let mut grid: ChoiceGrid = question.question.clone().into();
+                        let mut grid: ChoiceGrid = state.question.question.clone().into();
                         render::question(
                             frame,
-                            question,
-                            *players_answered_count,
+                            &state.question,
+                            state.players_answered_count,
                             &mut grid,
                             &mut ChoiceSelectorState::empty(),
-                            duration_from_start.num_seconds() as usize,
+                            state.duration_from_start.num_seconds() as usize,
                             false,
                             self.syntax_theme,
                             &self.quiz_name,
                         );
 
-                        if *skip_popup_visible {
+                        if state.skip_popup_visible {
                             render_skip_question_popup(frame);
                         }
                     }
                 }
-                TeacherTerminalState::Answers { answers } => {
+                TeacherTerminalState::Answers(state) => {
                     if frame.size().height < MINIMAL_QUESTION_HEIGHT
                         || frame.size().width < MINIMAL_QUESTION_WIDTH
                     {
@@ -93,27 +92,29 @@ impl TerminalDraw for TeacherTerminal {
                     } else {
                         render::question_answers(
                             frame,
-                            answers,
+                            &state.answers,
                             self.syntax_theme,
                             &self.quiz_name,
                         );
                     }
                 }
-                TeacherTerminalState::Results {
-                    results,
-                    table_state,
-                    kick_popup_visible,
-                } => {
-                    render::results(frame, results, table_state, None, &self.quiz_name);
-                    if *kick_popup_visible {
+                TeacherTerminalState::Results(state) => {
+                    render::results(
+                        frame,
+                        &state.results,
+                        &mut state.table_state,
+                        None,
+                        &self.quiz_name,
+                    );
+                    if state.kick_popup_visible {
                         render_kick_popup(frame);
                     }
                 }
                 TeacherTerminalState::EndGame => {
                     render::end_game(frame, &self.quiz_name);
                 }
-                TeacherTerminalState::Error { message } => {
-                    render::error(frame, message, &self.quiz_name);
+                TeacherTerminalState::Error(state) => {
+                    render::error(frame, &state.message, &self.quiz_name);
                 }
             }
 

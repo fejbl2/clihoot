@@ -1,41 +1,8 @@
 use actix::prelude::*;
 
-use ratatui::widgets::{ListState, TableState};
+use common::{messages::network::PlayerData, terminal::highlight::Theme};
 
-use common::{
-    messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard},
-    terminal::highlight::Theme,
-};
-
-use crate::Lobby;
-
-#[derive(Debug)]
-pub enum TeacherTerminalState {
-    StartGame,
-    WaitingForGame {
-        list_state: ListState,
-        kick_popup_visible: bool,
-    },
-    Question {
-        question: NextQuestion,
-        players_answered_count: usize,
-        start_time: chrono::DateTime<chrono::Utc>,
-        duration_from_start: chrono::Duration,
-        skip_popup_visible: bool,
-    },
-    Answers {
-        answers: QuestionEnded,
-    },
-    Results {
-        results: ShowLeaderboard,
-        table_state: TableState,
-        kick_popup_visible: bool,
-    },
-    EndGame,
-    Error {
-        message: String,
-    },
-}
+use crate::{teacher::state::TeacherTerminalState, Lobby};
 
 pub struct TeacherTerminal {
     pub quiz_name: String,

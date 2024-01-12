@@ -1,15 +1,22 @@
-use crate::terminal::draw_states::{render_color_selection, render_name_selection};
-use crate::terminal::student::{StudentTerminal, StudentTerminalState};
-use common::constants::{
-    MINIMAL_QUESTION_HEIGHT, MINIMAL_QUESTION_WIDTH, MINIMAL_SCREEN_HEIGHT, MINIMAL_SCREEN_WIDTH,
-};
-use common::terminal::render::{self};
-use common::terminal::terminal_actor::TerminalDraw;
-
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
-use super::draw_states::render_help;
+use common::{
+    constants::{
+        MINIMAL_QUESTION_HEIGHT, MINIMAL_QUESTION_WIDTH, MINIMAL_SCREEN_HEIGHT,
+        MINIMAL_SCREEN_WIDTH,
+    },
+    terminal::{
+        render::{self},
+        terminal_actor::TerminalDraw,
+    },
+};
+
+use crate::student::{
+    draw_states::{render_color_selection, render_help, render_name_selection},
+    state::StudentTerminalState,
+    terminal::StudentTerminal,
+};
 
 impl TerminalDraw for StudentTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
@@ -26,37 +33,27 @@ impl TerminalDraw for StudentTerminal {
 
                 return;
             }
+
             match &mut self.state {
                 StudentTerminalState::StartGame => {
                     render::welcome(frame, &self.quiz_name);
                 }
-                StudentTerminalState::NameSelection {
-                    name,
-                    name_already_used,
-                } => {
-                    render_name_selection(frame, name, *name_already_used, &self.quiz_name);
+                StudentTerminalState::NameSelection(state) => {
+                    render_name_selection(frame, state, &self.quiz_name);
                 }
-                StudentTerminalState::ColorSelection { list_state } => {
-                    render_color_selection(frame, self.color, list_state, &self.quiz_name);
+                StudentTerminalState::ColorSelection(state) => {
+                    render_color_selection(frame, state, &self.quiz_name);
                 }
-                StudentTerminalState::WaitingForGame { list_state } => {
+                StudentTerminalState::WaitingForGame(state) => {
                     render::waiting(
                         frame,
                         &mut self.players,
-                        list_state,
+                        &mut state.list_state,
                         Some(self.uuid),
                         &self.quiz_name,
                     );
                 }
-                StudentTerminalState::Question {
-                    question,
-                    players_answered_count,
-                    answered,
-                    start_time: _,
-                    duration_from_start,
-                    choice_grid,
-                    choice_selector_state,
-                } => {
+                StudentTerminalState::Question(state) => {
                     if frame.size().height < MINIMAL_QUESTION_HEIGHT
                         || frame.size().width < MINIMAL_QUESTION_WIDTH
                     {
@@ -69,18 +66,18 @@ impl TerminalDraw for StudentTerminal {
                     } else {
                         render::question(
                             frame,
-                            question,
-                            *players_answered_count,
-                            choice_grid,
-                            choice_selector_state,
-                            duration_from_start.num_seconds() as usize,
-                            *answered,
+                            &state.question,
+                            state.players_answered_count,
+                            &mut state.choice_grid,
+                            &mut state.choice_selector_state,
+                            state.duration_from_start.num_seconds() as usize,
+                            state.answered,
                             self.syntax_theme,
                             &self.quiz_name,
                         );
                     }
                 }
-                StudentTerminalState::Answers { answers } => {
+                StudentTerminalState::Answers(state) => {
                     if frame.size().height < MINIMAL_QUESTION_HEIGHT
                         || frame.size().width < MINIMAL_QUESTION_WIDTH
                     {
@@ -93,30 +90,27 @@ impl TerminalDraw for StudentTerminal {
                     } else {
                         render::question_answers(
                             frame,
-                            answers,
+                            &state.answers,
                             self.syntax_theme,
                             &self.quiz_name,
                         );
                     }
                 }
-                StudentTerminalState::Results {
-                    results,
-                    table_state,
-                } => {
+                StudentTerminalState::Results(state) => {
                     render::results(
                         frame,
-                        results,
-                        table_state,
+                        &state.results,
+                        &mut state.table_state,
                         Some(self.uuid),
                         &self.quiz_name,
                     );
                 }
 
-                StudentTerminalState::EndGame {} => {
+                StudentTerminalState::EndGame => {
                     render::end_game(frame, &self.quiz_name);
                 }
-                StudentTerminalState::Error { message } => {
-                    render::error(frame, message, &self.quiz_name);
+                StudentTerminalState::Error(state) => {
+                    render::error(frame, &state.message, &self.quiz_name);
                 }
             };
 
