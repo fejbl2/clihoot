@@ -11,12 +11,12 @@ use common::{
 
 use crate::{
     music_actor::{MusicMessage, SoundEffectMessage},
-    terminal::{
+    student::{
         state::{
             AnswersState, ErrorState, NameSelectionState, QuestionState, ResultsState,
             StudentTerminalState, WaitingForGameState,
         },
-        student::StudentTerminal,
+        terminal::StudentTerminal,
     },
 };
 

@@ -17,12 +17,12 @@ use common::{
 
 use crate::{
     music_actor::{MusicActor, SoundEffectMessage},
-    terminal::{
+    student::{
         constants::COLORS,
         state::{
             ColorSelectionState, NameSelectionState, StudentTerminalState, WaitingForGameState,
         },
-        student::StudentTerminal,
+        terminal::StudentTerminal,
     },
 };
 

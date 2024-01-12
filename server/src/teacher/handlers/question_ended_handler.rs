@@ -4,20 +4,17 @@ use common::{
 };
 use log::debug;
 
-use crate::teacher::terminal::{TeacherTerminal, TeacherTerminalState};
+use crate::teacher::{
+    state::{AnswersState, TeacherTerminalState},
+    terminal::TeacherTerminal,
+};
 
 impl TerminalHandleQuestionEnded for TeacherTerminal {
     fn handle_question_ended(&mut self, question_ended: QuestionEnded) -> anyhow::Result<()> {
         debug!("Teacher: handling question ended");
 
         let question = match &self.state {
-            TeacherTerminalState::Question {
-                question,
-                players_answered_count: _,
-                start_time: _,
-                duration_from_start: _,
-                skip_popup_visible: _,
-            } => question,
+            TeacherTerminalState::Question(state) => &state.question,
             _ => bail!(
                 "Teacher: received question ended, but the terminal is not in the Question state"
             ),
@@ -29,9 +26,9 @@ impl TerminalHandleQuestionEnded for TeacherTerminal {
             );
         }
 
-        self.state = TeacherTerminalState::Answers {
+        self.state = TeacherTerminalState::Answers(AnswersState {
             answers: question_ended,
-        };
+        });
 
         Ok(())
     }

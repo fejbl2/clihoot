@@ -5,7 +5,7 @@ use ratatui::{
 
 use common::terminal::render::{self, get_bordered_block, get_empty_block, welcome_results_layout};
 
-use crate::terminal::{
+use crate::student::{
     constants::COLORS,
     state::{ColorSelectionState, NameSelectionState},
 };

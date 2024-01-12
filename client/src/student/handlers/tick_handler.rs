@@ -1,6 +1,6 @@
 use common::terminal::terminal_actor::TerminalHandleTick;
 
-use crate::terminal::{state::StudentTerminalState, student::StudentTerminal};
+use crate::student::{state::StudentTerminalState, terminal::StudentTerminal};
 
 impl TerminalHandleTick for StudentTerminal {
     fn handle_tick(&mut self) -> anyhow::Result<()> {

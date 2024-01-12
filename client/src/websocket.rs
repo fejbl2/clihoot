@@ -7,21 +7,25 @@ use log::{debug, info, warn};
 use std::cell::RefCell;
 use std::rc::Rc;
 
+use url::Url;
+use uuid::Uuid;
+
 use tokio::net::TcpStream;
 use tokio_tungstenite::MaybeTlsStream;
 use tokio_tungstenite::{connect_async, tungstenite, WebSocketStream};
 use tungstenite::Error::ConnectionClosed;
 
-use crate::music_actor::MusicActor;
-use crate::terminal::student::run_student;
-use common::messages::network::CanJoin::No;
-use common::messages::network::TryJoinRequest;
-use common::messages::status_messages::ClientWebsocketStatus;
-use common::messages::ServerNetworkMessage::TryJoinResponse;
-use common::messages::{network, ClientNetworkMessage, ServerNetworkMessage};
-use common::terminal::highlight::Theme;
-use url::Url;
-use uuid::Uuid;
+use common::{
+    messages::{
+        network::{self, CanJoin::No, TryJoinRequest},
+        status_messages::ClientWebsocketStatus,
+        ClientNetworkMessage, ServerNetworkMessage,
+        ServerNetworkMessage::TryJoinResponse,
+    },
+    terminal::highlight::Theme,
+};
+
+use crate::{music_actor::MusicActor, student::terminal::run_student};
 
 #[derive(Debug, Message)]
 #[rtype(result = "()")]

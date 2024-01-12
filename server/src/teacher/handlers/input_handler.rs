@@ -12,7 +12,10 @@ use common::{
 
 use crate::{
     messages::lobby::{EndQuestion, KickPlayer, StartQuestion, SwitchToLeaderboard},
-    teacher::terminal::{TeacherTerminal, TeacherTerminalState},
+    teacher::{
+        state::{TeacherTerminalState, WaitingForGameState},
+        terminal::TeacherTerminal,
+    },
     Lobby,
 };
 
@@ -32,31 +35,28 @@ impl TerminalHandleInput for TeacherTerminal {
         }
 
         match &mut self.state {
-            TeacherTerminalState::StartGame {} => {
+            TeacherTerminalState::StartGame => {
                 if key_code == KeyCode::Enter {
-                    self.state = TeacherTerminalState::WaitingForGame {
+                    self.state = TeacherTerminalState::WaitingForGame(WaitingForGameState {
                         list_state: ListState::default().with_selected(Some(0)),
                         kick_popup_visible: false,
-                    };
+                    });
                 }
             }
-            TeacherTerminalState::WaitingForGame {
-                list_state,
-                kick_popup_visible,
-            } => {
-                let mut selected = list_state.selected().unwrap_or(0);
+            TeacherTerminalState::WaitingForGame(state) => {
+                let mut selected = state.list_state.selected().unwrap_or(0);
 
-                if *kick_popup_visible {
+                if state.kick_popup_visible {
                     if !self.players.is_empty() {
                         let player_uuid = self.players[selected].uuid;
                         let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
 
                         if kicked {
-                            list_state.select(Some(selected.saturating_sub(1)));
+                            state.list_state.select(Some(selected.saturating_sub(1)));
                         }
                     }
 
-                    *kick_popup_visible = false;
+                    state.kick_popup_visible = false;
                     return;
                 }
 
@@ -64,54 +64,45 @@ impl TerminalHandleInput for TeacherTerminal {
                     KeyCode::Enter => self.lobby.do_send(StartQuestion),
                     KeyCode::Char('x') => {
                         if !self.players.is_empty() {
-                            *kick_popup_visible = true;
+                            state.kick_popup_visible = true;
                         }
                     }
                     _ => {}
                 };
 
                 move_in_list(&mut selected, self.players.len(), key_code);
-                list_state.select(Some(selected));
+                state.list_state.select(Some(selected));
             }
-            TeacherTerminalState::Question {
-                question: q,
-                players_answered_count: _,
-                start_time: _,
-                duration_from_start: _,
-                skip_popup_visible,
-            } => {
-                if *skip_popup_visible {
+            TeacherTerminalState::Question(state) => {
+                if state.skip_popup_visible {
                     if let KeyCode::Char('y') = key_code {
                         self.lobby.do_send(EndQuestion {
-                            index: q.question_index,
+                            index: state.question.question_index,
                         });
                     }
-                    *skip_popup_visible = false;
+                    state.skip_popup_visible = false;
                 }
                 if key_code == KeyCode::Enter {
-                    *skip_popup_visible = true;
+                    state.skip_popup_visible = true;
                 }
             }
-            TeacherTerminalState::Answers { answers: _ } => {
+            TeacherTerminalState::Answers(_) => {
                 if key_code == KeyCode::Enter {
                     self.lobby.do_send(SwitchToLeaderboard);
                 }
             }
-            TeacherTerminalState::Results {
-                results,
-                table_state,
-                kick_popup_visible,
-            } => {
-                let mut selected = table_state.selected().unwrap_or(0);
+            TeacherTerminalState::Results(state) => {
+                let mut selected = state.table_state.selected().unwrap_or(0);
 
-                if *kick_popup_visible {
+                if state.kick_popup_visible {
                     if !self.players.is_empty() {
-                        let player_uuid = results.players[selected].0.uuid;
+                        let player_uuid = state.results.players[selected].0.uuid;
                         let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
 
                         if kicked {
-                            table_state.select(Some(selected.saturating_sub(1)));
-                            results.players = results
+                            state.table_state.select(Some(selected.saturating_sub(1)));
+                            state.results.players = state
+                                .results
                                 .clone()
                                 .players
                                 .into_iter()
@@ -120,29 +111,29 @@ impl TerminalHandleInput for TeacherTerminal {
                         }
                     }
 
-                    *kick_popup_visible = false;
+                    state.kick_popup_visible = false;
                     return;
                 }
 
                 if key_code == KeyCode::Enter {
-                    if results.was_final_round {
+                    if state.results.was_final_round {
                         self.state = TeacherTerminalState::EndGame;
                     }
                     self.lobby.do_send(StartQuestion);
                     return;
                 }
 
-                if key_code == KeyCode::Char('x') && !results.players.is_empty() {
-                    *kick_popup_visible = true;
+                if key_code == KeyCode::Char('x') && !state.results.players.is_empty() {
+                    state.kick_popup_visible = true;
                 }
 
                 move_in_list(&mut selected, self.players.len(), key_code);
-                table_state.select(Some(selected));
+                state.table_state.select(Some(selected));
             }
             TeacherTerminalState::EndGame => {
                 debug!("EndGame - doing nothing: {:?}", key_code);
             }
-            TeacherTerminalState::Error { message: _ } => {
+            TeacherTerminalState::Error(_) => {
                 debug!("Error - doing nothing: {:?}", key_code);
             }
         };

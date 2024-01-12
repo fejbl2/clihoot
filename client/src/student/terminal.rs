@@ -4,13 +4,19 @@ use ratatui::style::Color;
 
 use uuid::Uuid;
 
-use common::messages::network::PlayerData;
-use common::terminal::highlight::Theme;
-use common::terminal::terminal_actor::{TerminalActor, TerminalStop};
+use common::{
+    messages::network::PlayerData,
+    terminal::{
+        highlight::Theme,
+        terminal_actor::{TerminalActor, TerminalStop},
+    },
+};
 
-use crate::music_actor::{MusicActor, MusicMessage};
-use crate::terminal::state::StudentTerminalState;
-use crate::websocket::WebsocketActor;
+use crate::{
+    music_actor::{MusicActor, MusicMessage},
+    student::state::StudentTerminalState,
+    websocket::WebsocketActor,
+};
 
 pub struct StudentTerminal {
     pub uuid: Uuid,

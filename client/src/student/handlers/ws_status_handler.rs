@@ -5,9 +5,9 @@ use common::{
 
 use crate::{
     music_actor::MusicMessage,
-    terminal::{
+    student::{
         state::{ErrorState, StudentTerminalState},
-        student::StudentTerminal,
+        terminal::StudentTerminal,
     },
 };
 

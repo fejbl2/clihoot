@@ -12,10 +12,10 @@ use common::{
     },
 };
 
-use crate::terminal::{
+use crate::student::{
     draw_states::{render_color_selection, render_help, render_name_selection},
     state::StudentTerminalState,
-    student::StudentTerminal,
+    terminal::StudentTerminal,
 };
 
 impl TerminalDraw for StudentTerminal {
