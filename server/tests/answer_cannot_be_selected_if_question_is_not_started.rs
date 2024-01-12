@@ -2,7 +2,7 @@ mod fixtures;
 mod mocks;
 mod utils;
 
-use std::{borrow::Cow, thread::JoinHandle, time::Duration, vec};
+use std::{borrow::Cow, collections::HashSet, thread::JoinHandle, time::Duration};
 
 use actix::Addr;
 use common::{
@@ -42,7 +42,7 @@ async fn answer_cannot_be_selected_if_question_is_not_started(
     let answer = ClientNetworkMessage::AnswerSelected(AnswerSelected {
         player_uuid: player.uuid,
         question_index: 0,
-        answers: vec![questions[0].choices[0].id],
+        answers: HashSet::from([questions[0].choices[0].id]),
     });
 
     // try to answer before the question is started

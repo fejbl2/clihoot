@@ -52,7 +52,7 @@ pub fn calculate_points(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::collections::{HashMap, HashSet};
 
     use super::*;
     use common::constants::DEFAULT_QUIZ_NAME;
@@ -109,7 +109,7 @@ mod tests {
         };
 
         let answers = AnswerSelected {
-            answers: vec![choice_2.id, choice_1.id],
+            answers: HashSet::from([choice_2.id, choice_1.id]),
             player_uuid: player_id,
             question_index,
         };

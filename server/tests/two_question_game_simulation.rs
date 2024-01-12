@@ -2,7 +2,12 @@ mod fixtures;
 mod mocks;
 mod utils;
 
-use std::{collections::HashMap, thread, time::Duration, vec};
+use std::{
+    collections::{HashMap, HashSet},
+    thread,
+    time::Duration,
+    vec,
+};
 
 use actix::Addr;
 use anyhow::anyhow;
@@ -299,7 +304,7 @@ async fn assert_state_after_first_question(
     assert_eq!(fst_end_q1.question_index, 0);
     assert_eq!(
         fst_end_q1.player_answer,
-        Some(vec![game.questions[0].choices[1].id])
+        Some(HashSet::from([game.questions[0].choices[1].id]))
     );
     assert_eq!(snd_end_q1.player_answer, fst_end_q1.player_answer);
     let mut stats = HashMap::new();
@@ -351,14 +356,14 @@ async fn assert_state_after_second_question(
     assert_eq!(fst.question_index, 1);
     assert_eq!(
         fst.player_answer,
-        Some(vec![
+        Some(HashSet::from([
             game.questions[1].choices[0].id,
             game.questions[1].choices[1].id
-        ])
+        ]))
     );
     assert_eq!(
         snd.player_answer,
-        Some(vec![game.questions[1].choices[0].id])
+        Some(HashSet::from([game.questions[1].choices[0].id]))
     );
     let mut stats = HashMap::new();
     stats.insert(
