@@ -1,15 +1,21 @@
-use crate::terminal::draw_states::{render_color_selection, render_name_selection};
-use crate::terminal::student::{StudentTerminal, StudentTerminalState};
-use common::constants::{
-    MINIMAL_QUESTION_HEIGHT, MINIMAL_QUESTION_WIDTH, MINIMAL_SCREEN_HEIGHT, MINIMAL_SCREEN_WIDTH,
-};
-use common::terminal::render::{self};
-use common::terminal::terminal_actor::TerminalDraw;
-
 use ratatui::backend::Backend;
 use ratatui::Terminal;
 
-use super::draw_states::render_help;
+use common::{
+    constants::{
+        MINIMAL_QUESTION_HEIGHT, MINIMAL_QUESTION_WIDTH, MINIMAL_SCREEN_HEIGHT,
+        MINIMAL_SCREEN_WIDTH,
+    },
+    terminal::{
+        render::{self},
+        terminal_actor::TerminalDraw,
+    },
+};
+
+use crate::terminal::{
+    draw_states::{render_color_selection, render_help, render_name_selection},
+    student::{StudentTerminal, StudentTerminalState},
+};
 
 impl TerminalDraw for StudentTerminal {
     fn redraw<B: Backend>(&mut self, term: &mut Terminal<B>) -> anyhow::Result<()> {
