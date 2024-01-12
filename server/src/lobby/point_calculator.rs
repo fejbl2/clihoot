@@ -128,5 +128,43 @@ mod tests {
         .expect("Failed to calculate points");
 
         assert!(points > 200);
+
+        let answers = AnswerSelected {
+            answers: vec![choice_1.id, choice_3.id],
+            player_uuid: player_id,
+            question_index,
+        };
+
+        let points = calculate_points(
+            player_id,
+            answer_order,
+            total_players,
+            question_index,
+            &answers,
+            &questions,
+            &results,
+        )
+        .expect("Failed to calculate points");
+
+        assert!(points > 0);
+
+        let answers = AnswerSelected {
+            answers: vec![choice_4.id, choice_3.id],
+            player_uuid: player_id,
+            question_index,
+        };
+
+        let points = calculate_points(
+            player_id,
+            answer_order,
+            total_players,
+            question_index,
+            &answers,
+            &questions,
+            &results,
+        )
+        .expect("Failed to calculate points");
+
+        assert_eq!(points, 0);
     }
 }
