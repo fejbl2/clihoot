@@ -600,7 +600,7 @@ pub fn help(frame: &mut Frame, help_text: &[(&str, &str)]) {
     frame.render_widget(table, area);
 }
 
-pub fn yes_no_popup(frame: &mut Frame, message: &str) {
+pub fn confirm_popup(frame: &mut Frame, message: &str) {
     let title = Title::from(" Confirm ")
         .alignment(Alignment::Center)
         .position(Position::Top);

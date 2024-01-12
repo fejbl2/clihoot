@@ -13,7 +13,9 @@ use common::{
 };
 
 use crate::student::{
-    draw_states::{render_color_selection, render_help, render_name_selection},
+    draw_states::{
+        render_color_selection, render_help, render_multichoice_popup, render_name_selection,
+    },
     state::StudentTerminalState,
     terminal::StudentTerminal,
 };
@@ -75,6 +77,9 @@ impl TerminalDraw for StudentTerminal {
                             self.syntax_theme,
                             &self.quiz_name,
                         );
+                        if state.multichoice_popup_visible {
+                            render_multichoice_popup(frame);
+                        }
                     }
                 }
                 StudentTerminalState::Answers(state) => {

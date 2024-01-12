@@ -14,15 +14,18 @@ use common::{
         widgets::choice::{ChoiceGrid, ChoiceSelectorState},
     },
 };
+use uuid::Uuid;
 
 use crate::{
     music_actor::{MusicActor, SoundEffectMessage},
     student::{
         state::{
-            ColorSelectionState, NameSelectionState, StudentTerminalState, WaitingForGameState,
+            ColorSelectionState, NameSelectionState, QuestionState, StudentTerminalState,
+            WaitingForGameState,
         },
         terminal::StudentTerminal,
     },
+    websocket::WebsocketActor,
 };
 
 impl TerminalHandleInput for StudentTerminal {
@@ -111,25 +114,33 @@ impl TerminalHandleInput for StudentTerminal {
                     return;
                 }
 
+                if state.multichoice_popup_visible {
+                    if key_code == KeyCode::Char('y') {
+                        state.answered = true;
+                        handle_send(&self.ws_actor_address, self.uuid, state);
+                    }
+
+                    state.multichoice_popup_visible = false;
+                    return;
+                }
+
                 if key_code == KeyCode::Enter {
                     self.music_address.do_send(SoundEffectMessage::EnterPressed);
                     state.answered = true;
 
-                    // allow to send answers quicker in singlechoice questions
-                    if !state.question.is_multichoice
-                        && state.choice_selector_state.selected().is_empty()
-                    {
+                    if state.choice_selector_state.selected().is_empty() {
+                        if state.question.is_multichoice {
+                            state.multichoice_popup_visible = true;
+                            state.answered = false;
+                            return;
+                        }
+                        // allow to send answers quicker in singlechoice questions
                         state
                             .choice_selector_state
-                            .toggle_selection(&state.choice_grid, state.question.is_multichoice)
+                            .toggle_selection(&state.choice_grid, state.question.is_multichoice);
+                        handle_send(&self.ws_actor_address, self.uuid, state);
                     }
 
-                    self.ws_actor_address
-                        .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
-                            player_uuid: self.uuid,
-                            question_index: state.question.question_index,
-                            answers: state.choice_selector_state.selected(),
-                        }));
                     return;
                 }
 
@@ -224,4 +235,12 @@ fn move_in_answers(
     if moved {
         music_address.do_send(SoundEffectMessage::Tap);
     }
+}
+
+fn handle_send(ws_actor_address: &Addr<WebsocketActor>, uuid: Uuid, state: &mut QuestionState) {
+    ws_actor_address.do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
+        player_uuid: uuid,
+        question_index: state.question.question_index,
+        answers: state.choice_selector_state.selected(),
+    }));
 }

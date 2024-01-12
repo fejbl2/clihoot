@@ -67,3 +67,8 @@ pub fn render_help(frame: &mut Frame) {
     ];
     render::help(frame, &help_text);
 }
+
+pub fn render_multichoice_popup(frame: &mut Frame) {
+    let message = "Are you sure you want to submit an empty answer?\n You will get 0 points!";
+    render::confirm_popup(frame, message);
+}

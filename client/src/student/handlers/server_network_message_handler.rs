@@ -55,6 +55,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     duration_from_start: chrono::Duration::zero(),
                     choice_grid: question.question.into(),
                     choice_selector_state: ChoiceSelectorState::default(),
+                    multichoice_popup_visible: false,
                 });
             }
             ServerNetworkMessage::QuestionUpdate(update) => {
