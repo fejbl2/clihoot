@@ -13,6 +13,7 @@ use ratatui::{
     },
     Frame,
 };
+use uuid::Uuid;
 
 use crate::constants::{COLORS, MINIMAL_ASCII_HEIGHT, MINIMAL_ASCII_WIDTH};
 use crate::messages::network::{NextQuestion, PlayerData, QuestionEnded, ShowLeaderboard};
@@ -91,6 +92,7 @@ pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str, quiz_name: &str)
         _ => {
             for i in 0..lines.len() {
                 let paragraph = Paragraph::new(lines[i])
+                    .wrap(Wrap { trim: true })
                     .block(get_empty_block())
                     .alignment(Alignment::Center);
                 frame.render_widget(paragraph, layout[i]);
@@ -99,6 +101,7 @@ pub fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str, quiz_name: &str)
     }
 
     let paragraph = Paragraph::new(text)
+        .wrap(Wrap { trim: true })
         .block(get_empty_block())
         .alignment(Alignment::Center);
     frame.render_widget(paragraph, layout[lines.len()]);
@@ -122,7 +125,9 @@ pub fn welcome_results_layout(
         .constraints(constraints)
         .split(content_space);
 
-    let paragraph = Paragraph::new(paragraph_name).block(get_empty_block());
+    let paragraph = Paragraph::new(paragraph_name)
+        .wrap(Wrap { trim: true })
+        .block(get_empty_block());
 
     frame.render_widget(outer_block, frame.size());
     frame.render_widget(inner_block, inner);
@@ -162,11 +167,21 @@ pub fn waiting(
     frame: &mut Frame,
     players: &mut [PlayerData],
     list_state: &mut ListState,
+    player_uuid: Option<Uuid>,
     quiz_name: &str,
 ) {
+    let constraints = if player_uuid.is_none() {
+        vec![
+            Constraint::Length(1),
+            Constraint::Percentage(90),
+            Constraint::Length(1),
+        ]
+    } else {
+        vec![Constraint::Length(1), Constraint::Percentage(90)]
+    };
     let layout = welcome_results_layout(
         frame,
-        vec![Constraint::Length(1), Constraint::Percentage(90)],
+        constraints.clone(),
         "Players waiting for the game to start:".to_string(),
         " Welcome! ",
         quiz_name,
@@ -175,8 +190,13 @@ pub fn waiting(
     let items: Vec<_> = players
         .iter()
         .map(|player| {
-            ListItem::new(player.nickname.to_string())
-                .style(style::Style::default().fg(player.color))
+            let item = ListItem::new(player.nickname.to_string())
+                .style(style::Style::default().fg(player.color));
+            if player.uuid == player_uuid.unwrap_or(Uuid::nil()) {
+                item.underlined().bold()
+            } else {
+                item
+            }
         })
         .collect();
 
@@ -185,6 +205,14 @@ pub fn waiting(
         .highlight_symbol(">> ");
 
     frame.render_stateful_widget(list, layout[1], list_state);
+
+    if constraints.len() == 3 {
+        let paragraph = Paragraph::new("Press Enter to start the game!")
+            .wrap(Wrap { trim: true })
+            .block(get_empty_block())
+            .alignment(Alignment::Center);
+        frame.render_widget(paragraph, layout[2]);
+    }
 }
 
 fn question_time(
@@ -208,9 +236,11 @@ fn question_time(
         "Time left: {}",
         (question.show_choices_after + question.time_seconds).saturating_sub(time_from_start)
     ))
+    .wrap(Wrap { trim: true })
     .alignment(Alignment::Left)
     .block(get_empty_block());
     let asnwered_paragraph = Paragraph::new(format!("Players answered: {players_answered_count}"))
+        .wrap(Wrap { trim: true })
         .alignment(Alignment::Right)
         .block(get_empty_block());
     let type_paragraph = Paragraph::new(format!(
@@ -220,6 +250,7 @@ fn question_time(
             false => "Single choice",
         }
     ))
+    .wrap(Wrap { trim: true })
     .alignment(Alignment::Center)
     .block(get_empty_block());
 
@@ -249,6 +280,7 @@ fn question_layout(frame: &mut Frame, title: &str, text: &str, quiz_name: &str) 
 
     let paragraph = Paragraph::new(text)
         .bold()
+        .wrap(Wrap { trim: true })
         .block(get_empty_block().padding(Padding::new(1, 1, 1, 1)))
         .alignment(Alignment::Center);
 
@@ -300,8 +332,14 @@ pub fn question(
     }
 
     if question.code_block.is_some() {
-        let code_paragraph = highlight_code_block(question.code_block.as_ref().unwrap(), theme)
-            .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+        let code_paragraph = highlight_code_block(
+            question
+                .code_block
+                .as_ref()
+                .expect("Code block should be Some"),
+            theme,
+        )
+        .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
         frame.render_widget(code_paragraph, layout[2]);
     }
 
@@ -312,6 +350,7 @@ pub fn question(
             time,
             if time == 1 { "" } else { "s" }
         ))
+        .wrap(Wrap { trim: true })
         .block(Block::default().padding(Padding::new(0, 0, layout[3].height / 2, 0)))
         .alignment(Alignment::Center);
 
@@ -372,9 +411,15 @@ pub fn question_answers(
     );
 
     if question.question.code_block.is_some() {
-        let code_paragraph =
-            highlight_code_block(question.question.code_block.as_ref().unwrap(), theme)
-                .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
+        let code_paragraph = highlight_code_block(
+            question
+                .question
+                .code_block
+                .as_ref()
+                .expect("Code block should be Some"),
+            theme,
+        )
+        .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
         frame.render_widget(code_paragraph, layout[2]);
     }
 
@@ -436,6 +481,7 @@ pub fn results(
     frame: &mut Frame,
     results: &ShowLeaderboard,
     table_state: &mut TableState,
+    player_uuid: Option<Uuid>,
     quiz_name: &str,
 ) {
     let mut layout = welcome_results_layout(
@@ -460,6 +506,7 @@ pub fn results(
         );
 
         let paragraph = Paragraph::new("Great job!")
+            .wrap(Wrap { trim: true })
             .block(get_empty_block())
             .alignment(Alignment::Center);
         frame.render_widget(paragraph, layout[2]);
@@ -469,18 +516,28 @@ pub fn results(
         .players
         .iter()
         .map(|(player, score)| {
-            let row = vec![
-                Line::styled(player.nickname.to_string(), style::Style::default().bold())
-                    .alignment(Alignment::Left),
-                Line::raw(format!("{score}")).alignment(Alignment::Right),
-            ];
+            let mut name_cell = Line::styled(player.nickname.to_string(), style::Style::default())
+                .alignment(Alignment::Left);
+            let mut score_cell = Line::raw(format!("{score}")).alignment(Alignment::Center);
+            if player.uuid == player_uuid.unwrap_or(Uuid::nil()) {
+                name_cell.patch_style(style::Style::default().underlined().bold());
+                score_cell.patch_style(style::Style::default().underlined().bold());
+            }
+            let row = vec![name_cell, score_cell];
 
             Row::new(row).style(style::Style::default().fg(player.color))
         })
         .collect();
 
-    let widths = [Constraint::Percentage(50), Constraint::Percentage(50)];
+    let widths = [Constraint::Percentage(70), Constraint::Percentage(30)];
+
+    let cells = vec![
+        Line::styled("Player", style::Style::default()).alignment(Alignment::Left),
+        Line::raw("Score").alignment(Alignment::Center),
+    ];
+
     let table = Table::new(items, widths)
+        .header(Row::new(cells).underlined())
         .block(get_bordered_block())
         .highlight_symbol(">> ");
 
@@ -529,7 +586,7 @@ pub fn help(frame: &mut Frame, help_text: &[(&str, &str)]) {
             let row = vec![
                 Line::styled((*key).to_string(), style::Style::default().bold())
                     .alignment(Alignment::Left),
-                Line::raw((*function).to_string()).alignment(Alignment::Right),
+                Line::raw((*function).to_string()).alignment(Alignment::Left),
             ];
 
             Row::new(row)
