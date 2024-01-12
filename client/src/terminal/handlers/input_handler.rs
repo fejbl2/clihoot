@@ -19,7 +19,10 @@ use crate::{
     music_actor::{MusicActor, SoundEffectMessage},
     terminal::{
         constants::COLORS,
-        student::{StudentTerminal, StudentTerminalState},
+        state::{
+            ColorSelectionState, NameSelectionState, StudentTerminalState, WaitingForGameState,
+        },
+        student::StudentTerminal,
     },
 };
 
@@ -40,40 +43,42 @@ impl TerminalHandleInput for StudentTerminal {
 
         match &mut self.state {
             StudentTerminalState::StartGame if key_code == KeyCode::Enter => {
-                self.state = StudentTerminalState::NameSelection {
+                self.state = StudentTerminalState::NameSelection(NameSelectionState {
                     name: String::new(),
                     name_already_used: false,
-                };
+                })
             }
-            StudentTerminalState::NameSelection {
-                name,
-                name_already_used,
-            } => {
-                if input_name(name, key_code, &self.players, name_already_used) {
+            StudentTerminalState::NameSelection(state) => {
+                if input_name(
+                    &mut state.name,
+                    key_code,
+                    &self.players,
+                    &mut state.name_already_used,
+                ) {
                     self.music_address.do_send(SoundEffectMessage::EnterPressed);
-                    self.name = (*name).to_string();
-                    self.state = StudentTerminalState::ColorSelection {
+                    self.name = (*state.name).to_string();
+                    self.state = StudentTerminalState::ColorSelection(ColorSelectionState {
                         list_state: ListState::default().with_selected(Some(0)),
-                    }
+                    })
                 }
             }
-            StudentTerminalState::ColorSelection { list_state } => {
+            StudentTerminalState::ColorSelection(state) => {
                 if key_code == KeyCode::Backspace {
-                    self.state = StudentTerminalState::NameSelection {
+                    self.state = StudentTerminalState::NameSelection(NameSelectionState {
                         name: self.name.to_string(),
                         name_already_used: false,
-                    };
+                    });
                     return;
                 }
 
-                let mut selected = list_state.selected().unwrap_or(0);
+                let mut selected = state.list_state.selected().unwrap_or(0);
 
                 if key_code == KeyCode::Enter {
                     self.music_address.do_send(SoundEffectMessage::EnterPressed);
                     self.color = COLORS[selected];
-                    self.state = StudentTerminalState::WaitingForGame {
+                    self.state = StudentTerminalState::WaitingForGame(WaitingForGameState {
                         list_state: ListState::default().with_selected(Some(0)),
-                    };
+                    });
                     self.ws_actor_address
                         .do_send(ClientNetworkMessage::JoinRequest(JoinRequest {
                             player_data: PlayerData {
@@ -86,66 +91,61 @@ impl TerminalHandleInput for StudentTerminal {
                 }
 
                 let moved = move_in_list(&mut selected, COLORS.len(), key_code);
-                list_state.select(Some(selected));
+                state.list_state.select(Some(selected));
                 if moved {
                     self.music_address.do_send(SoundEffectMessage::Tap)
                 }
             }
-            StudentTerminalState::WaitingForGame { list_state } => {
-                let mut selected = list_state.selected().unwrap_or(0);
+            StudentTerminalState::WaitingForGame(state) => {
+                let mut selected = state.list_state.selected().unwrap_or(0);
                 let moved = move_in_list(&mut selected, self.players.len(), key_code);
-                list_state.select(Some(selected));
+                state.list_state.select(Some(selected));
 
                 if moved {
                     self.music_address.do_send(SoundEffectMessage::Tap)
                 }
             }
-            StudentTerminalState::Question {
-                question,
-                players_answered_count: _,
-                answered,
-                start_time: _,
-                duration_from_start,
-                choice_grid,
-                choice_selector_state,
-            } => {
-                if (duration_from_start.num_seconds() as usize) < question.show_choices_after {
+            StudentTerminalState::Question(state) => {
+                if (state.duration_from_start.num_seconds() as usize)
+                    < state.question.show_choices_after
+                {
                     return;
                 }
 
                 if key_code == KeyCode::Enter {
                     self.music_address.do_send(SoundEffectMessage::EnterPressed);
-                    *answered = true;
+                    state.answered = true;
 
                     // allow to send answers quicker in singlechoice questions
-                    if !question.is_multichoice && choice_selector_state.selected().is_empty() {
-                        choice_selector_state.toggle_selection(choice_grid, question.is_multichoice)
+                    if !state.question.is_multichoice
+                        && state.choice_selector_state.selected().is_empty()
+                    {
+                        state
+                            .choice_selector_state
+                            .toggle_selection(&state.choice_grid, state.question.is_multichoice)
                     }
 
                     self.ws_actor_address
                         .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
                             player_uuid: self.uuid,
-                            question_index: question.question_index,
-                            answers: choice_selector_state.selected(),
+                            question_index: state.question.question_index,
+                            answers: state.choice_selector_state.selected(),
                         }));
                     return;
                 }
 
                 move_in_answers(
                     key_code,
-                    choice_selector_state,
-                    choice_grid,
-                    question.is_multichoice,
+                    &mut state.choice_selector_state,
+                    &state.choice_grid,
+                    state.question.is_multichoice,
                     self.music_address.clone(),
                 );
             }
-            StudentTerminalState::Results {
-                results,
-                table_state: list_state,
-            } => {
-                let mut selected = list_state.selected().unwrap_or(0);
-                let moved = move_in_list(&mut selected, results.players.len(), key_code);
-                list_state.select(Some(selected));
+            StudentTerminalState::Results(state) => {
+                let mut selected = state.table_state.selected().unwrap_or(0);
+                let moved = move_in_list(&mut selected, state.results.players.len(), key_code);
+                state.table_state.select(Some(selected));
 
                 if moved {
                     self.music_address.do_send(SoundEffectMessage::Tap)
