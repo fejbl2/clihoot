@@ -197,24 +197,31 @@ fn move_in_answers(
     is_multichoice: bool,
     music_address: Addr<MusicActor>,
 ) {
-    match key_code {
-        KeyCode::Char(' ') => choice_selector_state.toggle_selection(choice_grid, is_multichoice), // spacebar
+    let moved = match key_code {
+        KeyCode::Char(' ') => {
+            choice_selector_state.toggle_selection(choice_grid, is_multichoice);
+            false
+        } // spacebar
         KeyCode::Down | KeyCode::Char('s') => {
-            music_address.do_send(SoundEffectMessage::Tap);
             choice_selector_state.move_down(choice_grid);
+            true
         }
         KeyCode::Up | KeyCode::Char('w') => {
-            music_address.do_send(SoundEffectMessage::Tap);
             choice_selector_state.move_up(choice_grid);
+            true
         }
         KeyCode::Right | KeyCode::Char('d') => {
-            music_address.do_send(SoundEffectMessage::Tap);
             choice_selector_state.move_right(choice_grid);
+            true
         }
         KeyCode::Left | KeyCode::Char('a') => {
-            music_address.do_send(SoundEffectMessage::Tap);
             choice_selector_state.move_left(choice_grid);
+            true
         }
-        _ => {}
+        _ => false,
     };
+
+    if moved {
+        music_address.do_send(SoundEffectMessage::Tap);
+    }
 }
