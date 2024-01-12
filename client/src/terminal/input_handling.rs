@@ -152,6 +152,12 @@ impl TerminalHandleInput for StudentTerminal {
                         self.music_address.do_send(SoundEffectMessage::EnterPressed);
                         *answered = true;
 
+                        // allow to send answers quicker in singlechoice questions
+                        if !question.is_multichoice && choice_selector_state.selected().is_empty() {
+                            choice_selector_state
+                                .toggle_selection(choice_grid, question.is_multichoice)
+                        }
+
                         self.ws_actor_address
                             .do_send(ClientNetworkMessage::AnswerSelected(AnswerSelected {
                                 player_uuid: self.uuid,
