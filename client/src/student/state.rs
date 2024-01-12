@@ -57,6 +57,6 @@ pub enum StudentTerminalState {
     Question(QuestionState),
     Answers(AnswersState),
     Results(ResultsState),
-    EndGame, // show some screen saying that the game ended and the student should just pres ctrl + c to close the app
+    EndGame,
     Error(ErrorState),
 }
