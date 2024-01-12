@@ -54,6 +54,7 @@ impl Handler<AnswerSelected> for Lobby {
         }
 
         let answer_order = self.results.entry(msg.question_index).or_default().len();
+        debug!("Player {id} answered as {answer_order}th player");
 
         let points = calculate_points(
             id,
@@ -64,6 +65,7 @@ impl Handler<AnswerSelected> for Lobby {
             &self.questions,
             &self.results,
         )?;
+        debug!("Player {id} got {points} points");
 
         self.results.entry(msg.question_index).or_default().insert(
             id,
