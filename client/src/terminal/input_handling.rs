@@ -25,7 +25,9 @@ impl TerminalHandleInput for StudentTerminal {
             return Ok(());
         }
 
-        if key_code == KeyCode::Char('h') {
+        if key_code == KeyCode::Char('h')
+            && !matches!(self.state, StudentTerminalState::NameSelection { .. })
+        {
             self.help_visible = true;
             return Ok(());
         }
