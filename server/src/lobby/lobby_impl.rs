@@ -1,5 +1,4 @@
 use actix::prelude::{Actor, Context};
-
 use anyhow::Ok;
 use common::{
     messages::{
@@ -157,6 +156,7 @@ impl Lobby {
     }
 
     pub fn send_leaderboard(&self, index: usize) -> anyhow::Result<bool> {
+        use itertools::Itertools;
         let is_final = index == self.questions.len() - 1;
 
         let message = ShowLeaderboard {
@@ -178,6 +178,8 @@ impl Lobby {
 
                     (player, score)
                 })
+                // sort by score descending
+                .sorted_by_key(|(_, score)| std::cmp::Reverse(*score))
                 .collect(),
         };
 

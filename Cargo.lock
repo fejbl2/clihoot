@@ -1675,6 +1675,7 @@ dependencies = [
  "common",
  "crossterm",
  "futures-util",
+ "itertools",
  "log",
  "rand",
  "ratatui",
