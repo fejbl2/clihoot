@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::anyhow;
 use common::{messages::network::AnswerSelected, questions::QuestionSet};
 use log::debug;
@@ -25,14 +27,10 @@ pub fn calculate_points(
         .iter()
         .filter(|choice| choice.is_correct)
         .map(|choice| choice.id)
-        .collect::<Vec<_>>();
+        .collect::<HashSet<_>>();
     debug!("Question has {} correct answers", correct_answers.len());
 
-    let num_correct = answers
-        .answers
-        .iter()
-        .filter(|answer| correct_answers.contains(answer))
-        .count();
+    let num_correct = answers.answers.intersection(&correct_answers).count();
 
     let num_wrong = answers.answers.len() - num_correct;
 
