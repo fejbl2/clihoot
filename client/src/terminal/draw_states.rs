@@ -63,8 +63,8 @@ pub fn render_help(frame: &mut Frame) {
         ("CTRL C", "Exit the game"),
         ("SPACE", "Select an option"),
         ("h", "Show this help"),
-        ("↑↓ | jk | ws", "Move up and down"),
-        ("←→ | hl | ad", "Move left and right"),
+        ("↑↓ | ws", "Move up and down"),
+        ("←→ | ad", "Move left and right"),
     ];
     render::help(frame, &help_text);
 }

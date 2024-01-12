@@ -59,14 +59,14 @@ impl TerminalHandleInput for TeacherTerminal {
 
                 match key_code {
                     KeyCode::Enter => self.lobby.do_send(StartQuestion),
-                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                    KeyCode::Down | KeyCode::Char('s') => {
                         selected += 1;
                         if selected >= self.players.len() {
                             selected = 0;
                         }
                         list_state.select(Some(selected));
                     }
-                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                    KeyCode::Up | KeyCode::Char('w') => {
                         if selected == 0 {
                             selected = self.players.len() - 1;
                         } else {
@@ -140,14 +140,14 @@ impl TerminalHandleInput for TeacherTerminal {
                         }
                         self.lobby.do_send(StartQuestion);
                     }
-                    KeyCode::Down | KeyCode::Char('j' | 's') => {
+                    KeyCode::Down | KeyCode::Char('s') => {
                         selected += 1;
                         if selected >= results.players.len() {
                             selected = 0;
                         }
                         table_state.select(Some(selected));
                     }
-                    KeyCode::Up | KeyCode::Char('k' | 'w') => {
+                    KeyCode::Up | KeyCode::Char('w') => {
                         if selected == 0 {
                             selected = results.players.len() - 1;
                         } else {
