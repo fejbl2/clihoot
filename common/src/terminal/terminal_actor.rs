@@ -23,7 +23,7 @@ pub trait TerminalDraw {
 }
 
 pub trait TerminalHandleInput {
-    fn handle_input(&mut self, key_code: KeyCode) -> anyhow::Result<()>;
+    fn handle_input(&mut self, key_code: KeyCode);
 }
 
 pub trait TerminalHandleServerNetworkMessage {
@@ -199,7 +199,7 @@ where
     type Result = anyhow::Result<()>;
 
     fn handle(&mut self, msg: KeyPress, _ctx: &mut Self::Context) -> Self::Result {
-        self.inner.handle_input(msg.key_code)?;
+        self.inner.handle_input(msg.key_code);
         self.inner.redraw(&mut self.terminal)
     }
 }
