@@ -3,12 +3,12 @@ use ratatui::{
     widgets::{List, ListItem, Paragraph},
 };
 
-use common::terminal::render::{self, get_bordered_block, get_empty_block, welcome_results_layout};
-
-use crate::student::{
+use common::{
     constants::COLORS,
-    state::{ColorSelectionState, NameSelectionState},
+    terminal::render::{self, get_bordered_block, get_empty_block, welcome_results_layout},
 };
+
+use crate::student::state::{ColorSelectionState, NameSelectionState};
 
 pub fn render_name_selection(frame: &mut Frame, state: &NameSelectionState, quiz_name: &str) {
     let layout = welcome_results_layout(

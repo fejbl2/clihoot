@@ -3,7 +3,7 @@ use crossterm::event::KeyCode;
 use ratatui::widgets::ListState;
 
 use common::{
-    constants::MAXIMAL_NAME_LENGTH,
+    constants::{COLORS, MAXIMAL_NAME_LENGTH},
     messages::{
         network::{AnswerSelected, JoinRequest, PlayerData},
         ClientNetworkMessage,
@@ -18,7 +18,6 @@ use common::{
 use crate::{
     music_actor::{MusicActor, SoundEffectMessage},
     student::{
-        constants::COLORS,
         state::{
             ColorSelectionState, NameSelectionState, StudentTerminalState, WaitingForGameState,
         },
