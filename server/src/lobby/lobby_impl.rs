@@ -28,6 +28,13 @@ impl Lobby {
             questions.questions.shuffle(&mut rng);
         }
 
+        if questions.randomize_answers {
+            let mut rng = rand::thread_rng();
+            for question in &mut questions.questions {
+                question.choices.shuffle(&mut rng);
+            }
+        }
+
         Lobby {
             teacher: None,
             phase: Phase::default(),
