@@ -3,7 +3,7 @@ mod mocks;
 mod utils;
 
 use std::{
-    collections::HashMap,
+    collections::{HashMap, HashSet},
     thread::{self, JoinHandle},
     time::Duration,
     vec,
@@ -61,7 +61,7 @@ async fn answer_can_be_selected(
     assert_eq!(state.results[&0][&player.uuid].answer_order, 1);
     assert_eq!(
         state.results[&0][&player.uuid].selected_answers,
-        vec![question.choices[0].id]
+        HashSet::from([question.choices[0].id])
     );
 
     let answered = state.results[&0][&player.uuid].timestamp;
@@ -75,7 +75,7 @@ async fn answer_can_be_selected(
     assert_eq!(question_ended.question_index, 0);
     assert_eq!(
         question_ended.player_answer,
-        Some(vec![question.choices[0].id])
+        Some(HashSet::from([question.choices[0].id]))
     );
 
     // check the correct question stats

@@ -1,4 +1,7 @@
-use std::{collections::HashMap, ops::Deref};
+use std::{
+    collections::{HashMap, HashSet},
+    ops::Deref,
+};
 
 use crate::questions::{Question, QuestionCensored};
 use actix::{
@@ -105,11 +108,11 @@ impl Deref for NextQuestion {
 pub struct AnswerSelected {
     pub player_uuid: Uuid,
     pub question_index: usize,
-    pub answers: Vec<Uuid>, // player can choose multiple answers
+    pub answers: HashSet<Uuid>, // player can choose multiple answers
 }
 
 impl Deref for AnswerSelected {
-    type Target = Vec<Uuid>;
+    type Target = HashSet<Uuid>;
 
     fn deref(&self) -> &Self::Target {
         &self.answers
@@ -133,7 +136,7 @@ pub struct ChoiceStats {
 pub struct QuestionEnded {
     pub question_index: usize,
     pub question: Question, // here we want also right choices unlike in NextQuestion, so no censoring
-    pub player_answer: Option<Vec<Uuid>>, // optional -- if player did not answer, this is None
+    pub player_answer: Option<HashSet<Uuid>>, // optional -- if player did not answer, this is None
     pub stats: HashMap<Uuid, ChoiceStats>, // how many answers has the option with given uuid
 }
 

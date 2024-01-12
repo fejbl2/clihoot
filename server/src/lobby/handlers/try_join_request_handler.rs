@@ -25,7 +25,7 @@ impl Handler<TryJoinRequest> for Lobby {
             };
         }
 
-        self.waiting_players.push(msg.uuid);
+        self.waiting_players.insert(msg.uuid);
 
         TryJoinResponse {
             can_join: CanJoin::Yes,

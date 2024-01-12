@@ -14,7 +14,7 @@ use common::{
 use log::debug;
 use rand::prelude::*;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use uuid::Uuid;
 
 use super::state::{Lobby, Phase};
@@ -40,7 +40,7 @@ impl Lobby {
             locked: true,
             joined_players: HashMap::new(),
             questions,
-            waiting_players: Vec::new(),
+            waiting_players: HashSet::new(),
             results: HashMap::new(),
         }
     }
@@ -128,7 +128,7 @@ impl Lobby {
         Ok(stats)
     }
 
-    fn get_player_answer(&self, index: usize, player_id: &Uuid) -> Option<Vec<Uuid>> {
+    fn get_player_answer(&self, index: usize, player_id: &Uuid) -> Option<HashSet<Uuid>> {
         self.results
             .get(&index)
             .and_then(|results| results.get(player_id))

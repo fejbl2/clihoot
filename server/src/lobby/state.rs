@@ -12,6 +12,7 @@ use common::questions::QuestionSet;
 use ratatui::style::Color;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::ops::Deref;
 use uuid::Uuid;
 
@@ -30,7 +31,7 @@ pub enum Phase {
 pub struct PlayerQuestionRecord {
     pub answer_order: usize,
     pub timestamp: DateTime<Utc>,
-    pub selected_answers: Vec<Uuid>,
+    pub selected_answers: HashSet<Uuid>,
     pub points_awarded: usize,
 }
 
@@ -79,7 +80,7 @@ pub struct Lobby {
     pub questions: QuestionSet,
 
     /// Players who have sent a TryJoinRequest, but have not joined yet
-    pub waiting_players: Vec<Uuid>,
+    pub waiting_players: HashSet<Uuid>,
 }
 
 impl<A, M> MessageResponse<A, M> for Lobby

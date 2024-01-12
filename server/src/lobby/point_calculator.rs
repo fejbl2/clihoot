@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use anyhow::anyhow;
 use common::{messages::network::AnswerSelected, questions::QuestionSet};
 use log::debug;
@@ -25,14 +27,10 @@ pub fn calculate_points(
         .iter()
         .filter(|choice| choice.is_correct)
         .map(|choice| choice.id)
-        .collect::<Vec<_>>();
+        .collect::<HashSet<_>>();
     debug!("Question has {} correct answers", correct_answers.len());
 
-    let num_correct = answers
-        .answers
-        .iter()
-        .filter(|answer| correct_answers.contains(answer))
-        .count();
+    let num_correct = answers.answers.intersection(&correct_answers).count();
 
     let num_wrong = answers.answers.len() - num_correct;
 
@@ -52,7 +50,7 @@ pub fn calculate_points(
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::collections::{HashMap, HashSet};
 
     use super::*;
     use common::constants::DEFAULT_QUIZ_NAME;
@@ -109,7 +107,7 @@ mod tests {
         };
 
         let answers = AnswerSelected {
-            answers: vec![choice_2.id, choice_1.id],
+            answers: HashSet::from([choice_2.id, choice_1.id]),
             player_uuid: player_id,
             question_index,
         };
@@ -130,7 +128,7 @@ mod tests {
         assert!(points > 200);
 
         let answers = AnswerSelected {
-            answers: vec![choice_1.id, choice_3.id],
+            answers: HashSet::from([choice_1.id, choice_3.id]),
             player_uuid: player_id,
             question_index,
         };
@@ -149,7 +147,7 @@ mod tests {
         assert!(points > 0);
 
         let answers = AnswerSelected {
-            answers: vec![choice_4.id, choice_3.id],
+            answers: HashSet::from([choice_4.id, choice_3.id]),
             player_uuid: player_id,
             question_index,
         };

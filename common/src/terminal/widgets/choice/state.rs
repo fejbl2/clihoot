@@ -191,7 +191,7 @@ impl ChoiceSelectorState {
 
     // get selected answers as vector
     #[must_use]
-    pub fn selected(&self) -> Vec<Uuid> {
+    pub fn selected(&self) -> HashSet<Uuid> {
         self.selected.clone().into_iter().collect()
     }
 
