@@ -104,7 +104,7 @@ impl TerminalDraw for TeacherTerminal {
                     table_state,
                     kick_popup_visible,
                 } => {
-                    render::results(frame, results, table_state, "", &self.quiz_name);
+                    render::results(frame, results, table_state, None, &self.quiz_name);
                     if *kick_popup_visible {
                         render_kick_popup(frame);
                     }

@@ -103,7 +103,13 @@ impl TerminalDraw for StudentTerminal {
                     results,
                     table_state,
                 } => {
-                    render::results(frame, results, table_state, &self.name, &self.quiz_name);
+                    render::results(
+                        frame,
+                        results,
+                        table_state,
+                        Some(self.uuid),
+                        &self.quiz_name,
+                    );
                 }
 
                 StudentTerminalState::EndGame {} => {

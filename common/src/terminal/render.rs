@@ -481,7 +481,7 @@ pub fn results(
     frame: &mut Frame,
     results: &ShowLeaderboard,
     table_state: &mut TableState,
-    player_name: &str,
+    player_uuid: Option<Uuid>,
     quiz_name: &str,
 ) {
     let mut layout = welcome_results_layout(
@@ -519,7 +519,7 @@ pub fn results(
             let mut name_cell = Line::styled(player.nickname.to_string(), style::Style::default())
                 .alignment(Alignment::Left);
             let mut score_cell = Line::raw(format!("{score}")).alignment(Alignment::Center);
-            if player.nickname == player_name {
+            if player.uuid == player_uuid.unwrap_or(Uuid::nil()) {
                 name_cell.patch_style(style::Style::default().underlined().bold());
                 score_cell.patch_style(style::Style::default().underlined().bold());
             }
