@@ -1,8 +1,8 @@
 use figlet_rs::FIGfont;
 
 use ratatui::{
-    layout::{Constraint, Direction, Layout},
-    widgets::{Block, Clear},
+    layout::{Alignment, Constraint, Direction, Layout},
+    widgets::{Block, Clear, Paragraph},
     Frame,
 };
 
@@ -40,7 +40,9 @@ fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str, quiz_name: &str) {
                 };
 
                 let figure = figure.to_string();
-                let paragraph = get_centered_paragraph(figure.as_str(), Block::default());
+                let paragraph = Paragraph::new(figure)
+                    .block(Block::default())
+                    .alignment(Alignment::Center);
                 frame.render_widget(paragraph, layout[i]);
             }
         }
