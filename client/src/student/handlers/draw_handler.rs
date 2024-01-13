@@ -6,10 +6,7 @@ use common::{
         MINIMAL_QUESTION_HEIGHT, MINIMAL_QUESTION_WIDTH, MINIMAL_SCREEN_HEIGHT,
         MINIMAL_SCREEN_WIDTH,
     },
-    terminal::{
-        render::{self},
-        terminal_actor::TerminalDraw,
-    },
+    terminal::{render, terminal_actor::TerminalDraw},
 };
 
 use crate::student::{
@@ -71,7 +68,7 @@ impl TerminalDraw for StudentTerminal {
                             &state.question,
                             state.players_answered_count,
                             &mut state.choice_grid,
-                            &mut state.choice_selector_state,
+                            Some(&mut state.choice_selector_state),
                             state.duration_from_start.num_seconds() as usize,
                             state.answered,
                             self.syntax_theme,

@@ -1,24 +1,24 @@
 use ratatui::{
     prelude::*,
-    widgets::{List, ListItem, Paragraph},
+    widgets::{Block, List, ListItem, Paragraph},
 };
 
 use common::{
     constants::COLORS,
-    terminal::render::{self, get_bordered_block, get_empty_block, welcome_results_layout},
+    terminal::render::{self, get_bordered_block, list_layout},
 };
 
 use crate::student::state::{ColorSelectionState, NameSelectionState};
 
 pub fn render_name_selection(frame: &mut Frame, state: &NameSelectionState, quiz_name: &str) {
-    let layout = welcome_results_layout(
+    let layout = list_layout(
         frame,
         vec![
             Constraint::Length(1),
             Constraint::Length(3),
             Constraint::Percentage(80),
         ],
-        "Name: ".to_string(),
+        "Name: ",
         " Welcome! ",
         quiz_name,
     );
@@ -26,7 +26,7 @@ pub fn render_name_selection(frame: &mut Frame, state: &NameSelectionState, quiz
     let paragraph_name = Paragraph::new(format!("{}|", state.name)).block(get_bordered_block());
     let paragraph_used_name = Paragraph::new("Name already used")
         .fg(Color::Red)
-        .block(get_empty_block());
+        .block(Block::default());
 
     frame.render_widget(paragraph_name, layout[1]);
     if state.name_already_used {
@@ -35,10 +35,10 @@ pub fn render_name_selection(frame: &mut Frame, state: &NameSelectionState, quiz
 }
 
 pub fn render_color_selection(frame: &mut Frame, state: &mut ColorSelectionState, quiz_name: &str) {
-    let layout = welcome_results_layout(
+    let layout = list_layout(
         frame,
         vec![Constraint::Length(1), Constraint::Percentage(90)],
-        "Color: ".to_string(),
+        "Color: ",
         " Welcome! ",
         quiz_name,
     );
@@ -70,5 +70,5 @@ pub fn render_help(frame: &mut Frame) {
 
 pub fn render_multichoice_popup(frame: &mut Frame) {
     let message = "Are you sure you want to submit an empty answer?\n You will get 0 points!";
-    render::confirm_popup(frame, message);
+    render::confirm(frame, message);
 }

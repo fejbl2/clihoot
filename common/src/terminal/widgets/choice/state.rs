@@ -9,23 +9,9 @@ pub struct ChoiceSelectorState {
     col: usize,
     pub(super) selected: HashSet<Uuid>,
     last_under_cursor: Option<Uuid>,
-    is_none: bool,
 }
 
 impl ChoiceSelectorState {
-    #[must_use]
-    pub fn empty() -> Self {
-        Self {
-            is_none: true,
-            ..Default::default()
-        }
-    }
-
-    #[must_use]
-    pub fn is_none(&self) -> bool {
-        self.is_none
-    }
-
     #[must_use]
     pub fn row(&self) -> usize {
         self.row
