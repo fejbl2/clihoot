@@ -5,10 +5,10 @@ A quiz app 🤔 for activating students in the classroom 🏫, working purely in
 ## Quickstart
 
 To host a game:
-`cargo run --bin server -- -p 8080 -q path_to_quiz.yaml`
+`cargo run --bin server -- -p 8080 -q sample_quizzes/quiz-1.yml`
 
 To join a game:
-`cargo run --bin student -- --addr="192.168.10.2:8080"`
+`cargo run --bin client -- --addr="127.0.0.1:8080"`
 
 ## Project Overview
 
@@ -85,6 +85,8 @@ How to play the game:
 
 2. Locate the clihoot client program (usually named clihoot-client) and execute it in your terminal. Your teacher
    will give you the address, it can be something like `teacher.example.com` or `192.168.0.60:4444` - which you can specify using option `--addr=<address>`.
+
+   You can also turn off the music by passing `--silent` option. But we will be sad 😢.
 
 3. When you successfully connect to the clihoot server, you will be asked to enter the nickname and color. The choice is up to you 😉.
 
