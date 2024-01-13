@@ -75,7 +75,7 @@ fn main() -> Result<()> {
             WebsocketActor::new(url.clone(), uuid, addr_music_actor, args.syntax_theme).await
         else {
             error!(
-                "I can't contact the specified clihoot server on address: '{url}' I am sorry 😿"
+                "I can't contact the specified clihoot server on address: '{url}' I am sorry 😿\n[HINT] You can use --addr to specify the clihoot address."
             );
             System::current().stop();
             return;

@@ -1,5 +1,7 @@
 use log::debug;
 use ratatui::widgets::{ListState, TableState};
+use std::collections::HashSet;
+use uuid::Uuid;
 
 use common::{
     constants::NICKNAME_ALREADY_TAKEN_MSG,
@@ -68,12 +70,32 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     anyhow::bail!("Terminal is not showing the question with given index");
                 }
 
+                self.music_address.do_send(SoundEffectMessage::Beep);
                 state.players_answered_count = update.players_answered_count;
             }
             ServerNetworkMessage::QuestionEnded(question) => {
                 debug!("Student: handling question ended");
                 self.music_address.do_send(SoundEffectMessage::Gong);
                 self.music_address.do_send(MusicMessage::NoMusic);
+
+                let correct_uuids: HashSet<Uuid> = question
+                    .question
+                    .choices
+                    .iter()
+                    .filter(|x| x.is_correct)
+                    .map(|x| x.id)
+                    .collect();
+
+                if let Some(player_answer) = question.player_answer.clone() {
+                    let sound_to_play =
+                        match player_answer.iter().any(|ans| correct_uuids.contains(ans)) {
+                            true => SoundEffectMessage::CorrectAnswer,
+                            false => SoundEffectMessage::WrongAnswer,
+                        };
+
+                    self.music_address.do_send(sound_to_play);
+                }
+
                 self.state = StudentTerminalState::Answers(AnswersState { answers: question });
             }
             ServerNetworkMessage::ShowLeaderboard(leaderboard) => {

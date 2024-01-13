@@ -10,6 +10,7 @@ use log::error;
 const LOBBY_MUSIC: &[u8] = include_bytes!("../assets/lobby.mp3");
 const COUNTDOWN_MUSIC: &[u8] = include_bytes!("../assets/countdown.mp3");
 
+const BEEP_SOUND: &[u8] = include_bytes!("../assets/beep_sound.mp3");
 const CHANGED_SELECTION_SOUND: &[u8] = include_bytes!("../assets/tap_sound.mp3");
 const ENTER_PRESSED_SOUND: &[u8] = include_bytes!("../assets/enter_pressed_sound.wav");
 const CORRECT_ANSWER_SOUND: &[u8] = include_bytes!("../assets/correct_answer_sound.mp3");
@@ -32,6 +33,7 @@ pub enum SoundEffectMessage {
     CorrectAnswer,
     WrongAnswer,
     Gong,
+    Beep,
 }
 
 impl MusicMessage {
@@ -51,6 +53,7 @@ impl SoundEffectMessage {
             SoundEffectMessage::CorrectAnswer => CORRECT_ANSWER_SOUND,
             SoundEffectMessage::WrongAnswer => WRONG_ANSWER_SOUND,
             SoundEffectMessage::Gong => GONG_SOUND,
+            SoundEffectMessage::Beep => BEEP_SOUND,
         }
     }
 }
@@ -75,7 +78,7 @@ impl MusicActor {
                     };
                 }
             }
-            error!("Failed to open stream to music device, no music will be played during game.");
+            error!("Failed to open stream to music device, no music will be played during game.\nUse --silent option to prevent this error.");
         }
 
         MusicActor {
