@@ -39,6 +39,7 @@ impl TerminalHandleInput for StudentTerminal {
         if key_code == KeyCode::Char('h')
             && !matches!(self.state, StudentTerminalState::NameSelection { .. })
         {
+            self.music_address.do_send(SoundEffectMessage::Tap);
             self.help_visible = true;
             return;
         }
@@ -116,6 +117,7 @@ impl TerminalHandleInput for StudentTerminal {
 
                 if state.multichoice_popup_visible {
                     if key_code == KeyCode::Char('y') {
+                        self.music_address.do_send(SoundEffectMessage::EnterPressed);
                         state.answered = true;
                         handle_send(&self.ws_actor_address, self.uuid, state);
                     }
@@ -125,7 +127,6 @@ impl TerminalHandleInput for StudentTerminal {
                 }
 
                 if key_code == KeyCode::Enter {
-                    self.music_address.do_send(SoundEffectMessage::EnterPressed);
                     state.answered = true;
 
                     if state.choice_selector_state.selected().is_empty() {
@@ -138,9 +139,10 @@ impl TerminalHandleInput for StudentTerminal {
                         state
                             .choice_selector_state
                             .toggle_selection(&state.choice_grid, state.question.is_multichoice);
-                        handle_send(&self.ws_actor_address, self.uuid, state);
                     }
 
+                    self.music_address.do_send(SoundEffectMessage::EnterPressed);
+                    handle_send(&self.ws_actor_address, self.uuid, state);
                     return;
                 }
 
@@ -211,6 +213,7 @@ fn move_in_answers(
     let moved = match key_code {
         KeyCode::Char(' ') => {
             choice_selector_state.toggle_selection(choice_grid, is_multichoice);
+            music_address.do_send(SoundEffectMessage::Tap);
             false
         } // spacebar
         KeyCode::Down | KeyCode::Char('s') => {
