@@ -2,6 +2,8 @@
 
 A quiz app 🤔 for activating students in the classroom 🏫, working purely in the terminal 💻.
 
+![Image of the game](image.png)
+
 ## Quickstart
 
 To host a game:
