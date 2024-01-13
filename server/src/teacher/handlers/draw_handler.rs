@@ -6,7 +6,7 @@ use common::{
     terminal::{
         render,
         terminal_actor::TerminalDraw,
-        widgets::choice::{ChoiceGrid, ChoiceSelectorState},
+        widgets::choice::{ChoiceGrid},
     },
 };
 
@@ -67,7 +67,7 @@ impl TerminalDraw for TeacherTerminal {
                             &state.question,
                             state.players_answered_count,
                             &mut grid,
-                            &mut ChoiceSelectorState::empty(),
+                            None,
                             state.duration_from_start.num_seconds() as usize,
                             false,
                             self.syntax_theme,
