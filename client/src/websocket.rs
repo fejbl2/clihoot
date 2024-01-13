@@ -97,22 +97,18 @@ impl WebsocketActor {
             info!("server does not allow us to join, reason: {}", reason);
         }
 
-        let my_address = ctx.address();
-        let music_address = self.music_actor_addr.clone();
-        let syntax_theme = self.syntax_theme;
-
         if let Ok(student_actor_addr) = run_student(
             uuid,
             quiz_name,
-            my_address.clone(),
-            &music_address,
-            syntax_theme,
+            ctx.address(),
+            &self.music_actor_addr,
+            self.syntax_theme,
         ) {
             // register student actor for network messages
-            my_address.do_send(Subscribe(student_actor_addr.clone().recipient()));
+            ctx.notify(Subscribe(student_actor_addr.clone().recipient()));
 
             // register student actor for status messages
-            my_address.do_send(SubscribeStatus(student_actor_addr.recipient()));
+            ctx.notify(SubscribeStatus(student_actor_addr.recipient()));
         };
     }
 }
