@@ -1,9 +1,8 @@
 use serde::{Deserialize, Serialize};
 
 use self::network::{
-    AnswerSelected, ClientDisconnected, JoinRequest, JoinResponse, NextQuestion, PlayersUpdate,
-    QuestionEnded, QuestionUpdate, ShowLeaderboard, TeacherDisconnected, TryJoinRequest,
-    TryJoinResponse,
+    AnswerSelected, JoinRequest, JoinResponse, NextQuestion, PlayersUpdate, QuestionEnded,
+    QuestionUpdate, ShowLeaderboard, TeacherDisconnected, TryJoinRequest, TryJoinResponse,
 };
 use actix::Message;
 
@@ -17,7 +16,6 @@ pub enum ClientNetworkMessage {
     TryJoinRequest(TryJoinRequest),
     JoinRequest(JoinRequest),
     AnswerSelected(AnswerSelected),
-    ClientDisconnected(ClientDisconnected),
 }
 
 /// The messages that can be sent over the websocket FROM the server TO the client

@@ -121,9 +121,6 @@ impl Handler<ClientNetworkMessage> for Websocket {
                     ctx.address(),
                 ));
             }
-            ClientNetworkMessage::ClientDisconnected(_msg) => {
-                ctx.notify(GracefulStop { reason: None });
-            }
         }
     }
 }

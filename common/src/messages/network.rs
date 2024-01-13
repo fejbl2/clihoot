@@ -148,11 +148,6 @@ pub struct ShowLeaderboard {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ClientDisconnected {
-    // no data
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct TeacherDisconnected {
     // no data
 }
