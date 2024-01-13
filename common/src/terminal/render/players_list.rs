@@ -11,7 +11,8 @@ use uuid::Uuid;
 use crate::messages::network::{PlayerData, ShowLeaderboard};
 
 use super::{
-    get_bordered_block, get_centered_paragraph, get_inner_block, get_outer_block, get_player_style,
+    get_bordered_block, get_centered_paragraph, get_highlighted_style, get_inner_block,
+    get_outer_block, get_player_style,
 };
 
 pub fn list_layout(
@@ -68,19 +69,18 @@ pub fn waiting(
     let items: Vec<_> = players
         .iter()
         .map(|player| {
-            let item = ListItem::new(player.nickname.to_string())
-                .style(style::Style::default().fg(player.color));
+            let mut item = Line::raw(player.nickname.to_string());
             if player.uuid == player_uuid.unwrap_or(Uuid::nil()) {
-                item.underlined().bold()
-            } else {
-                item
+                item.patch_style(get_player_style());
             }
+
+            ListItem::new(item).fg(player.color)
         })
         .collect();
 
     let list = List::new(items)
         .block(get_bordered_block())
-        .highlight_style(style::Style::default().add_modifier(style::Modifier::ITALIC))
+        .highlight_style(get_highlighted_style())
         .highlight_symbol(">> ");
 
     frame.render_stateful_widget(list, layout[1], list_state);
@@ -140,7 +140,6 @@ pub fn results(
         .collect();
 
     let widths = [Constraint::Percentage(70), Constraint::Percentage(30)];
-
     let cells = vec![
         Line::raw("Player").alignment(Alignment::Left),
         Line::raw("Score").alignment(Alignment::Center),
@@ -149,6 +148,7 @@ pub fn results(
     let table = Table::new(items, widths)
         .header(Row::new(cells).underlined())
         .block(get_bordered_block())
+        .highlight_style(get_highlighted_style())
         .highlight_symbol(">> ");
 
     frame.render_stateful_widget(table, layout[1], table_state);
