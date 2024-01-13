@@ -30,6 +30,7 @@ pub struct QuestionState {
     pub(super) duration_from_start: chrono::Duration,
     pub(super) choice_grid: ChoiceGrid,
     pub(super) choice_selector_state: ChoiceSelectorState,
+    pub(super) multichoice_popup_visible: bool,
 }
 
 #[derive(Debug)]
