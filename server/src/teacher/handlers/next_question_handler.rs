@@ -1,9 +1,7 @@
-use common::{
-    messages::network::NextQuestion, terminal::terminal_actor::TerminalHandleNextQuestion,
-};
+use common::{messages::network::NextQuestion, terminal::actor::TerminalHandleNextQuestion};
 
 use crate::teacher::{
-    state::{QuestionState, TeacherTerminalState},
+    states::{QuestionState, TeacherTerminalState},
     terminal::TeacherTerminal,
 };
 use log::debug;

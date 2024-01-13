@@ -28,8 +28,7 @@ pub enum Theme {
 impl From<Theme> for &str {
     fn from(value: Theme) -> Self {
         match value {
-            Theme::Default => "base16-eighties.dark",
-            Theme::EightiesDark => "base16-eighties.dark",
+            Theme::Default | Theme::EightiesDark => "base16-eighties.dark",
             Theme::MochaDark => "base16-mocha.dark",
             Theme::OceanDark => "base16-ocean.dark",
             Theme::OceanLight => "base16-ocean.light",
@@ -43,13 +42,13 @@ impl From<Theme> for &str {
 // NICE TO HAVE: store the result of this function
 // in the state so it doesn't get called with every redraw
 #[must_use]
-pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Paragraph {
+pub fn code_block(block: &CodeBlock, syntax_theme: Theme) -> Paragraph {
     let ss = SyntaxSet::load_defaults_newlines();
     let ts = ThemeSet::load_defaults();
 
     let use_bg_color = syntax_theme != Theme::Default;
 
-    let syntax = match find_syntax(&code_block.language, Some(&code_block.code)) {
+    let syntax = match find_syntax(&block.language, Some(&block.code)) {
         Ok(syntax) => syntax,                          // should always happen
         Err(_) => ss.find_syntax_plain_text().clone(), // fallback if something does terribly wrong
     };
@@ -59,7 +58,7 @@ pub fn highlight_code_block(code_block: &CodeBlock, syntax_theme: Theme) -> Para
 
     let mut lines: Vec<Line> = Vec::new();
 
-    for line in LinesWithEndings::from(&code_block.code) {
+    for line in LinesWithEndings::from(&block.code) {
         let Ok(ranges) = highlighter.highlight_line(line, &ss) else {
             return Paragraph::new("Unable to highlight code block");
         };

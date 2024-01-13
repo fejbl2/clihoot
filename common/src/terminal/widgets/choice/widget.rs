@@ -4,11 +4,11 @@ use ratatui::style::{Style, Stylize};
 use ratatui::text::Text;
 use ratatui::widgets::{Block, Padding, Paragraph, StatefulWidget, Widget, Wrap};
 
-use crate::terminal::widgets::choice::{ChoiceGrid, ChoiceSelectorState};
+use crate::terminal::widgets::choice::{Grid, SelectorState};
 
 #[derive(Default, Clone)]
-pub struct ChoiceSelector<'a> {
-    grid: ChoiceGrid,
+pub struct Selector<'a> {
+    grid: Grid,
     block: Option<Block<'a>>,
     current_item_style: Style,
     current_item_block: Option<Block<'a>>,
@@ -21,9 +21,9 @@ pub struct ChoiceSelector<'a> {
     max_width_percentage: u8,
 }
 
-impl<'a> ChoiceSelector<'a> {
+impl<'a> Selector<'a> {
     #[must_use]
-    pub fn new(grid: ChoiceGrid) -> Self {
+    pub fn new(grid: Grid) -> Self {
         Self {
             grid,
             block: None,
@@ -118,8 +118,8 @@ fn calculate_size(available_size: u16, item_count: u16, total_gap_size: u16, max
     }
 }
 
-impl<'a> StatefulWidget for ChoiceSelector<'a> {
-    type State = ChoiceSelectorState;
+impl<'a> StatefulWidget for Selector<'a> {
+    type State = SelectorState;
 
     // when rendering the widget, make sure that the ChoiceSelectorState is used
     // with the same grid that is used for the rendering
@@ -138,51 +138,56 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
             return;
         }
 
+        #[allow(clippy::cast_possible_truncation)]
+        #[allow(clippy::cast_sign_loss)]
         let max_width = (f32::from(choice_selector_area.width)
             * (f32::from(self.max_width_percentage) / 100.0))
             .round() as u16;
 
         let items = &mut self.grid.items;
 
-        let mut total_vgap_size = self.vertical_gap * (items.len() as u16 - 1);
-        if total_vgap_size >= choice_selector_area.height {
-            total_vgap_size = 0;
+        let mut total_vertical_gap_size =
+            self.vertical_gap * (u16::try_from(items.len()).unwrap_or(u16::MAX) - 1);
+        if total_vertical_gap_size >= choice_selector_area.height {
+            total_vertical_gap_size = 0;
         }
         let item_height = calculate_size(
             choice_selector_area.height,
-            items.len() as u16,
-            total_vgap_size,
+            u16::try_from(items.len()).unwrap_or(u16::MAX),
+            total_vertical_gap_size,
             choice_selector_area.height,
         );
 
         let (x, mut y) = (choice_selector_area.x, choice_selector_area.y);
 
         for (i, row) in items.iter_mut().enumerate() {
-            let mut total_hgap_size = self.horizontal_gap * (row.len() as u16 - 1);
-            if total_hgap_size > choice_selector_area.width {
-                total_hgap_size = 0;
+            let mut total_horizontal_gap_size =
+                self.horizontal_gap * (u16::try_from(row.len()).unwrap_or(u16::MAX) - 1);
+            if total_horizontal_gap_size > choice_selector_area.width {
+                total_horizontal_gap_size = 0;
             }
 
             let item_width = calculate_size(
                 choice_selector_area.width,
-                row.len() as u16,
-                total_hgap_size,
+                u16::try_from(row.len()).unwrap_or(u16::MAX),
+                total_horizontal_gap_size,
                 max_width,
             );
 
-            let leftover_space =
-                choice_selector_area.width - (item_width * row.len() as u16) - total_hgap_size;
+            let leftover_space = choice_selector_area.width
+                - (item_width * u16::try_from(row.len()).unwrap_or(u16::MAX))
+                - total_horizontal_gap_size;
 
             let mut row_x = x + leftover_space / 2;
             for (j, item) in row.iter_mut().enumerate() {
                 let area = Rect::new(
-                    row_x + j as u16 * item_width,
-                    y + i as u16 * item_height,
+                    row_x + u16::try_from(j).unwrap_or_default() * item_width,
+                    y + u16::try_from(i).unwrap_or_default() * item_height,
                     item_width,
                     item_height,
                 );
 
-                if total_hgap_size > 0 {
+                if total_horizontal_gap_size > 0 {
                     row_x += self.horizontal_gap;
                 }
 
@@ -219,7 +224,7 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                 let block = block.unwrap_or(item.block.clone());
 
                 let text = Text::from(item.content.clone());
-                let text_height = text.height() as u16 + 2;
+                let text_height = u16::try_from(text.height()).unwrap_or_default() + 2;
                 // centering the text vertically
                 let padding = Padding::new(0, 0, area.height.saturating_sub(text_height) / 2, 0);
 
@@ -231,16 +236,16 @@ impl<'a> StatefulWidget for ChoiceSelector<'a> {
                     .render(area, buf);
             }
 
-            if total_vgap_size > 0 {
+            if total_vertical_gap_size > 0 {
                 y += self.vertical_gap;
             }
         }
     }
 }
 
-impl<'a> Widget for ChoiceSelector<'a> {
+impl<'a> Widget for Selector<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let mut state = ChoiceSelectorState::default();
+        let mut state = SelectorState::default();
         StatefulWidget::render(self, area, buf, &mut state);
     }
 }

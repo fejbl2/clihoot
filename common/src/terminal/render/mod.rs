@@ -1,11 +1,13 @@
 mod helpers;
 mod players_list;
 mod popup;
-mod question;
+pub mod question;
 mod utils;
 
+pub use question::question;
+
 pub use helpers::*;
+pub use utils::*;
+
 pub use players_list::*;
 pub use popup::*;
-pub use question::*;
-pub use utils::*;

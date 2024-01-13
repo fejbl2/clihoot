@@ -16,6 +16,7 @@ pub const MAXIMAL_CHOICE_LENGTH: usize = 200;
 pub const MAXIMAL_QUESTION_LENGTH: usize = 200;
 pub const MAXIMAL_CODE_LENGTH: usize = 400;
 pub const MAXIMAL_NAME_LENGTH: usize = 20;
+pub const TICK_PERIOD_MS: u64 = 500;
 pub const PLAYER_KICKED_MESSAGE: &str = "You were kicked by the teacher";
 pub const COLORS: [Color; 7] = [
     Color::Red,

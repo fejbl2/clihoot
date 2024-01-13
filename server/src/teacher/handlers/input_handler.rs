@@ -7,19 +7,20 @@ use ratatui::widgets::ListState;
 
 use common::{
     constants::PLAYER_KICKED_MESSAGE,
-    terminal::{input_utils::move_in_list, terminal_actor::TerminalHandleInput},
+    terminal::{actor::TerminalHandleInput, input_utils::move_in_list},
 };
 
 use crate::{
     messages::lobby::{EndQuestion, KickPlayer, StartQuestion, SwitchToLeaderboard},
     teacher::{
-        state::{TeacherTerminalState, WaitingForGameState},
+        states::{TeacherTerminalState, WaitingForGameState},
         terminal::TeacherTerminal,
     },
     Lobby,
 };
 
 impl TerminalHandleInput for TeacherTerminal {
+    #[allow(clippy::too_many_lines)]
     fn handle_input(&mut self, key_code: KeyCode) {
         debug!("Key pressed: {:?}", key_code);
 
@@ -49,7 +50,7 @@ impl TerminalHandleInput for TeacherTerminal {
                 if state.kick_popup_visible {
                     if !self.players.is_empty() {
                         let player_uuid = self.players[selected].uuid;
-                        let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
+                        let kicked = handle_kick_player(&self.lobby, key_code, player_uuid);
 
                         if kicked {
                             state.list_state.select(Some(selected.saturating_sub(1)));
@@ -97,7 +98,7 @@ impl TerminalHandleInput for TeacherTerminal {
                 if state.kick_popup_visible {
                     if !self.players.is_empty() {
                         let player_uuid = state.results.players[selected].0.uuid;
-                        let kicked = handle_kick_player(self.lobby.clone(), key_code, player_uuid);
+                        let kicked = handle_kick_player(&self.lobby, key_code, player_uuid);
 
                         if kicked {
                             state.table_state.select(Some(selected.saturating_sub(1)));
@@ -140,7 +141,7 @@ impl TerminalHandleInput for TeacherTerminal {
     }
 }
 
-fn handle_kick_player(lobby_addr: Addr<Lobby>, key_code: KeyCode, player_uuid: Uuid) -> bool {
+fn handle_kick_player(lobby_addr: &Addr<Lobby>, key_code: KeyCode, player_uuid: Uuid) -> bool {
     match key_code {
         KeyCode::Char('y') => {
             lobby_addr.do_send(KickPlayer {

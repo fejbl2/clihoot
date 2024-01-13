@@ -8,11 +8,12 @@ use ratatui::Terminal;
 
 use std::marker::Unpin;
 
+use crate::constants::TICK_PERIOD_MS;
 use crate::messages::network::PlayersUpdate;
 use crate::messages::ServerNetworkMessage;
 use crate::messages::{
     network::{NextQuestion, QuestionEnded, QuestionUpdate, ShowLeaderboard},
-    status_messages::ClientWebsocketStatus,
+    status::ClientWebsocketStatus,
 };
 use crate::terminal::messages::{Initialize, KeyPress, Redraw, Stop, Tick};
 
@@ -65,6 +66,7 @@ pub trait TerminalStop {
     fn stop(&mut self) -> anyhow::Result<()>;
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub struct TerminalActor<T>
 where
     T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
@@ -87,26 +89,29 @@ where
     T: 'static + Unpin + TerminalDraw + TerminalHandleInput + TerminalStop,
 {
     #[cfg(not(feature = "test"))]
-    pub fn new(inner: T) -> Self {
+    /// Create a new terminal actor with the crossterm backend.
+    ///
+    /// # Panics
+    /// - If the terminal cannot be initialized.
+    pub fn new(inner: T) -> anyhow::Result<Self> {
         debug!("Initializing terminal actor with crossterm backend");
 
-        let term =
-            Terminal::new(ratatui::prelude::CrosstermBackend::new(std::io::stdout())).unwrap();
-        Self {
+        let term = Terminal::new(ratatui::prelude::CrosstermBackend::new(std::io::stdout()))?;
+        Ok(Self {
             terminal: term,
             inner,
-        }
+        })
     }
 
     #[cfg(feature = "test")]
-    pub fn new(inner: T) -> Self {
+    pub fn new(inner: T) -> anyhow::Result<Self> {
         debug!("Initializing terminal actor with test backend");
 
-        let term = Terminal::new(ratatui::backend::TestBackend::new(64, 32)).unwrap();
-        Self {
+        let term = Terminal::new(ratatui::backend::TestBackend::new(64, 32))?;
+        Ok(Self {
             terminal: term,
             inner,
-        }
+        })
     }
 }
 
@@ -117,9 +122,12 @@ where
     type Context = Context<Self>;
 
     fn started(&mut self, ctx: &mut Self::Context) {
-        ctx.run_interval(std::time::Duration::from_millis(500), |_, ctx| {
-            ctx.address().do_send(Tick)
-        });
+        ctx.run_interval(
+            std::time::Duration::from_millis(TICK_PERIOD_MS),
+            |_, ctx| {
+                ctx.address().do_send(Tick);
+            },
+        );
 
         let addr = ctx.address();
         let fut = async move {

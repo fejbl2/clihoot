@@ -307,33 +307,33 @@ async fn assert_state_after_first_question(
         Some(HashSet::from([game.questions[0].choices[1].id]))
     );
     assert_eq!(snd_end_q1.player_answer, fst_end_q1.player_answer);
-    let mut stats = HashMap::new();
-    stats.insert(
+    let mut statistics = HashMap::new();
+    statistics.insert(
         game.questions[0].choices[0].id,
         ChoiceStats {
             players_answered_count: 0,
         },
     );
-    stats.insert(
+    statistics.insert(
         game.questions[0].choices[1].id,
         ChoiceStats {
             players_answered_count: 2,
         },
     );
-    stats.insert(
+    statistics.insert(
         game.questions[0].choices[2].id,
         ChoiceStats {
             players_answered_count: 0,
         },
     );
-    stats.insert(
+    statistics.insert(
         game.questions[0].choices[3].id,
         ChoiceStats {
             players_answered_count: 0,
         },
     );
     assert_eq!(fst_end_q1.stats, snd_end_q1.stats);
-    assert_eq!(fst_end_q1.stats, stats);
+    assert_eq!(fst_end_q1.stats, statistics);
 
     let state = game.server.send(GetServerState).await?;
     assert_eq!(state.joined_players.len(), 2);
@@ -365,21 +365,21 @@ async fn assert_state_after_second_question(
         snd.player_answer,
         Some(HashSet::from([game.questions[1].choices[0].id]))
     );
-    let mut stats = HashMap::new();
-    stats.insert(
+    let mut statistics = HashMap::new();
+    statistics.insert(
         game.questions[1].choices[0].id,
         ChoiceStats {
             players_answered_count: 2,
         },
     );
-    stats.insert(
+    statistics.insert(
         game.questions[1].choices[1].id,
         ChoiceStats {
             players_answered_count: 1,
         },
     );
     assert_eq!(fst.stats, snd.stats);
-    assert_eq!(fst.stats, stats);
+    assert_eq!(fst.stats, statistics);
 
     let state = game.server.send(GetServerState).await?;
     assert_eq!(state.joined_players.len(), 2);

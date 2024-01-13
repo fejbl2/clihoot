@@ -1,6 +1,4 @@
-use common::{
-    messages::network::PlayersUpdate, terminal::terminal_actor::TerminalHandlePlayersUpdate,
-};
+use common::{messages::network::PlayersUpdate, terminal::actor::TerminalHandlePlayersUpdate};
 
 use crate::teacher::terminal::TeacherTerminal;
 use log::debug;

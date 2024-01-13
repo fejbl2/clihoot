@@ -13,12 +13,11 @@ impl Handler<KickPlayer> for Lobby {
     fn handle(&mut self, msg: KickPlayer, _: &mut Context<Self>) -> Self::Result {
         debug!("Received KickPlayer message in Lobby; kicking player");
 
-        let socket = match { self.joined_players.get(&msg.player_uuid) } {
-            Some(socket) => socket.addr.clone(),
-            None => {
-                warn!("{} was not found in joined_players", msg.player_uuid);
-                return Ok(());
-            }
+        let socket = if let Some(socket) = self.joined_players.get(&msg.player_uuid) {
+            socket.addr.clone()
+        } else {
+            warn!("{} was not found in joined_players", msg.player_uuid);
+            return Ok(());
         };
 
         if self.joined_players.remove(&msg.player_uuid).is_none() {

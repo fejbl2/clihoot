@@ -1,10 +1,8 @@
-use common::{
-    messages::network::ShowLeaderboard, terminal::terminal_actor::TerminalHandleShowLeaderboard,
-};
+use common::{messages::network::ShowLeaderboard, terminal::actor::TerminalHandleShowLeaderboard};
 use ratatui::widgets::TableState;
 
 use crate::teacher::{
-    state::{ResultsState, TeacherTerminalState},
+    states::{ResultsState, TeacherTerminalState},
     terminal::TeacherTerminal,
 };
 use log::debug;

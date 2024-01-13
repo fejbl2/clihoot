@@ -131,7 +131,7 @@ impl Handler<SoundEffectMessage> for MusicActor {
         let reader = BufReader::new(Cursor::new(msg.get_content()));
 
         if let Ok(source) = rodio::Decoder::new(reader) {
-            stream_handle.play_raw(source.convert_samples()).unwrap();
+            let _ = stream_handle.play_raw(source.convert_samples());
         } else {
             error!("Failed to decode the sound effect.");
         }

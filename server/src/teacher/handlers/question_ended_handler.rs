@@ -1,11 +1,9 @@
 use anyhow::bail;
-use common::{
-    messages::network::QuestionEnded, terminal::terminal_actor::TerminalHandleQuestionEnded,
-};
+use common::{messages::network::QuestionEnded, terminal::actor::TerminalHandleQuestionEnded};
 use log::debug;
 
 use crate::teacher::{
-    state::{AnswersState, TeacherTerminalState},
+    states::{AnswersState, TeacherTerminalState},
     terminal::TeacherTerminal,
 };
 

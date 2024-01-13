@@ -3,7 +3,7 @@ use std::{
     thread,
 };
 
-use anyhow::anyhow;
+use anyhow::bail;
 use clap::Parser;
 use common::questions::QuestionSet;
 use server::{lobby::run_server, teacher::run_teacher, Args};
@@ -58,11 +58,11 @@ fn main() -> anyhow::Result<()> {
 
     // wait for threads to finish
     if let Err(_e) = server_thread.join() {
-        return Err(anyhow!("Server thread panicked"));
+        bail!("Server thread panicked");
     }
 
     if let Err(_e) = teacher_thread.join() {
-        return Err(anyhow!("Teacher thread panicked"));
+        bail!("Teacher thread panicked");
     }
 
     Ok(())

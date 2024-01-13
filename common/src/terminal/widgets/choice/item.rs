@@ -6,7 +6,8 @@ use uuid::Uuid;
 use crate::questions::{Choice, ChoiceCensored};
 
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct ChoiceItem {
+#[allow(clippy::module_name_repetitions)]
+pub struct Item {
     pub(super) content: String,
     pub(super) is_correct: bool,
     pub(super) uuid: Uuid,
@@ -14,7 +15,7 @@ pub struct ChoiceItem {
     pub(super) block: Block<'static>,
 }
 
-impl ChoiceItem {
+impl Item {
     #[must_use]
     pub fn new(content: String, is_correct: bool, uuid: Uuid) -> Self {
         Self {
@@ -52,20 +53,20 @@ impl ChoiceItem {
     }
 }
 
-impl From<ChoiceCensored> for ChoiceItem {
+impl From<ChoiceCensored> for Item {
     fn from(value: ChoiceCensored) -> Self {
         Self::new(value.text, false, value.id)
     }
 }
 
-impl From<Choice> for ChoiceItem {
+impl From<Choice> for Item {
     fn from(value: Choice) -> Self {
         Self::new(value.text, value.is_correct, value.id)
     }
 }
 
-impl Styled for ChoiceItem {
-    type Item = ChoiceItem;
+impl Styled for Item {
+    type Item = Item;
 
     fn style(&self) -> Style {
         self.style

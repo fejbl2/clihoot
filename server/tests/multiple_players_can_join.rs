@@ -37,7 +37,7 @@ async fn multiple_players_can_join(
     // map the results to the player data, while KEEPING the orig references (so that clients are not dropped)
     let player_ids = players
         .iter()
-        .map(|res| res.as_ref().unwrap().2.clone())
+        .map(|res| res.as_ref().expect("Has to be OK").2.clone())
         .collect::<Vec<_>>();
 
     // Get server state and assert that both are there

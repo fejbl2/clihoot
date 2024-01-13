@@ -1,17 +1,18 @@
 use std::collections::HashSet;
 use uuid::Uuid;
 
-use crate::terminal::widgets::choice::ChoiceGrid;
+use crate::terminal::widgets::choice::Grid;
 
 #[derive(Debug, Default)]
-pub struct ChoiceSelectorState {
+#[allow(clippy::module_name_repetitions)]
+pub struct SelectorState {
     row: usize,
     col: usize,
     pub(super) selected: HashSet<Uuid>,
     last_under_cursor: Option<Uuid>,
 }
 
-impl ChoiceSelectorState {
+impl SelectorState {
     #[must_use]
     pub fn row(&self) -> usize {
         self.row
@@ -29,7 +30,7 @@ impl ChoiceSelectorState {
 
     // update `row` and `col` in case the configuration of the grid has changed
     // gets called before all other methods that mutate the state
-    pub fn move_to_last_known_choice(&mut self, grid: &ChoiceGrid) {
+    pub fn move_to_last_known_choice(&mut self, grid: &Grid) {
         let Some(last_under_cursor) = self.last_under_cursor else {
             return;
         };
@@ -61,15 +62,15 @@ impl ChoiceSelectorState {
     }
 
     // place the cursor to the to the last item in the row if it is out of bounds
-    // useful moving up/down and the rows dont have the same ammount of items
-    fn normalize_cursor(&mut self, grid: &ChoiceGrid) {
+    // useful moving up/down and the rows don't have the same amount of items
+    fn normalize_cursor(&mut self, grid: &Grid) {
         let row_len = grid.items[self.row].len();
         if self.col >= row_len {
             self.col = row_len - 1;
         }
     }
 
-    fn find_next_some_right(&mut self, grid: &ChoiceGrid) -> bool {
+    fn find_next_some_right(&mut self, grid: &Grid) -> bool {
         let row_len = grid.items[self.row].len();
         for _ in 0..row_len {
             self.col = (self.col + 1) % row_len;
@@ -82,7 +83,7 @@ impl ChoiceSelectorState {
         false
     }
 
-    fn find_next_some_left(&mut self, grid: &ChoiceGrid) -> bool {
+    fn find_next_some_left(&mut self, grid: &Grid) -> bool {
         let row_len = grid.items[self.row].len();
         for _ in 0..row_len {
             if self.col == 0 {
@@ -102,7 +103,7 @@ impl ChoiceSelectorState {
     // move up a row in the grid. If the item above is None, find closest Some to the left
     // of the original or continue moving up, until any Some is found
     // if on the first line and move_up is used, move to the last line.
-    pub fn move_up(&mut self, grid: &ChoiceGrid) {
+    pub fn move_up(&mut self, grid: &Grid) {
         if grid.is_empty() {
             return;
         }
@@ -127,7 +128,7 @@ impl ChoiceSelectorState {
         }
     }
 
-    pub fn move_down(&mut self, grid: &ChoiceGrid) {
+    pub fn move_down(&mut self, grid: &Grid) {
         if grid.is_empty() {
             return;
         }
@@ -149,7 +150,7 @@ impl ChoiceSelectorState {
 
     // move left. If the next item is None, find the closest Some to the left.
     // If at the start at the line and move_left is used, move to the end of the line.
-    pub fn move_left(&mut self, grid: &ChoiceGrid) {
+    pub fn move_left(&mut self, grid: &Grid) {
         if grid.is_empty() {
             return;
         }
@@ -162,7 +163,7 @@ impl ChoiceSelectorState {
         }
     }
 
-    pub fn move_right(&mut self, grid: &ChoiceGrid) {
+    pub fn move_right(&mut self, grid: &Grid) {
         if grid.is_empty() {
             return;
         }
@@ -181,7 +182,7 @@ impl ChoiceSelectorState {
         self.selected.clone().into_iter().collect()
     }
 
-    pub fn toggle_selection(&mut self, grid: &ChoiceGrid, is_multichoice: bool) {
+    pub fn toggle_selection(&mut self, grid: &Grid, is_multichoice: bool) {
         if grid.is_empty() {
             return;
         }

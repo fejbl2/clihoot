@@ -8,7 +8,7 @@ use common::{
     terminal::render::{self, get_bordered_block, list_layout},
 };
 
-use crate::student::state::{ColorSelectionState, NameSelectionState};
+use crate::student::states::{ColorSelectionState, NameSelectionState};
 
 pub fn render_name_selection(frame: &mut Frame, state: &NameSelectionState, quiz_name: &str) {
     let layout = list_layout(

@@ -7,17 +7,18 @@ use uuid::Uuid;
 use common::{
     messages::network::PlayerData,
     terminal::{
+        actor::{TerminalActor, TerminalStop},
         highlight::Theme,
-        terminal_actor::{TerminalActor, TerminalStop},
     },
 };
 
 use crate::{
     music_actor::{MusicActor, MusicMessage},
-    student::state::StudentTerminalState,
+    student::states::StudentTerminalState,
     websocket::WebsocketActor,
 };
 
+#[allow(clippy::module_name_repetitions)]
 pub struct StudentTerminal {
     pub uuid: Uuid,
     pub name: String,
@@ -63,11 +64,11 @@ impl TerminalStop for StudentTerminal {
     }
 }
 
-pub async fn run_student(
+pub fn run_student(
     uuid: Uuid,
     quiz_name: String,
     ws_actor_addr: Addr<WebsocketActor>,
-    music_actor_addr: Addr<MusicActor>,
+    music_actor_addr: &Addr<MusicActor>,
     syntax_theme: Theme,
 ) -> anyhow::Result<Addr<TerminalActor<StudentTerminal>>> {
     let term = TerminalActor::new(StudentTerminal::new(
@@ -76,7 +77,7 @@ pub async fn run_student(
         ws_actor_addr,
         music_actor_addr.clone(),
         syntax_theme,
-    ))
+    ))?
     .start();
 
     music_actor_addr.do_send(MusicMessage::Lobby);

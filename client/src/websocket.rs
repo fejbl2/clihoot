@@ -18,7 +18,7 @@ use tungstenite::Error::ConnectionClosed;
 use common::{
     messages::{
         network::{self, CanJoin::No, TryJoinRequest},
-        status_messages::ClientWebsocketStatus,
+        status::ClientWebsocketStatus,
         ClientNetworkMessage, ServerNetworkMessage,
         ServerNetworkMessage::TryJoinResponse,
     },
@@ -35,15 +35,15 @@ pub struct Subscribe(pub Recipient<ServerNetworkMessage>);
 #[rtype(result = "()")]
 pub struct SubscribeStatus(pub Recipient<ClientWebsocketStatus>);
 
+type Sender = SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, tungstenite::protocol::Message>;
+type Receiver = SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>;
+
 // actor which represents a gateway to the server, one can send it a request for sending a message or
 // just subscribe for incoming messages
+#[allow(clippy::module_name_repetitions)]
 pub struct WebsocketActor {
-    ws_stream_tx: Rc<
-        RefCell<
-            SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, tungstenite::protocol::Message>,
-        >,
-    >,
-    ws_stream_rx: Option<SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>>,
+    ws_stream_tx: Rc<RefCell<Sender>>,
+    ws_stream_rx: Option<Receiver>,
     subscribers_network_messages: Vec<Recipient<ServerNetworkMessage>>,
     subscribers_status: Vec<Recipient<ClientWebsocketStatus>>,
     music_actor_addr: Addr<MusicActor>,
@@ -101,25 +101,19 @@ impl WebsocketActor {
         let music_address = self.music_actor_addr.clone();
         let syntax_theme = self.syntax_theme;
 
-        async move {
-            if let Ok(student_actor_addr) = run_student(
-                uuid,
-                quiz_name,
-                my_address.clone(),
-                music_address,
-                syntax_theme,
-            )
-            .await
-            {
-                // register student actor for network messages
-                my_address.do_send(Subscribe(student_actor_addr.clone().recipient()));
+        if let Ok(student_actor_addr) = run_student(
+            uuid,
+            quiz_name,
+            my_address.clone(),
+            &music_address,
+            syntax_theme,
+        ) {
+            // register student actor for network messages
+            my_address.do_send(Subscribe(student_actor_addr.clone().recipient()));
 
-                // register student actor for status messages
-                my_address.do_send(SubscribeStatus(student_actor_addr.clone().recipient()));
-            };
-        }
-        .into_actor(self)
-        .spawn(ctx);
+            // register student actor for status messages
+            my_address.do_send(SubscribeStatus(student_actor_addr.recipient()));
+        };
     }
 }
 
@@ -139,11 +133,7 @@ impl Handler<ClientNetworkMessage> for WebsocketActor {
 This function try to send message to the server using websocket and if it fails, it will send message to the terminal actor.
 */
 async fn send_message(
-    stream_tx: Rc<
-        RefCell<
-            SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, tungstenite::protocol::Message>,
-        >,
-    >,
+    stream_tx: Rc<RefCell<Sender>>,
     message: ClientNetworkMessage,
     my_address: Addr<WebsocketActor>,
 ) {
@@ -156,11 +146,7 @@ async fn send_message(
 // I was not able to fix this.. I admit my weakness ... :-(
 #[allow(clippy::await_holding_refcell_ref)]
 async fn send_message_directly(
-    stream_tx: Rc<
-        RefCell<
-            SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, tungstenite::protocol::Message>,
-        >,
-    >,
+    stream_tx: Rc<RefCell<Sender>>,
     message: ClientNetworkMessage,
 ) -> anyhow::Result<()> {
     let serialized_message = serde_json::to_string(&message)?;

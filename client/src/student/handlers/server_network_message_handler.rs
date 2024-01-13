@@ -6,15 +6,13 @@ use uuid::Uuid;
 use common::{
     constants::NICKNAME_ALREADY_TAKEN_MSG,
     messages::{network::CanJoin, ServerNetworkMessage},
-    terminal::{
-        terminal_actor::TerminalHandleServerNetworkMessage, widgets::choice::ChoiceSelectorState,
-    },
+    terminal::{actor::TerminalHandleServerNetworkMessage, widgets::choice::SelectorState},
 };
 
 use crate::{
     music_actor::{MusicMessage, SoundEffectMessage},
     student::{
-        state::{
+        states::{
             AnswersState, ErrorState, NameSelectionState, QuestionState, ResultsState,
             StudentTerminalState, WaitingForGameState,
         },
@@ -38,7 +36,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                             name_already_used: true,
                         });
                     } else {
-                        self.state = StudentTerminalState::Error(ErrorState { message })
+                        self.state = StudentTerminalState::Error(ErrorState { message });
                     }
                     return Ok(());
                 }
@@ -56,7 +54,7 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     start_time: chrono::Utc::now(),
                     duration_from_start: chrono::Duration::zero(),
                     choice_grid: question.question.into(),
-                    choice_selector_state: ChoiceSelectorState::default(),
+                    choice_selector_state: SelectorState::default(),
                     multichoice_popup_visible: false,
                 });
             }
@@ -88,9 +86,10 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
 
                 if let Some(player_answer) = question.player_answer.clone() {
                     let sound_to_play =
-                        match player_answer.iter().any(|ans| correct_uuids.contains(ans)) {
-                            true => SoundEffectMessage::CorrectAnswer,
-                            false => SoundEffectMessage::WrongAnswer,
+                        if player_answer.iter().any(|ans| correct_uuids.contains(ans)) {
+                            SoundEffectMessage::CorrectAnswer
+                        } else {
+                            SoundEffectMessage::WrongAnswer
                         };
 
                     self.music_address.do_send(sound_to_play);
@@ -115,7 +114,10 @@ impl TerminalHandleServerNetworkMessage for StudentTerminal {
                     message: "Teacher disconnected from the game".to_string(),
                 });
             }
-            _ => {}
+            ServerNetworkMessage::TryJoinResponse(_) => {
+                debug!("Student: handling try join response");
+                unreachable!("Student should not receive TryJoinResponse");
+            }
         }
         Ok(())
     }

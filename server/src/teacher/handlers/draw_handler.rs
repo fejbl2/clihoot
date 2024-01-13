@@ -3,18 +3,14 @@ use common::{
         MINIMAL_QUESTION_HEIGHT, MINIMAL_QUESTION_WIDTH, MINIMAL_SCREEN_HEIGHT,
         MINIMAL_SCREEN_WIDTH,
     },
-    terminal::{
-        render,
-        terminal_actor::TerminalDraw,
-        widgets::choice::{ChoiceGrid},
-    },
+    terminal::{actor::TerminalDraw, render, widgets::choice::Grid},
 };
 
 use ratatui::prelude::*;
 
 use crate::teacher::{
     draw_states::{render_kick_popup, render_skip_question_popup, render_teacher_help},
-    state::TeacherTerminalState,
+    states::TeacherTerminalState,
     terminal::TeacherTerminal,
 };
 
@@ -61,14 +57,15 @@ impl TerminalDraw for TeacherTerminal {
                             MINIMAL_QUESTION_WIDTH,
                         );
                     } else {
-                        let mut grid: ChoiceGrid = state.question.question.clone().into();
+                        let mut grid: Grid = state.question.question.clone().into();
                         render::question(
                             frame,
                             &state.question,
                             state.players_answered_count,
                             &mut grid,
                             None,
-                            state.duration_from_start.num_seconds() as usize,
+                            usize::try_from(state.duration_from_start.num_seconds())
+                                .unwrap_or(usize::MAX),
                             false,
                             self.syntax_theme,
                             &self.quiz_name,
@@ -90,7 +87,7 @@ impl TerminalDraw for TeacherTerminal {
                             MINIMAL_QUESTION_WIDTH,
                         );
                     } else {
-                        render::question_answers(
+                        render::question::answers(
                             frame,
                             &state.answers,
                             self.syntax_theme,

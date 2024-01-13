@@ -20,7 +20,9 @@ pub fn create_server(sample_questions: QuestionSet) -> (JoinHandle<()>, Addr<Lob
     );
 
     let (tx, rx) = mpsc::channel();
-    let addr = format!("0.0.0.0:{DEFAULT_PORT}").parse().unwrap();
+    let addr = format!("0.0.0.0:{DEFAULT_PORT}")
+        .parse()
+        .expect("Failed to parse address");
 
     let server_thread = thread::spawn(move || {
         run_server(tx, sample_questions, addr).expect("Failed to run server");

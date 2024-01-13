@@ -1,11 +1,10 @@
+use crate::terminal::highlight;
 use crate::{constants::COLORS, messages::network::QuestionEnded, questions::CodeBlock};
-use std::rc::Rc;
-
 use crate::{
     messages::network::NextQuestion,
     terminal::{
-        highlight::{highlight_code_block, Theme},
-        widgets::choice::{ChoiceGrid, ChoiceSelector, ChoiceSelectorState},
+        highlight::Theme,
+        widgets::choice::{Grid, Selector, SelectorState},
     },
 };
 use log::{debug, trace};
@@ -18,10 +17,11 @@ use ratatui::{
         Block, BorderType, Borders, Padding, Paragraph, Wrap,
     },
 };
+use std::rc::Rc;
 
 use super::{get_bordered_block, get_centered_paragraph, get_inner_block, get_outer_block};
 
-fn question_time(
+fn time(
     frame: &mut Frame,
     question: &NextQuestion,
     players_answered_count: usize,
@@ -46,7 +46,7 @@ fn question_time(
     .alignment(Alignment::Left)
     .block(Block::default());
 
-    let asnwered_paragraph = Paragraph::new(format!("Players answered: {players_answered_count}"))
+    let answered_paragraph = Paragraph::new(format!("Players answered: {players_answered_count}"))
         .wrap(Wrap { trim: true })
         .alignment(Alignment::Right)
         .block(Block::default());
@@ -65,7 +65,7 @@ fn question_time(
     frame.render_widget(counts_block, layout[0]);
     frame.render_widget(time_paragraph, counts_layout[0]);
     frame.render_widget(type_paragraph, counts_layout[1]);
-    frame.render_widget(asnwered_paragraph, counts_layout[2]);
+    frame.render_widget(answered_paragraph, counts_layout[2]);
 }
 
 fn question_layout(frame: &mut Frame, title: &str, text: &str, quiz_name: &str) -> Rc<[Rect]> {
@@ -98,7 +98,7 @@ fn question_layout(frame: &mut Frame, title: &str, text: &str, quiz_name: &str) 
 }
 
 fn code(frame: &mut Frame, code_block: &CodeBlock, theme: Theme, layout: &[Rect]) {
-    let code_paragraph = highlight_code_block(code_block, theme)
+    let code_paragraph = highlight::code_block(code_block, theme)
         .block(get_bordered_block().padding(Padding::new(1, 1, 1, 1)));
     frame.render_widget(code_paragraph, layout[2]);
 }
@@ -108,8 +108,8 @@ pub fn question(
     frame: &mut Frame,
     question: &NextQuestion,
     players_answered_count: usize,
-    choice_grid: &mut ChoiceGrid,
-    choice_selector_state: Option<&mut ChoiceSelectorState>,
+    choice_grid: &mut Grid,
+    choice_selector_state: Option<&mut SelectorState>,
     time_from_start: usize,
     answered: bool,
     theme: Theme,
@@ -130,7 +130,7 @@ pub fn question(
         quiz_name,
     );
 
-    question_time(
+    time(
         frame,
         question,
         players_answered_count,
@@ -182,9 +182,9 @@ pub fn question(
         }
     }
 
-    *choice_grid = ChoiceGrid::new(items);
+    *choice_grid = Grid::new(items);
 
-    let choice_selector = ChoiceSelector::new(choice_grid.clone());
+    let choice_selector = Selector::new(choice_grid.clone());
     let choice_selector = choice_selector
         .vertical_gap(1)
         .horizontal_gap(2)
@@ -196,23 +196,15 @@ pub fn question(
         )
         .block(Block::default());
 
-    match choice_selector_state {
-        Some(state) => {
-            frame.render_stateful_widget(choice_selector, layout[3], state);
-        }
-        None => {
-            let choice_selector = choice_selector.current_item_style(Style::default());
-            frame.render_widget(choice_selector, layout[3]);
-        }
+    if let Some(state) = choice_selector_state {
+        frame.render_stateful_widget(choice_selector, layout[3], state);
+    } else {
+        let choice_selector = choice_selector.current_item_style(Style::default());
+        frame.render_widget(choice_selector, layout[3]);
     }
 }
 
-pub fn question_answers(
-    frame: &mut Frame,
-    question: &QuestionEnded,
-    theme: Theme,
-    quiz_name: &str,
-) {
+pub fn answers(frame: &mut Frame, question: &QuestionEnded, theme: Theme, quiz_name: &str) {
     let layout = question_layout(
         frame,
         &format!(" Question {} ", question.question_index + 1),
@@ -224,7 +216,7 @@ pub fn question_answers(
         code(frame, code_block, theme, &layout);
     }
 
-    let mut choice_grid: ChoiceGrid = question.clone().question.into();
+    let mut choice_grid: Grid = question.clone().question.into();
     let mut items = choice_grid.clone().items();
 
     for (row, items) in items.iter_mut().enumerate() {
@@ -265,9 +257,9 @@ pub fn question_answers(
         }
     }
 
-    choice_grid = ChoiceGrid::new(items);
+    choice_grid = Grid::new(items);
 
-    let choice_selector = ChoiceSelector::new(choice_grid);
+    let choice_selector = Selector::new(choice_grid);
     let choice_selector = choice_selector
         .vertical_gap(1)
         .horizontal_gap(3)

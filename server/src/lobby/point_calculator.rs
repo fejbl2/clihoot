@@ -58,7 +58,7 @@ mod tests {
     use common::questions::{Choice, Question};
 
     #[test]
-    fn test_calculate_points() {
+    fn test_calculate_points() -> anyhow::Result<()> {
         let player_id = Uuid::new_v4();
         let answer_order = 1;
         let total_players = 4;
@@ -122,8 +122,7 @@ mod tests {
             &answers,
             &questions,
             &results,
-        )
-        .expect("Failed to calculate points");
+        )?;
 
         assert!(points > 200);
 
@@ -141,8 +140,7 @@ mod tests {
             &answers,
             &questions,
             &results,
-        )
-        .expect("Failed to calculate points");
+        )?;
 
         assert!(points > 0);
 
@@ -160,9 +158,9 @@ mod tests {
             &answers,
             &questions,
             &results,
-        )
-        .expect("Failed to calculate points");
+        )?;
 
         assert_eq!(points, 0);
+        Ok(())
     }
 }

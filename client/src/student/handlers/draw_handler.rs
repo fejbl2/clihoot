@@ -6,14 +6,14 @@ use common::{
         MINIMAL_QUESTION_HEIGHT, MINIMAL_QUESTION_WIDTH, MINIMAL_SCREEN_HEIGHT,
         MINIMAL_SCREEN_WIDTH,
     },
-    terminal::{render, terminal_actor::TerminalDraw},
+    terminal::{actor::TerminalDraw, render},
 };
 
 use crate::student::{
     draw_states::{
         render_color_selection, render_help, render_multichoice_popup, render_name_selection,
     },
-    state::StudentTerminalState,
+    states::StudentTerminalState,
     terminal::StudentTerminal,
 };
 
@@ -69,7 +69,8 @@ impl TerminalDraw for StudentTerminal {
                             state.players_answered_count,
                             &mut state.choice_grid,
                             Some(&mut state.choice_selector_state),
-                            state.duration_from_start.num_seconds() as usize,
+                            usize::try_from(state.duration_from_start.num_seconds())
+                                .unwrap_or(usize::MAX),
                             state.answered,
                             self.syntax_theme,
                             &self.quiz_name,
@@ -90,7 +91,7 @@ impl TerminalDraw for StudentTerminal {
                             MINIMAL_QUESTION_WIDTH,
                         );
                     } else {
-                        render::question_answers(
+                        render::question::answers(
                             frame,
                             &state.answers,
                             self.syntax_theme,

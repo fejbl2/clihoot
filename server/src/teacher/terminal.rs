@@ -2,8 +2,9 @@ use actix::prelude::*;
 
 use common::{messages::network::PlayerData, terminal::highlight::Theme};
 
-use crate::{teacher::state::TeacherTerminalState, Lobby};
+use crate::{teacher::states::TeacherTerminalState, Lobby};
 
+#[allow(clippy::module_name_repetitions)]
 pub struct TeacherTerminal {
     pub quiz_name: String,
     pub lobby: Addr<Lobby>,

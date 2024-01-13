@@ -2,7 +2,7 @@ use ratatui::widgets::{ListState, TableState};
 
 use common::{
     messages::network::{NextQuestion, QuestionEnded, ShowLeaderboard},
-    terminal::widgets::choice::{ChoiceGrid, ChoiceSelectorState},
+    terminal::widgets::choice::{Grid, SelectorState},
 };
 
 #[derive(Debug)]
@@ -28,8 +28,8 @@ pub struct QuestionState {
     pub(super) answered: bool,
     pub(super) start_time: chrono::DateTime<chrono::Utc>,
     pub(super) duration_from_start: chrono::Duration,
-    pub(super) choice_grid: ChoiceGrid,
-    pub(super) choice_selector_state: ChoiceSelectorState,
+    pub(super) choice_grid: Grid,
+    pub(super) choice_selector_state: SelectorState,
     pub(super) multichoice_popup_visible: bool,
 }
 

@@ -30,14 +30,21 @@ pub fn is_port_available(port: u16) -> bool {
 }
 
 #[must_use]
+/// Returns a sample question set from the common crate.
+/// # Panics
+/// - if the sample questions cannot be loaded.
 pub fn sample_questions() -> questions::QuestionSet {
-    questions::QuestionSet::from_file(Path::new("../common/tests/files/ok_minimal.yaml")).unwrap()
+    questions::QuestionSet::from_file(Path::new("../common/tests/files/ok_minimal.yaml"))
+        .expect("Failed to load sample questions")
 }
 
 pub type Sender = SplitSink<WebSocketStream<MaybeTlsStream<TcpStream>>, Message>;
 pub type Receiver = SplitStream<WebSocketStream<MaybeTlsStream<TcpStream>>>;
 
 #[allow(dead_code)]
+/// Connects to the server and returns the sender and receiver.
+/// # Panics
+/// - if the server cannot be connected to.
 pub async fn connect_to_server() -> (Sender, Receiver) {
     thread::sleep(Duration::from_millis(100));
 
@@ -51,6 +58,9 @@ pub async fn connect_to_server() -> (Sender, Receiver) {
 }
 
 #[allow(dead_code)]
+/// Tries to join the server and returns the uuid and the response.
+/// # Panics
+/// - if the server cannot be joined, will panic.
 pub async fn try_join_server(
     sender: &mut Sender,
     receiver: &mut Receiver,
@@ -79,7 +89,9 @@ pub async fn try_join_server(
     Ok((id, msg))
 }
 
-#[allow(dead_code)]
+/// Generates a new player uuid, connects to the server and joins it.
+/// # Panics
+/// - if failed to receive message, will panic.
 pub async fn join_server(
     sender: &mut Sender,
     receiver: &mut Receiver,
@@ -120,8 +132,8 @@ pub async fn join_server(
 }
 
 /// Generates a new player uuid, connects to the server and joins it.
-/// # Errors
-/// - if the server cannot be joined, will panic.
+/// # Panics
+/// - if the server returns bad response, will panic.
 #[allow(dead_code)]
 pub async fn join_new_player() -> anyhow::Result<(Sender, Receiver, PlayerData)> {
     let (mut sender, mut receiver) = connect_to_server().await;
@@ -136,6 +148,9 @@ pub async fn join_new_player() -> anyhow::Result<(Sender, Receiver, PlayerData)>
 }
 
 #[allow(dead_code)]
+/// Receives a message from the server and returns it.
+/// # Panics
+/// - if failed to receive message, will panic.
 pub async fn receive_server_network_msg(
     receiver: &mut Receiver,
 ) -> anyhow::Result<ServerNetworkMessage> {
@@ -147,6 +162,9 @@ pub async fn receive_server_network_msg(
 }
 
 #[allow(dead_code)]
+/// Receives a message from the server and returns it.
+/// # Panics
+/// - if failed to receive message, will panic.
 pub async fn receive_close_frame(receiver: &mut Receiver) -> anyhow::Result<CloseFrame> {
     let msg = receiver.next().await.expect("Failed to receive message")?;
 

@@ -1,5 +1,5 @@
 use actix_rt::System;
-use common::terminal::terminal_actor::TerminalStop;
+use common::terminal::actor::TerminalStop;
 
 use crate::{messages::lobby, teacher::terminal::TeacherTerminal};
 

@@ -1,7 +1,7 @@
 mod draw_states;
 mod handlers;
 mod init;
-mod state;
+mod states;
 mod terminal;
 
 pub use handlers::*;

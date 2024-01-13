@@ -1,6 +1,6 @@
-use crate::teacher::{state::TeacherTerminalState, terminal::TeacherTerminal};
+use crate::teacher::{states::TeacherTerminalState, terminal::TeacherTerminal};
 
-impl common::terminal::terminal_actor::TerminalHandleTick for TeacherTerminal {
+impl common::terminal::actor::TerminalHandleTick for TeacherTerminal {
     fn handle_tick(&mut self) -> anyhow::Result<()> {
         let TeacherTerminalState::Question(state) = &mut self.state else {
             return Ok(());

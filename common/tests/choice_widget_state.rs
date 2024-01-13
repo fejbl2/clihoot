@@ -1,23 +1,23 @@
 use uuid::Uuid;
 
-use common::terminal::widgets::choice::{ChoiceGrid, ChoiceItem, ChoiceSelectorState};
+use common::terminal::widgets::choice::{Grid, Item, SelectorState};
 
-fn one_row_fixture(uuids: &[Uuid]) -> ChoiceGrid {
+fn one_row_fixture(uuids: &[Uuid]) -> Grid {
     let row = uuids
         .iter()
-        .map(|id| Some(ChoiceItem::new(id.to_string(), false, *id)))
+        .map(|id| Some(Item::new(id.to_string(), false, *id)))
         .collect();
 
-    ChoiceGrid::new(vec![row])
+    Grid::new(vec![row])
 }
 
-fn multiple_row_fixture(uuids: &[Vec<Uuid>]) -> ChoiceGrid {
-    ChoiceGrid::new(
+fn multiple_row_fixture(uuids: &[Vec<Uuid>]) -> Grid {
+    Grid::new(
         uuids
             .iter()
             .map(|row| {
                 row.iter()
-                    .map(|id| Some(ChoiceItem::new(id.to_string(), false, *id)))
+                    .map(|id| Some(Item::new(id.to_string(), false, *id)))
                     .collect()
             })
             .collect(),
@@ -29,7 +29,7 @@ fn test_one_row_move_around() {
     let uuids = [Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()];
     let grid = one_row_fixture(&uuids);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
@@ -71,7 +71,7 @@ fn test_one_row_toggle_selection_multichoice() {
     let uuids = [Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()];
     let grid = one_row_fixture(&uuids);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert!(state.selected().is_empty());
 
     state.toggle_selection(&grid, is_multichoice);
@@ -115,7 +115,7 @@ fn test_one_row_toggle_selection_singlechoice() {
     let uuids = [Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()];
     let grid = one_row_fixture(&uuids);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert!(state.selected().is_empty());
 
     state.toggle_selection(&grid, is_multichoice);
@@ -157,7 +157,7 @@ fn test_classic_4_choices_move_around() {
 
     let grid = multiple_row_fixture(&uuids);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
@@ -216,7 +216,7 @@ fn test_classic_4_choices_toggle_selection() {
     ];
     let grid = multiple_row_fixture(&uuids);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert!(state.selected().is_empty());
 
     state.toggle_selection(&grid, true);
@@ -269,7 +269,7 @@ fn test_random_grid_move_around() {
     ];
     let grid = multiple_row_fixture(&uuids);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
@@ -311,13 +311,13 @@ fn test_reconfigure_grid() {
     let uuids = [Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()];
 
     // single row with 3 choices
-    let grid = ChoiceGrid::new(vec![vec![
-        Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0])),
-        Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1])),
-        Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2])),
+    let grid = Grid::new(vec![vec![
+        Some(Item::new(uuids[0].to_string(), false, uuids[0])),
+        Some(Item::new(uuids[1].to_string(), false, uuids[1])),
+        Some(Item::new(uuids[2].to_string(), false, uuids[2])),
     ]]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
@@ -329,10 +329,10 @@ fn test_reconfigure_grid() {
     assert_eq!(state.last_under_cursor(), Some(uuids[1]));
 
     // rearange the grid to be one single column with three rows
-    let grid = ChoiceGrid::new(vec![
-        vec![Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0]))],
-        vec![Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1]))],
-        vec![Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2]))],
+    let grid = Grid::new(vec![
+        vec![Some(Item::new(uuids[0].to_string(), false, uuids[0]))],
+        vec![Some(Item::new(uuids[1].to_string(), false, uuids[1]))],
+        vec![Some(Item::new(uuids[2].to_string(), false, uuids[2]))],
     ]);
 
     state.move_to_last_known_choice(&grid);
@@ -341,10 +341,10 @@ fn test_reconfigure_grid() {
     assert_eq!(state.last_under_cursor(), Some(uuids[1]));
 
     // rearange back to the original config
-    let grid = ChoiceGrid::new(vec![vec![
-        Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0])),
-        Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1])),
-        Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2])),
+    let grid = Grid::new(vec![vec![
+        Some(Item::new(uuids[0].to_string(), false, uuids[0])),
+        Some(Item::new(uuids[1].to_string(), false, uuids[1])),
+        Some(Item::new(uuids[2].to_string(), false, uuids[2])),
     ]]);
 
     // try to select item under the cursor, without calling the move_to_last_known_choice function
@@ -362,12 +362,12 @@ fn test_grid_changed_completely() {
     let uuid_old_2 = Uuid::new_v4();
 
     // single row with 1 choice
-    let grid = ChoiceGrid::new(vec![vec![
-        Some(ChoiceItem::new("foo".to_string(), false, uuid_old_1)),
-        Some(ChoiceItem::new("bar".to_string(), false, uuid_old_2)),
+    let grid = Grid::new(vec![vec![
+        Some(Item::new("foo".to_string(), false, uuid_old_1)),
+        Some(Item::new("bar".to_string(), false, uuid_old_2)),
     ]]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
@@ -383,9 +383,9 @@ fn test_grid_changed_completely() {
     let uuid_new_1 = Uuid::new_v4();
     let uuid_new_2 = Uuid::new_v4();
 
-    let grid = ChoiceGrid::new(vec![vec![
-        Some(ChoiceItem::new("foo".to_string(), false, uuid_new_1)),
-        Some(ChoiceItem::new("bar".to_string(), false, uuid_new_2)),
+    let grid = Grid::new(vec![vec![
+        Some(Item::new("foo".to_string(), false, uuid_new_1)),
+        Some(Item::new("bar".to_string(), false, uuid_new_2)),
     ]]);
 
     // we should be back at [0, 0] so we can somehow move around again
@@ -396,10 +396,10 @@ fn test_grid_changed_completely() {
 
 #[test]
 fn test_empty_grid() {
-    let grid = ChoiceGrid::new(Vec::new());
+    let grid = Grid::new(Vec::new());
     assert!(grid.is_empty());
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
 
     // nothing should happen
     state.move_right(&grid);
@@ -416,10 +416,10 @@ fn test_empty_grid() {
 
 #[test]
 fn test_grid_empty_line() {
-    let grid = ChoiceGrid::new(vec![vec![]]);
+    let grid = Grid::new(vec![vec![]]);
     assert!(grid.is_empty());
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
 
     // nothing should happen
     state.move_right(&grid);
@@ -436,10 +436,10 @@ fn test_grid_empty_line() {
 
 #[test]
 fn test_only_none_line() {
-    let grid = ChoiceGrid::new(vec![vec![None]]);
+    let grid = Grid::new(vec![vec![None]]);
     assert!(grid.is_empty());
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
 
     // nothing should happen
     state.move_right(&grid);
@@ -456,10 +456,10 @@ fn test_only_none_line() {
 
 #[test]
 fn test_only_none_matrix() {
-    let grid = ChoiceGrid::new(vec![vec![None, None], vec![None, None]]);
+    let grid = Grid::new(vec![vec![None, None], vec![None, None]]);
     assert!(grid.is_empty());
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
 
     // nothing should happen
     state.move_right(&grid);
@@ -478,14 +478,14 @@ fn test_only_none_matrix() {
 fn test_row_with_none() {
     let uuid_1 = Uuid::new_v4();
     let uuid_2 = Uuid::new_v4();
-    let grid = ChoiceGrid::new(vec![vec![
-        Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
+    let grid = Grid::new(vec![vec![
+        Some(Item::new("test".to_string(), false, uuid_1)),
         None,
-        Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
+        Some(Item::new("test".to_string(), false, uuid_2)),
         None,
     ]]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     state.move_right(&grid);
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 2);
@@ -521,18 +521,12 @@ fn test_row_with_none() {
 fn test_4_with_none() {
     let uuid_1 = Uuid::new_v4();
     let uuid_2 = Uuid::new_v4();
-    let grid = ChoiceGrid::new(vec![
-        vec![
-            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
-            None,
-        ],
-        vec![
-            None,
-            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
-        ],
+    let grid = Grid::new(vec![
+        vec![Some(Item::new("test".to_string(), false, uuid_1)), None],
+        vec![None, Some(Item::new("test".to_string(), false, uuid_2))],
     ]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     state.move_right(&grid);
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 0);
@@ -568,18 +562,12 @@ fn test_4_with_none() {
 fn test_4_with_none_mirrored() {
     let uuid_1 = Uuid::new_v4();
     let uuid_2 = Uuid::new_v4();
-    let grid = ChoiceGrid::new(vec![
-        vec![
-            None,
-            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
-        ],
-        vec![
-            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
-            None,
-        ],
+    let grid = Grid::new(vec![
+        vec![None, Some(Item::new("test".to_string(), false, uuid_1))],
+        vec![Some(Item::new("test".to_string(), false, uuid_2)), None],
     ]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     state.move_right(&grid);
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 1);
@@ -615,19 +603,13 @@ fn test_4_with_none_mirrored() {
 fn test_only_none_line_in_middle() {
     let uuid_1 = Uuid::new_v4();
     let uuid_2 = Uuid::new_v4();
-    let grid = ChoiceGrid::new(vec![
-        vec![
-            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
-            None,
-        ],
+    let grid = Grid::new(vec![
+        vec![Some(Item::new("test".to_string(), false, uuid_1)), None],
         vec![None, None],
-        vec![
-            None,
-            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
-        ],
+        vec![None, Some(Item::new("test".to_string(), false, uuid_2))],
     ]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     state.move_right(&grid);
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 0);
@@ -663,15 +645,15 @@ fn test_only_none_line_in_middle() {
 fn test_start_on_none_row_move_right() {
     let uuid_1 = Uuid::new_v4();
     let uuid_2 = Uuid::new_v4();
-    let grid = ChoiceGrid::new(vec![
+    let grid = Grid::new(vec![
         vec![None, None],
         vec![
-            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
-            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
+            Some(Item::new("test".to_string(), false, uuid_1)),
+            Some(Item::new("test".to_string(), false, uuid_2)),
         ],
     ]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     state.move_right(&grid);
     assert_eq!(state.row(), 1);
     assert_eq!(state.col(), 0);
@@ -682,15 +664,15 @@ fn test_start_on_none_row_move_right() {
 fn test_start_on_none_row_move_left() {
     let uuid_1 = Uuid::new_v4();
     let uuid_2 = Uuid::new_v4();
-    let grid = ChoiceGrid::new(vec![
+    let grid = Grid::new(vec![
         vec![None, None],
         vec![
-            Some(ChoiceItem::new("test".to_string(), false, uuid_1)),
-            Some(ChoiceItem::new("test".to_string(), false, uuid_2)),
+            Some(Item::new("test".to_string(), false, uuid_1)),
+            Some(Item::new("test".to_string(), false, uuid_2)),
         ],
     ]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     state.move_right(&grid);
     assert_eq!(state.row(), 1);
     assert_eq!(state.col(), 0);
@@ -702,15 +684,15 @@ fn test_reconfigure_with_none() {
     let uuids = [Uuid::new_v4(), Uuid::new_v4(), Uuid::new_v4()];
 
     // single row with 3 choices
-    let grid = ChoiceGrid::new(vec![vec![
-        Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0])),
+    let grid = Grid::new(vec![vec![
+        Some(Item::new(uuids[0].to_string(), false, uuids[0])),
         None,
-        Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1])),
+        Some(Item::new(uuids[1].to_string(), false, uuids[1])),
         None,
-        Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2])),
+        Some(Item::new(uuids[2].to_string(), false, uuids[2])),
     ]]);
 
-    let mut state = ChoiceSelectorState::default();
+    let mut state = SelectorState::default();
     assert_eq!(state.row(), 0);
     assert_eq!(state.col(), 0);
     assert!(state.last_under_cursor().is_none());
@@ -722,12 +704,12 @@ fn test_reconfigure_with_none() {
     assert_eq!(state.last_under_cursor(), Some(uuids[1]));
 
     // rearange the grid to be one single column with three rows
-    let grid = ChoiceGrid::new(vec![
-        vec![Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0]))],
+    let grid = Grid::new(vec![
+        vec![Some(Item::new(uuids[0].to_string(), false, uuids[0]))],
         vec![None],
-        vec![Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1]))],
+        vec![Some(Item::new(uuids[1].to_string(), false, uuids[1]))],
         vec![None],
-        vec![Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2]))],
+        vec![Some(Item::new(uuids[2].to_string(), false, uuids[2]))],
     ]);
 
     state.move_to_last_known_choice(&grid);
@@ -736,12 +718,12 @@ fn test_reconfigure_with_none() {
     assert_eq!(state.last_under_cursor(), Some(uuids[1]));
 
     // rearange back to the original config
-    let grid = ChoiceGrid::new(vec![vec![
-        Some(ChoiceItem::new(uuids[0].to_string(), false, uuids[0])),
+    let grid = Grid::new(vec![vec![
+        Some(Item::new(uuids[0].to_string(), false, uuids[0])),
         None,
-        Some(ChoiceItem::new(uuids[1].to_string(), false, uuids[1])),
+        Some(Item::new(uuids[1].to_string(), false, uuids[1])),
         None,
-        Some(ChoiceItem::new(uuids[2].to_string(), false, uuids[2])),
+        Some(Item::new(uuids[2].to_string(), false, uuids[2])),
     ]]);
 
     // try to select item under the cursor, without calling the move_to_last_known_choice function

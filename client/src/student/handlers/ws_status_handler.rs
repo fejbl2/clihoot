@@ -1,12 +1,11 @@
 use common::{
-    messages::status_messages::ClientWebsocketStatus,
-    terminal::terminal_actor::TerminalHandleClientWebsocketStatus,
+    messages::status::ClientWebsocketStatus, terminal::actor::TerminalHandleClientWebsocketStatus,
 };
 
 use crate::{
     music_actor::MusicMessage,
     student::{
-        state::{ErrorState, StudentTerminalState},
+        states::{ErrorState, StudentTerminalState},
         terminal::StudentTerminal,
     },
 };
@@ -18,21 +17,21 @@ impl TerminalHandleClientWebsocketStatus for StudentTerminal {
                 self.music_address.do_send(MusicMessage::NoMusic);
                 self.state = StudentTerminalState::Error(ErrorState {
                     message: "Listening on websocket failed".to_string(),
-                })
+                });
             }
             ClientWebsocketStatus::CantSendMessage => {
                 self.music_address.do_send(MusicMessage::NoMusic);
                 self.state = StudentTerminalState::Error(ErrorState {
                     message: "Message cannot be send over websocket".to_string(),
-                })
+                });
             }
             ClientWebsocketStatus::SocketClosed => {
                 self.music_address.do_send(MusicMessage::NoMusic);
-                self.state = StudentTerminalState::EndGame
+                self.state = StudentTerminalState::EndGame;
             }
             ClientWebsocketStatus::CloseFrameReceived(message) => {
                 self.music_address.do_send(MusicMessage::NoMusic);
-                self.state = StudentTerminalState::Error(ErrorState { message })
+                self.state = StudentTerminalState::Error(ErrorState { message });
             }
         }
         Ok(())

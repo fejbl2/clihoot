@@ -3,12 +3,12 @@ use crossterm::event::{Event, EventStream, KeyCode, KeyEventKind, KeyModifiers};
 use futures::{FutureExt, StreamExt};
 use std::marker::Unpin;
 
-use crate::terminal::messages::{KeyPress, Redraw, Stop};
-use crate::terminal::terminal_actor::{
+use crate::terminal::actor::{
     TerminalActor, TerminalDraw, TerminalHandleInput, TerminalHandleTick,
 };
+use crate::terminal::messages::{KeyPress, Redraw, Stop};
 
-use super::terminal_actor::TerminalStop;
+use super::actor::TerminalStop;
 
 // poll terminal events and send appropriate messages to the terminal actor
 pub async fn handle_events<T>(term: Addr<TerminalActor<T>>) -> anyhow::Result<()>

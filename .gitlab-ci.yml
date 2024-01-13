@@ -26,7 +26,7 @@ lint:
     - rustup component add rustfmt
     - cargo fmt -- --check
     - rustup component add clippy
-    - cargo clippy -- -D warnings
+    - cargo clippy -- -D warnings -D clippy::pedantic -A clippy::missing_errors_doc
 
 # https://github.com/mozilla/grcov
 test:

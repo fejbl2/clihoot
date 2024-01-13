@@ -1,10 +1,8 @@
 use anyhow::bail;
-use common::{
-    messages::network::QuestionUpdate, terminal::terminal_actor::TerminalHandleQuestionUpdate,
-};
+use common::{messages::network::QuestionUpdate, terminal::actor::TerminalHandleQuestionUpdate};
 use log::debug;
 
-use crate::teacher::{state::TeacherTerminalState, terminal::TeacherTerminal};
+use crate::teacher::{states::TeacherTerminalState, terminal::TeacherTerminal};
 
 impl TerminalHandleQuestionUpdate for TeacherTerminal {
     fn handle_question_update(&mut self, update: QuestionUpdate) -> anyhow::Result<()> {

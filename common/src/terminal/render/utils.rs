@@ -16,7 +16,7 @@ fn ascii_art(frame: &mut Frame, lines: &[&str], text: &str, quiz_name: &str) {
 
     let mut constraints = vec![];
     for _ in lines {
-        let constraint = Constraint::Percentage((95 / lines.len()) as u16);
+        let constraint = Constraint::Percentage(u16::try_from(95 / lines.len()).unwrap_or(1));
         constraints.push(constraint);
     }
     constraints.push(Constraint::Min(1));

@@ -18,7 +18,11 @@ fn valid_questions_file(file: &str) -> Result<PathBuf, String> {
         // if user entered absolute path, this also works thanks to how 'join' works
         let path = current_dir.join(file);
         if path.exists() {
-            info!("Using questions file '{}'", path.to_str().unwrap());
+            info!(
+                "Using questions file '{}'",
+                path.to_str()
+                    .unwrap_or("ERR: Failed to convert path to string")
+            );
             return Ok(path);
         }
 

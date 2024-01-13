@@ -2,8 +2,8 @@ use std::sync::mpsc::Sender;
 
 use actix::{prelude::Actor, Addr};
 
+use common::terminal::actor::TerminalActor;
 use common::terminal::highlight::Theme;
-use common::terminal::terminal_actor::TerminalActor;
 
 use crate::{messages::lobby::RegisterTeacher, Lobby};
 
@@ -37,11 +37,10 @@ async fn init(
         quiz_name.to_string(),
         lobby.clone(),
         syntax_theme,
-    ))
+    ))?
     .start();
 
-    tx.send(teacher.clone())
-        .expect("Failed to send teacher address");
+    tx.send(teacher.clone())?;
 
     lobby.do_send(RegisterTeacher {
         teacher: teacher.clone(),

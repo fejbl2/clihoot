@@ -9,9 +9,9 @@ use common::{
         ClientNetworkMessage,
     },
     terminal::{
+        actor::TerminalHandleInput,
         input_utils::move_in_list,
-        terminal_actor::TerminalHandleInput,
-        widgets::choice::{ChoiceGrid, ChoiceSelectorState},
+        widgets::choice::{Grid, SelectorState},
     },
 };
 use uuid::Uuid;
@@ -19,7 +19,7 @@ use uuid::Uuid;
 use crate::{
     music_actor::{MusicActor, SoundEffectMessage},
     student::{
-        state::{
+        states::{
             ColorSelectionState, NameSelectionState, QuestionState, StudentTerminalState,
             WaitingForGameState,
         },
@@ -29,6 +29,7 @@ use crate::{
 };
 
 impl TerminalHandleInput for StudentTerminal {
+    #[allow(clippy::too_many_lines)]
     fn handle_input(&mut self, key_code: KeyCode) {
         // hide help pop-up if it is visible and any key is pressed
         if self.help_visible {
@@ -49,7 +50,7 @@ impl TerminalHandleInput for StudentTerminal {
                 self.state = StudentTerminalState::NameSelection(NameSelectionState {
                     name: String::new(),
                     name_already_used: false,
-                })
+                });
             }
             StudentTerminalState::NameSelection(state) => {
                 if input_name(
@@ -62,7 +63,7 @@ impl TerminalHandleInput for StudentTerminal {
                     self.name = (*state.name).to_string();
                     self.state = StudentTerminalState::ColorSelection(ColorSelectionState {
                         list_state: ListState::default().with_selected(Some(0)),
-                    })
+                    });
                 }
             }
             StudentTerminalState::ColorSelection(state) => {
@@ -96,7 +97,7 @@ impl TerminalHandleInput for StudentTerminal {
                 let moved = move_in_list(&mut selected, COLORS.len(), key_code);
                 state.list_state.select(Some(selected));
                 if moved {
-                    self.music_address.do_send(SoundEffectMessage::Tap)
+                    self.music_address.do_send(SoundEffectMessage::Tap);
                 }
             }
             StudentTerminalState::WaitingForGame(state) => {
@@ -105,11 +106,11 @@ impl TerminalHandleInput for StudentTerminal {
                 state.list_state.select(Some(selected));
 
                 if moved {
-                    self.music_address.do_send(SoundEffectMessage::Tap)
+                    self.music_address.do_send(SoundEffectMessage::Tap);
                 }
             }
             StudentTerminalState::Question(state) => {
-                if (state.duration_from_start.num_seconds() as usize)
+                if (usize::try_from(state.duration_from_start.num_seconds()).unwrap_or(usize::MAX))
                     < state.question.show_choices_after
                 {
                     return;
@@ -135,7 +136,7 @@ impl TerminalHandleInput for StudentTerminal {
                             state.answered = false;
                             return;
                         }
-                        // allow to send answers quicker in singlechoice questions
+                        // allow to send answers quicker in single choice questions
                         state
                             .choice_selector_state
                             .toggle_selection(&state.choice_grid, state.question.is_multichoice);
@@ -151,7 +152,7 @@ impl TerminalHandleInput for StudentTerminal {
                     &mut state.choice_selector_state,
                     &state.choice_grid,
                     state.question.is_multichoice,
-                    self.music_address.clone(),
+                    &self.music_address,
                 );
             }
             StudentTerminalState::Results(state) => {
@@ -160,7 +161,7 @@ impl TerminalHandleInput for StudentTerminal {
                 state.table_state.select(Some(selected));
 
                 if moved {
-                    self.music_address.do_send(SoundEffectMessage::Tap)
+                    self.music_address.do_send(SoundEffectMessage::Tap);
                 }
             }
             _ => {}
@@ -205,10 +206,10 @@ fn input_name(
 
 fn move_in_answers(
     key_code: KeyCode,
-    choice_selector_state: &mut ChoiceSelectorState,
-    choice_grid: &ChoiceGrid,
+    choice_selector_state: &mut SelectorState,
+    choice_grid: &Grid,
     is_multichoice: bool,
-    music_address: Addr<MusicActor>,
+    music_address: &Addr<MusicActor>,
 ) {
     let moved = match key_code {
         KeyCode::Char(' ') => {
