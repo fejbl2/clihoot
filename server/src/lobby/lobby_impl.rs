@@ -1,5 +1,5 @@
 use actix::prelude::{Actor, Context};
-use anyhow::Ok;
+use anyhow::{bail, Ok};
 use common::{
     messages::{
         network::{
@@ -120,7 +120,7 @@ impl Lobby {
                     choice_stats.players_answered_count += 1;
                 } else {
                     // never happens
-                    panic!("Answer {answer} not found in stats");
+                    bail!("ChoiceStats for choice {} not found", answer);
                 }
             }
         }
