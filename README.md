@@ -36,19 +36,22 @@ questions:
       - text: yes
         is_correct: true
       - text: no
-  - text: What will this code print?
-    time_seconds: 40
+  - text: What does this code do?
     code_block:
       language: rust
       code: >
         fn main() {
             println!("42");
         }
-    is_multichoice: false
+    time_seconds: 60
+    is_multichoice: true
     choices:
-      - text: "42"
+      - text: Nothing useful
+      - text: It prints 42
         is_correct: true
-      - text: "69"
+      - text: It fails to compile
+      - text: It answers to the ultimate question of life
+        is_correct: true
 ```
 
 The file starts with the name of the quiz, followed by sequence of questions.

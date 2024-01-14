@@ -4,7 +4,7 @@ use ratatui::{
     layout::{Alignment, Constraint, Direction, Layout, Rect},
     prelude::*,
     style::{self},
-    widgets::{Block, List, ListItem, ListState, Row, Table, TableState},
+    widgets::{Block, List, ListItem, ListState, Paragraph, Row, Table, TableState, Wrap},
 };
 use uuid::Uuid;
 
@@ -33,7 +33,10 @@ pub fn list_layout(
         .constraints(constraints)
         .split(content_space);
 
-    let paragraph = get_centered_paragraph(text, Block::default());
+    let paragraph = Paragraph::new(text)
+        .wrap(Wrap { trim: true })
+        .alignment(Alignment::Left)
+        .block(Block::default());
 
     frame.render_widget(outer_block, frame.size());
     frame.render_widget(inner_block, inner);

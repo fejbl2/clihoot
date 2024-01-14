@@ -1,8 +1,15 @@
-quiz_name: "Rust Quiz"
+quiz_name: Quiz
 questions:
+  - text: Sample question?
+    time_seconds: 42
+    is_multichoice: false
+    choices:
+      - text: yes
+        is_correct: true
+      - text: no
   - text: What does this code do?
     code_block:
-      language: rs
+      language: rust
       code: >
         fn main() {
             println!("42");
@@ -13,6 +20,6 @@ questions:
       - text: Nothing useful
       - text: It prints 42
         is_correct: true
-      - text: It fails to compile and the compiler will scream at us
-      - text: It answers to the ultimate question of life, the Universe, and Everything
+      - text: It fails to compile
+      - text: It answers to the ultimate question of life
         is_correct: true
