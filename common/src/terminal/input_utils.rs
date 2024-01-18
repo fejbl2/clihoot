@@ -8,7 +8,7 @@ pub fn move_in_list(selected: &mut usize, list_size: usize, key_code: KeyCode) -
         }
         KeyCode::Up | KeyCode::Char('w') => {
             if *selected == 0 {
-                *selected = list_size - 1;
+                *selected = list_size.saturating_sub(1);
             } else {
                 *selected -= 1;
             }
