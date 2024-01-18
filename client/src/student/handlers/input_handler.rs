@@ -127,6 +127,10 @@ impl TerminalHandleInput for StudentTerminal {
                     return;
                 }
 
+                if state.answered {
+                    return;
+                }
+
                 if key_code == KeyCode::Enter {
                     state.answered = true;
 
